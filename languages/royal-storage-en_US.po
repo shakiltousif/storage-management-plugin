@@ -1,0 +1,145 @@
+# English translation for Royal Storage Management
+# Copyright (C) 2025 Royal Storage
+# This file is distributed under the same license as the Royal Storage Management package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Royal Storage Management 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-16 00:00:00+00:00\n"
+"PO-Revision-Date: 2025-10-16 00:00:00+00:00\n"
+"Last-Translator: Royal Storage <info@royalstorage.rs>\n"
+"Language-Team: English\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: includes/class-plugin.php:41
+msgid "Royal Storage Management"
+msgstr "Royal Storage Management"
+
+#: includes/class-plugin.php:42
+msgid "Storage Management"
+msgstr "Storage Management"
+
+#: includes/class-plugin.php:43
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: includes/class-plugin.php:44
+msgid "Storage Units"
+msgstr "Storage Units"
+
+#: includes/class-plugin.php:45
+msgid "Parking Spaces"
+msgstr "Parking Spaces"
+
+#: includes/class-plugin.php:46
+msgid "Bookings"
+msgstr "Bookings"
+
+#: includes/class-plugin.php:47
+msgid "Invoices"
+msgstr "Invoices"
+
+#: includes/class-plugin.php:48
+msgid "Settings"
+msgstr "Settings"
+
+#: includes/Admin/class-settings.php:10
+msgid "Business Settings"
+msgstr "Business Settings"
+
+#: includes/Admin/class-settings.php:11
+msgid "Pricing Settings"
+msgstr "Pricing Settings"
+
+#: includes/Admin/class-settings.php:12
+msgid "Email Settings"
+msgstr "Email Settings"
+
+#: includes/Admin/class-settings.php:13
+msgid "Payment Settings"
+msgstr "Payment Settings"
+
+#: includes/class-invoice-generator.php:100
+msgid "Invoice"
+msgstr "Invoice"
+
+#: includes/class-invoice-generator.php:105
+msgid "From:"
+msgstr "From:"
+
+#: includes/class-invoice-generator.php:112
+msgid "Bill To:"
+msgstr "Bill To:"
+
+#: includes/class-invoice-generator.php:122
+msgid "Description"
+msgstr "Description"
+
+#: includes/class-invoice-generator.php:123
+msgid "Amount"
+msgstr "Amount"
+
+#: includes/class-invoice-generator.php:128
+msgid "Storage Rental"
+msgstr "Storage Rental"
+
+#: includes/class-invoice-generator.php:132
+msgid "VAT (20%)"
+msgstr "VAT (20%)"
+
+#: includes/class-invoice-generator.php:136
+msgid "Total"
+msgstr "Total"
+
+#: includes/class-invoice-generator.php:142
+msgid "Invoice Date:"
+msgstr "Invoice Date:"
+
+#: includes/class-invoice-generator.php:143
+msgid "Due Date:"
+msgstr "Due Date:"
+
+#: includes/class-invoice-generator.php:144
+msgid "Status:"
+msgstr "Status:"
+
+#: includes/class-payment-handler.php:50
+msgid "Payment Reminder - Royal Storage"
+msgstr "Payment Reminder - Royal Storage"
+
+#: includes/class-payment-handler.php:51
+msgid "Dear %s, please complete your payment for booking #%d. Total amount: %s RSD"
+msgstr "Dear %s, please complete your payment for booking #%d. Total amount: %s RSD"
+
+#: includes/class-payment-handler.php:62
+msgid "Payment Confirmed - Royal Storage"
+msgstr "Payment Confirmed - Royal Storage"
+
+#: includes/class-payment-handler.php:63
+msgid "Dear %s, your payment for booking #%d has been confirmed. Your access code is: %s"
+msgstr "Dear %s, your payment for booking #%d has been confirmed. Your access code is: %s"
+
+#: includes/class-payment-handler.php:77
+msgid "Payment Failed - Royal Storage"
+msgstr "Payment Failed - Royal Storage"
+
+#: includes/class-payment-handler.php:78
+msgid "Dear %s, your payment for booking #%d failed. Reason: %s. Please try again."
+msgstr "Dear %s, your payment for booking #%d failed. Reason: %s. Please try again."
+
+#: includes/class-payment-handler.php:155
+msgid "Refund Processed - Royal Storage"
+msgstr "Refund Processed - Royal Storage"
+
+#: includes/class-payment-handler.php:156
+msgid "Dear %s, your refund for booking #%d has been processed. Amount: %s RSD"
+msgstr "Dear %s, your refund for booking #%d has been processed. Amount: %s RSD"
+
+#: royal-storage.php:41
+msgid "Royal Storage Management requires WooCommerce to be installed and activated."
+msgstr "Royal Storage Management requires WooCommerce to be installed and activated."
+

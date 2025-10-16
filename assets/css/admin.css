@@ -1,0 +1,891 @@
+/* Royal Storage Admin Styles */
+
+.royal-storage-admin {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.royal-storage-admin .wrap {
+	max-width: 1200px;
+	margin: 20px auto;
+}
+
+.royal-storage-admin h1 {
+	color: #1a1a1a;
+	margin-bottom: 20px;
+	font-size: 32px;
+	font-weight: 600;
+}
+
+.royal-storage-admin h2 {
+	color: #1a1a1a;
+	margin-top: 30px;
+	margin-bottom: 15px;
+	font-size: 24px;
+	font-weight: 600;
+}
+
+/* Dashboard Container */
+.royal-storage-dashboard-container {
+	margin-top: 20px;
+}
+
+/* Dashboard Actions */
+.royal-storage-dashboard-actions {
+	margin-bottom: 20px;
+	padding: 15px;
+	background: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 4px;
+}
+
+/* Dashboard Metrics */
+.royal-storage-metrics {
+	margin-bottom: 30px;
+}
+
+.metrics-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-bottom: 20px;
+}
+
+.metric-card {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	display: flex;
+	align-items: center;
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.metric-icon {
+	font-size: 32px;
+	margin-right: 15px;
+	width: 50px;
+	text-align: center;
+}
+
+.metric-content h3 {
+	margin: 0 0 8px 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: #666;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.metric-number {
+	font-size: 28px;
+	font-weight: 700;
+	color: #1a1a1a;
+	margin: 0;
+}
+
+.metric-number.alert {
+	color: #dc3545;
+}
+
+.metric-number.warning {
+	color: #ffc107;
+}
+
+/* Dashboard Widgets */
+.royal-storage-widget {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.royal-storage-widget h2 {
+	margin-top: 0;
+	margin-bottom: 20px;
+	color: #1a1a1a;
+	font-size: 20px;
+	font-weight: 600;
+	border-bottom: 2px solid #f0f0f0;
+	padding-bottom: 10px;
+}
+
+/* Status Styles */
+.status-confirmed {
+	color: #28a745;
+	font-weight: 600;
+}
+
+.status-active {
+	color: #007cba;
+	font-weight: 600;
+}
+
+.status-pending {
+	color: #ffc107;
+	font-weight: 600;
+}
+
+.status-cancelled {
+	color: #dc3545;
+	font-weight: 600;
+}
+
+.status-expired {
+	color: #6c757d;
+	font-weight: 600;
+}
+
+.days-left.urgent {
+	color: #dc3545;
+	font-weight: 700;
+}
+
+.days-left.warning {
+	color: #ffc107;
+	font-weight: 600;
+}
+
+/* Settings Page Styles */
+.royal-storage-settings-container {
+	margin-top: 20px;
+}
+
+.royal-storage-settings-section {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.royal-storage-settings-section h2 {
+	margin-top: 0;
+	margin-bottom: 20px;
+	color: #1a1a1a;
+	font-size: 20px;
+	font-weight: 600;
+	border-bottom: 2px solid #f0f0f0;
+	padding-bottom: 10px;
+}
+
+.royal-storage-settings-section .form-table th {
+	width: 200px;
+	padding: 15px 10px 15px 0;
+	vertical-align: top;
+	font-weight: 600;
+	color: #333;
+}
+
+.royal-storage-settings-section .form-table td {
+	padding: 15px 10px;
+	vertical-align: top;
+}
+
+.royal-storage-settings-section .form-table input[type="text"],
+.royal-storage-settings-section .form-table input[type="email"],
+.royal-storage-settings-section .form-table input[type="password"],
+.royal-storage-settings-section .form-table input[type="number"],
+.royal-storage-settings-section .form-table select,
+.royal-storage-settings-section .form-table textarea {
+	width: 100%;
+	max-width: 400px;
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.royal-storage-settings-section .form-table input:focus,
+.royal-storage-settings-section .form-table select:focus,
+.royal-storage-settings-section .form-table textarea:focus {
+	border-color: #007cba;
+	box-shadow: 0 0 0 1px #007cba;
+	outline: none;
+}
+
+.royal-storage-settings-section .form-table .small-text {
+	max-width: 100px;
+}
+
+.royal-storage-settings-section .form-table .large-text {
+	max-width: 600px;
+}
+
+.royal-storage-settings-section .form-table .description {
+	font-style: italic;
+	color: #666;
+	margin-top: 5px;
+	font-size: 13px;
+}
+
+.royal-storage-settings-section fieldset {
+	border: none;
+	padding: 0;
+	margin: 0;
+}
+
+.royal-storage-settings-section fieldset label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: normal;
+}
+
+.royal-storage-settings-section fieldset input[type="checkbox"] {
+	width: auto;
+	margin-right: 8px;
+}
+
+/* Settings Save Button */
+.royal-storage-settings-container .submit {
+	margin-top: 30px;
+	padding: 20px;
+	background: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+}
+
+.royal-storage-settings-container .submit .button-primary {
+	background: #007cba;
+	border-color: #007cba;
+	padding: 10px 20px;
+	font-size: 16px;
+	font-weight: 600;
+	height: auto;
+	line-height: 1.4;
+}
+
+.royal-storage-settings-container .submit .button-primary:hover {
+	background: #005a87;
+	border-color: #005a87;
+}
+
+/* Reports Page Styles */
+.royal-storage-reports-filters {
+	background: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: end;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.royal-storage-reports-filters .filter-group {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.royal-storage-reports-filters label {
+	font-weight: 600;
+	color: #333;
+	font-size: 14px;
+}
+
+.royal-storage-reports-filters input[type="date"] {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	min-width: 150px;
+}
+
+.royal-storage-reports-export {
+	margin-bottom: 20px;
+}
+
+.royal-storage-reports-export .button {
+	background: #28a745;
+	border-color: #28a745;
+	color: #fff;
+	padding: 8px 16px;
+	font-size: 14px;
+}
+
+.royal-storage-reports-export .button:hover {
+	background: #218838;
+	border-color: #1e7e34;
+}
+
+.royal-storage-reports-section {
+	margin-bottom: 30px;
+}
+
+.royal-storage-reports-section .royal-storage-widget {
+	margin-bottom: 0;
+}
+
+/* Revenue Chart Styles */
+.revenue-chart-container {
+	margin-top: 15px;
+}
+
+.chart-placeholder {
+	background: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 4px;
+	padding: 15px;
+}
+
+/* Occupancy Report Styles */
+.occupancy-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 20px;
+	margin-bottom: 20px;
+	padding: 20px;
+	background: #f8f9fa;
+	border-radius: 8px;
+}
+
+.occupancy-metric {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 15px;
+	background: #fff;
+	border: 1px solid #e9ecef;
+	border-radius: 6px;
+}
+
+.occupancy-metric .label {
+	font-weight: 600;
+	color: #666;
+}
+
+.occupancy-metric .value {
+	font-size: 18px;
+	font-weight: 700;
+	color: #007cba;
+}
+
+.occupancy-details {
+	margin-top: 20px;
+}
+
+.occupancy-details h3 {
+	margin-bottom: 15px;
+	color: #333;
+	font-size: 16px;
+}
+
+/* Status Badge Styles */
+.status-badge {
+	display: inline-block;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.status-badge.status-confirmed {
+	background: #d4edda;
+	color: #155724;
+	border: 1px solid #c3e6cb;
+}
+
+.status-badge.status-active {
+	background: #cce7ff;
+	color: #004085;
+	border: 1px solid #b3d7ff;
+}
+
+.status-badge.status-pending {
+	background: #fff3cd;
+	color: #856404;
+	border: 1px solid #ffeaa7;
+}
+
+.status-badge.status-cancelled {
+	background: #f8d7da;
+	color: #721c24;
+	border: 1px solid #f5c6cb;
+}
+
+.status-badge.status-expired {
+	background: #e2e3e5;
+	color: #383d41;
+	border: 1px solid #d6d8db;
+}
+
+.status-badge.status-paid {
+	background: #d4edda;
+	color: #155724;
+	border: 1px solid #c3e6cb;
+}
+
+.status-badge.status-unpaid {
+	background: #f8d7da;
+	color: #721c24;
+	border: 1px solid #f5c6cb;
+}
+
+.status-badge.status-partial {
+	background: #fff3cd;
+	color: #856404;
+	border: 1px solid #ffeaa7;
+}
+
+/* Table Enhancements */
+.royal-storage-widget table {
+	margin-top: 0;
+}
+
+.royal-storage-widget table th {
+	background: #f8f9fa;
+	font-weight: 600;
+	color: #333;
+	border-bottom: 2px solid #e9ecef;
+}
+
+.royal-storage-widget table td {
+	vertical-align: middle;
+}
+
+.royal-storage-widget table tfoot th {
+	background: #e9ecef;
+	font-weight: 700;
+	color: #333;
+}
+
+/* Responsive Design for Reports */
+@media (max-width: 768px) {
+	.royal-storage-reports-filters {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 15px;
+	}
+	
+	.royal-storage-reports-filters .filter-group {
+		width: 100%;
+	}
+	
+	.royal-storage-reports-filters input[type="date"] {
+		width: 100%;
+		min-width: auto;
+	}
+	
+	.occupancy-stats {
+		grid-template-columns: 1fr;
+		gap: 15px;
+	}
+	
+	.royal-storage-widget table {
+		font-size: 12px;
+	}
+	
+	.royal-storage-widget table th,
+	.royal-storage-widget table td {
+		padding: 8px 4px;
+	}
+}
+
+/* Customers Page Styles */
+.royal-storage-customers-summary {
+	margin-bottom: 30px;
+}
+
+.royal-storage-customers-filters {
+	background: #f8f9fa;
+	border: 1px solid #e9ecef;
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.royal-storage-customers-filters .search-box {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	flex-wrap: wrap;
+}
+
+.royal-storage-customers-filters label {
+	font-weight: 600;
+	color: #333;
+	font-size: 14px;
+	min-width: 120px;
+}
+
+.royal-storage-customers-filters input[type="search"] {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	min-width: 300px;
+	flex: 1;
+}
+
+.royal-storage-customers-export {
+	margin-bottom: 20px;
+}
+
+.royal-storage-customers-export .button {
+	background: #28a745;
+	border-color: #28a745;
+	color: #fff;
+	padding: 8px 16px;
+	font-size: 14px;
+}
+
+.royal-storage-customers-export .button:hover {
+	background: #218838;
+	border-color: #1e7e34;
+}
+
+.royal-storage-customers-table {
+	margin-bottom: 30px;
+}
+
+.royal-storage-customers-pagination {
+	margin-top: 20px;
+}
+
+/* Customer Table Styles */
+.royal-storage-widget h2 .search-results {
+	font-size: 14px;
+	font-weight: normal;
+	color: #666;
+	margin-left: 10px;
+}
+
+.customer-actions {
+	display: flex;
+	gap: 5px;
+	flex-wrap: wrap;
+}
+
+.customer-actions .button {
+	font-size: 12px;
+	padding: 4px 8px;
+	height: auto;
+	line-height: 1.4;
+}
+
+.overdue-amount {
+	color: #dc3545;
+	font-weight: 600;
+}
+
+.no-overdue {
+	color: #28a745;
+	font-weight: 600;
+}
+
+.active-bookings-count {
+	background: #cce7ff;
+	color: #004085;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+.total-bookings-count {
+	background: #e2e3e5;
+	color: #383d41;
+	padding: 2px 6px;
+	border-radius: 3px;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+.no-customers {
+	text-align: center;
+	padding: 40px 20px;
+	color: #666;
+}
+
+.no-customers p {
+	margin: 10px 0;
+	font-size: 16px;
+}
+
+/* Pagination Styles */
+.tablenav {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 20px;
+	padding: 10px 0;
+}
+
+.tablenav-pages {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.tablenav-pages .button {
+	padding: 4px 8px;
+	font-size: 12px;
+	height: auto;
+	line-height: 1.4;
+}
+
+.tablenav-pages .paging-input {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.tablenav-pages .current-page {
+	width: 50px;
+	text-align: center;
+	padding: 4px;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+}
+
+.tablenav-pages .tablenav-paging-text {
+	font-size: 12px;
+	color: #666;
+}
+
+.displaying-num {
+	font-size: 12px;
+	color: #666;
+}
+
+/* Responsive Design for Customers */
+@media (max-width: 768px) {
+	.royal-storage-customers-filters .search-box {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+	}
+	
+	.royal-storage-customers-filters input[type="search"] {
+		min-width: auto;
+		width: 100%;
+	}
+	
+	.customer-actions {
+		flex-direction: column;
+		gap: 3px;
+	}
+	
+	.customer-actions .button {
+		width: 100%;
+		text-align: center;
+	}
+	
+	.royal-storage-widget table {
+		font-size: 12px;
+	}
+	
+	.royal-storage-widget table th,
+	.royal-storage-widget table td {
+		padding: 6px 4px;
+	}
+	
+	.tablenav {
+		flex-direction: column;
+		gap: 10px;
+	}
+	
+	.tablenav-pages {
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+}
+
+/* Dashboard Widgets */
+.royal-storage-dashboard-widget {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.royal-storage-dashboard-widget h3 {
+	margin-top: 0;
+	margin-bottom: 15px;
+	color: #1a1a1a;
+	font-size: 18px;
+}
+
+.royal-storage-stat {
+	display: inline-block;
+	margin-right: 30px;
+	margin-bottom: 15px;
+}
+
+.royal-storage-stat-value {
+	font-size: 32px;
+	font-weight: 700;
+	color: #0073aa;
+	display: block;
+}
+
+.royal-storage-stat-label {
+	font-size: 14px;
+	color: #666;
+	margin-top: 5px;
+}
+
+/* Tables */
+.royal-storage-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.royal-storage-table thead {
+	background: #f5f5f5;
+	border-bottom: 2px solid #e0e0e0;
+}
+
+.royal-storage-table th {
+	padding: 12px 15px;
+	text-align: left;
+	font-weight: 600;
+	color: #1a1a1a;
+}
+
+.royal-storage-table td {
+	padding: 12px 15px;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.royal-storage-table tbody tr:hover {
+	background: #f9f9f9;
+}
+
+/* Forms */
+.royal-storage-form-group {
+	margin-bottom: 20px;
+}
+
+.royal-storage-form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 600;
+	color: #1a1a1a;
+}
+
+.royal-storage-form-group input,
+.royal-storage-form-group select,
+.royal-storage-form-group textarea {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	font-family: inherit;
+}
+
+.royal-storage-form-group input:focus,
+.royal-storage-form-group select:focus,
+.royal-storage-form-group textarea:focus {
+	outline: none;
+	border-color: #0073aa;
+	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Buttons */
+.royal-storage-btn {
+	display: inline-block;
+	padding: 10px 20px;
+	background: #0073aa;
+	color: #fff;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.2s;
+}
+
+.royal-storage-btn:hover {
+	background: #005a87;
+}
+
+.royal-storage-btn-secondary {
+	background: #6c757d;
+}
+
+.royal-storage-btn-secondary:hover {
+	background: #5a6268;
+}
+
+.royal-storage-btn-danger {
+	background: #dc3545;
+}
+
+.royal-storage-btn-danger:hover {
+	background: #c82333;
+}
+
+/* Status Badges */
+.royal-storage-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.royal-storage-badge-success {
+	background: #d4edda;
+	color: #155724;
+}
+
+.royal-storage-badge-warning {
+	background: #fff3cd;
+	color: #856404;
+}
+
+.royal-storage-badge-danger {
+	background: #f8d7da;
+	color: #721c24;
+}
+
+.royal-storage-badge-info {
+	background: #d1ecf1;
+	color: #0c5460;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.royal-storage-admin .wrap {
+		margin: 10px;
+	}
+
+	.royal-storage-stat {
+		display: block;
+		margin-right: 0;
+		margin-bottom: 20px;
+	}
+
+	.royal-storage-table {
+		font-size: 12px;
+	}
+
+	.royal-storage-table th,
+	.royal-storage-table td {
+		padding: 8px 10px;
+	}
+}
+

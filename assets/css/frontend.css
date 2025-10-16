@@ -1,0 +1,300 @@
+/* Royal Storage Frontend Styles */
+
+.royal-storage-booking,
+.royal-storage-portal {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	color: #333;
+}
+
+/* Booking Form */
+.royal-storage-booking {
+	max-width: 600px;
+	margin: 30px auto;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 30px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.royal-storage-booking h2 {
+	color: #1a1a1a;
+	margin-top: 0;
+	margin-bottom: 10px;
+	font-size: 28px;
+	font-weight: 600;
+}
+
+.royal-storage-booking p {
+	color: #666;
+	margin-bottom: 20px;
+}
+
+/* Form Steps */
+.royal-storage-form-steps {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 30px;
+	position: relative;
+}
+
+.royal-storage-form-steps::before {
+	content: '';
+	position: absolute;
+	top: 20px;
+	left: 0;
+	right: 0;
+	height: 2px;
+	background: #e0e0e0;
+	z-index: 0;
+}
+
+.royal-storage-form-step {
+	flex: 1;
+	text-align: center;
+	position: relative;
+	z-index: 1;
+}
+
+.royal-storage-form-step-number {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	background: #e0e0e0;
+	border-radius: 50%;
+	color: #666;
+	font-weight: 600;
+	margin-bottom: 10px;
+}
+
+.royal-storage-form-step.active .royal-storage-form-step-number {
+	background: #0073aa;
+	color: #fff;
+}
+
+.royal-storage-form-step.completed .royal-storage-form-step-number {
+	background: #28a745;
+	color: #fff;
+}
+
+.royal-storage-form-step-label {
+	font-size: 12px;
+	color: #666;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+/* Form Groups */
+.royal-storage-form-group {
+	margin-bottom: 20px;
+}
+
+.royal-storage-form-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 600;
+	color: #1a1a1a;
+	font-size: 14px;
+}
+
+.royal-storage-form-group input,
+.royal-storage-form-group select,
+.royal-storage-form-group textarea {
+	width: 100%;
+	padding: 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+	font-family: inherit;
+	box-sizing: border-box;
+}
+
+.royal-storage-form-group input:focus,
+.royal-storage-form-group select:focus,
+.royal-storage-form-group textarea:focus {
+	outline: none;
+	border-color: #0073aa;
+	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.royal-storage-form-group.error input,
+.royal-storage-form-group.error select {
+	border-color: #dc3545;
+}
+
+.royal-storage-form-error {
+	color: #dc3545;
+	font-size: 12px;
+	margin-top: 5px;
+}
+
+/* Unit Selection */
+.royal-storage-units {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 15px;
+	margin-bottom: 20px;
+}
+
+.royal-storage-unit-card {
+	border: 2px solid #e0e0e0;
+	border-radius: 8px;
+	padding: 15px;
+	cursor: pointer;
+	transition: all 0.3s;
+	text-align: center;
+}
+
+.royal-storage-unit-card:hover {
+	border-color: #0073aa;
+	box-shadow: 0 2px 8px rgba(0, 115, 170, 0.2);
+}
+
+.royal-storage-unit-card.selected {
+	border-color: #0073aa;
+	background: #f0f7ff;
+}
+
+.royal-storage-unit-card h4 {
+	margin: 0 0 10px 0;
+	color: #1a1a1a;
+	font-size: 16px;
+}
+
+.royal-storage-unit-card p {
+	margin: 5px 0;
+	color: #666;
+	font-size: 13px;
+}
+
+.royal-storage-unit-price {
+	font-size: 18px;
+	font-weight: 700;
+	color: #0073aa;
+	margin-top: 10px;
+}
+
+/* Buttons */
+.royal-storage-btn {
+	display: inline-block;
+	padding: 12px 24px;
+	background: #0073aa;
+	color: #fff;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.2s;
+	width: 100%;
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.royal-storage-btn:hover {
+	background: #005a87;
+}
+
+.royal-storage-btn-secondary {
+	background: #6c757d;
+	margin-right: 10px;
+}
+
+.royal-storage-btn-secondary:hover {
+	background: #5a6268;
+}
+
+/* Portal */
+.royal-storage-portal {
+	max-width: 900px;
+	margin: 30px auto;
+}
+
+.royal-storage-portal h2 {
+	color: #1a1a1a;
+	margin-bottom: 20px;
+	font-size: 28px;
+	font-weight: 600;
+}
+
+.royal-storage-bookings-list {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.royal-storage-booking-item {
+	padding: 20px;
+	border-bottom: 1px solid #e0e0e0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.royal-storage-booking-item:last-child {
+	border-bottom: none;
+}
+
+.royal-storage-booking-info h4 {
+	margin: 0 0 5px 0;
+	color: #1a1a1a;
+}
+
+.royal-storage-booking-info p {
+	margin: 3px 0;
+	color: #666;
+	font-size: 13px;
+}
+
+.royal-storage-booking-actions {
+	text-align: right;
+}
+
+.royal-storage-booking-actions a {
+	display: inline-block;
+	margin-left: 10px;
+	padding: 8px 16px;
+	background: #0073aa;
+	color: #fff;
+	border-radius: 4px;
+	text-decoration: none;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.royal-storage-booking-actions a:hover {
+	background: #005a87;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.royal-storage-booking {
+		margin: 15px;
+		padding: 20px;
+	}
+
+	.royal-storage-units {
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	}
+
+	.royal-storage-booking-item {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.royal-storage-booking-actions {
+		text-align: left;
+		margin-top: 15px;
+	}
+
+	.royal-storage-booking-actions a {
+		display: block;
+		margin-left: 0;
+		margin-bottom: 8px;
+	}
+}
+

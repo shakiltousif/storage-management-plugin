@@ -1,0 +1,145 @@
+# Serbian translation for Royal Storage Management
+# Copyright (C) 2025 Royal Storage
+# This file is distributed under the same license as the Royal Storage Management package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Royal Storage Management 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-16 00:00:00+00:00\n"
+"PO-Revision-Date: 2025-10-16 00:00:00+00:00\n"
+"Last-Translator: Royal Storage <info@royalstorage.rs>\n"
+"Language-Team: Serbian\n"
+"Language: sr_RS\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: includes/class-plugin.php:41
+msgid "Royal Storage Management"
+msgstr "Управљање складиштем Роял"
+
+#: includes/class-plugin.php:42
+msgid "Storage Management"
+msgstr "Управљање складиштем"
+
+#: includes/class-plugin.php:43
+msgid "Dashboard"
+msgstr "Контролна табла"
+
+#: includes/class-plugin.php:44
+msgid "Storage Units"
+msgstr "Јединице складишта"
+
+#: includes/class-plugin.php:45
+msgid "Parking Spaces"
+msgstr "Паркинг места"
+
+#: includes/class-plugin.php:46
+msgid "Bookings"
+msgstr "Резервације"
+
+#: includes/class-plugin.php:47
+msgid "Invoices"
+msgstr "Рачуни"
+
+#: includes/class-plugin.php:48
+msgid "Settings"
+msgstr "Подешавања"
+
+#: includes/Admin/class-settings.php:10
+msgid "Business Settings"
+msgstr "Подешавања пословања"
+
+#: includes/Admin/class-settings.php:11
+msgid "Pricing Settings"
+msgstr "Подешавања цена"
+
+#: includes/Admin/class-settings.php:12
+msgid "Email Settings"
+msgstr "Подешавања е-поште"
+
+#: includes/Admin/class-settings.php:13
+msgid "Payment Settings"
+msgstr "Подешавања плаћања"
+
+#: includes/class-invoice-generator.php:100
+msgid "Invoice"
+msgstr "Рачун"
+
+#: includes/class-invoice-generator.php:105
+msgid "From:"
+msgstr "Од:"
+
+#: includes/class-invoice-generator.php:112
+msgid "Bill To:"
+msgstr "Наплатити:"
+
+#: includes/class-invoice-generator.php:122
+msgid "Description"
+msgstr "Опис"
+
+#: includes/class-invoice-generator.php:123
+msgid "Amount"
+msgstr "Износ"
+
+#: includes/class-invoice-generator.php:128
+msgid "Storage Rental"
+msgstr "Изнајмљивање складишта"
+
+#: includes/class-invoice-generator.php:132
+msgid "VAT (20%)"
+msgstr "ПДВ (20%)"
+
+#: includes/class-invoice-generator.php:136
+msgid "Total"
+msgstr "Укупно"
+
+#: includes/class-invoice-generator.php:142
+msgid "Invoice Date:"
+msgstr "Датум рачуна:"
+
+#: includes/class-invoice-generator.php:143
+msgid "Due Date:"
+msgstr "Датум доспећа:"
+
+#: includes/class-invoice-generator.php:144
+msgid "Status:"
+msgstr "Статус:"
+
+#: includes/class-payment-handler.php:50
+msgid "Payment Reminder - Royal Storage"
+msgstr "Подсетник за плаћање - Роял складиште"
+
+#: includes/class-payment-handler.php:51
+msgid "Dear %s, please complete your payment for booking #%d. Total amount: %s RSD"
+msgstr "Драги %s, молимо вас да завршите плаћање за резервацију #%d. Укупан износ: %s РСД"
+
+#: includes/class-payment-handler.php:62
+msgid "Payment Confirmed - Royal Storage"
+msgstr "Плаћање потврђено - Роял складиште"
+
+#: includes/class-payment-handler.php:63
+msgid "Dear %s, your payment for booking #%d has been confirmed. Your access code is: %s"
+msgstr "Драги %s, ваше плаћање за резервацију #%d је потврђено. Ваш код приступа је: %s"
+
+#: includes/class-payment-handler.php:77
+msgid "Payment Failed - Royal Storage"
+msgstr "Плаћање неуспешно - Роял складиште"
+
+#: includes/class-payment-handler.php:78
+msgid "Dear %s, your payment for booking #%d failed. Reason: %s. Please try again."
+msgstr "Драги %s, ваше плаћање за резервацију #%d је неуспешно. Разлог: %s. Молимо покушајте поново."
+
+#: includes/class-payment-handler.php:155
+msgid "Refund Processed - Royal Storage"
+msgstr "Повраћај обрађен - Роял складиште"
+
+#: includes/class-payment-handler.php:156
+msgid "Dear %s, your refund for booking #%d has been processed. Amount: %s RSD"
+msgstr "Драги %s, ваш повраћај за резервацију #%d је обрађен. Износ: %s РСД"
+
+#: royal-storage.php:41
+msgid "Royal Storage Management requires WooCommerce to be installed and activated."
+msgstr "Управљање складиштем Роял захтева да буде инсталиран и активиран WooCommerce."
+

@@ -1,0 +1,147 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Royal Storage Management 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-16 00:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: includes/class-plugin.php:41
+msgid "Royal Storage Management"
+msgstr ""
+
+#: includes/class-plugin.php:42
+msgid "Storage Management"
+msgstr ""
+
+#: includes/class-plugin.php:43
+msgid "Dashboard"
+msgstr ""
+
+#: includes/class-plugin.php:44
+msgid "Storage Units"
+msgstr ""
+
+#: includes/class-plugin.php:45
+msgid "Parking Spaces"
+msgstr ""
+
+#: includes/class-plugin.php:46
+msgid "Bookings"
+msgstr ""
+
+#: includes/class-plugin.php:47
+msgid "Invoices"
+msgstr ""
+
+#: includes/class-plugin.php:48
+msgid "Settings"
+msgstr ""
+
+#: includes/Admin/class-settings.php:10
+msgid "Business Settings"
+msgstr ""
+
+#: includes/Admin/class-settings.php:11
+msgid "Pricing Settings"
+msgstr ""
+
+#: includes/Admin/class-settings.php:12
+msgid "Email Settings"
+msgstr ""
+
+#: includes/Admin/class-settings.php:13
+msgid "Payment Settings"
+msgstr ""
+
+#: includes/class-invoice-generator.php:100
+msgid "Invoice"
+msgstr ""
+
+#: includes/class-invoice-generator.php:105
+msgid "From:"
+msgstr ""
+
+#: includes/class-invoice-generator.php:112
+msgid "Bill To:"
+msgstr ""
+
+#: includes/class-invoice-generator.php:122
+msgid "Description"
+msgstr ""
+
+#: includes/class-invoice-generator.php:123
+msgid "Amount"
+msgstr ""
+
+#: includes/class-invoice-generator.php:128
+msgid "Storage Rental"
+msgstr ""
+
+#: includes/class-invoice-generator.php:132
+msgid "VAT (20%)"
+msgstr ""
+
+#: includes/class-invoice-generator.php:136
+msgid "Total"
+msgstr ""
+
+#: includes/class-invoice-generator.php:142
+msgid "Invoice Date:"
+msgstr ""
+
+#: includes/class-invoice-generator.php:143
+msgid "Due Date:"
+msgstr ""
+
+#: includes/class-invoice-generator.php:144
+msgid "Status:"
+msgstr ""
+
+#: includes/class-payment-handler.php:50
+msgid "Payment Reminder - Royal Storage"
+msgstr ""
+
+#: includes/class-payment-handler.php:51
+msgid "Dear %s, please complete your payment for booking #%d. Total amount: %s RSD"
+msgstr ""
+
+#: includes/class-payment-handler.php:62
+msgid "Payment Confirmed - Royal Storage"
+msgstr ""
+
+#: includes/class-payment-handler.php:63
+msgid "Dear %s, your payment for booking #%d has been confirmed. Your access code is: %s"
+msgstr ""
+
+#: includes/class-payment-handler.php:77
+msgid "Payment Failed - Royal Storage"
+msgstr ""
+
+#: includes/class-payment-handler.php:78
+msgid "Dear %s, your payment for booking #%d failed. Reason: %s. Please try again."
+msgstr ""
+
+#: includes/class-payment-handler.php:155
+msgid "Refund Processed - Royal Storage"
+msgstr ""
+
+#: includes/class-payment-handler.php:156
+msgid "Dear %s, your refund for booking #%d has been processed. Amount: %s RSD"
+msgstr ""
+
+#: royal-storage.php:41
+msgid "Royal Storage Management requires WooCommerce to be installed and activated."
+msgstr ""
+
