@@ -237,9 +237,24 @@ class BookingEngine {
 	 * @return bool
 	 */
 	public function cancel_booking( $booking_id ) {
+		if ( empty( $booking_id ) || $booking_id <= 0 ) {
+			return false;
+		}
+		
 		$booking = new Booking( $booking_id );
+		
+		// Check if booking exists
+		if ( ! $booking->get_id() ) {
+			return false;
+		}
+		
 		$booking->set_status( 'cancelled' );
-		return $booking->save();
+		$result = $booking->save();
+		
+		// Log the result for debugging
+		error_log( 'Cancel booking result for ID ' . $booking_id . ': ' . ( $result ? 'success' : 'failed' ) );
+		
+		return $result;
 	}
 
 	/**

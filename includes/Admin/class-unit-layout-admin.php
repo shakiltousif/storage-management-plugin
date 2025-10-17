@@ -17,28 +17,12 @@ class UnitLayoutAdmin {
 	 * Constructor
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_ajax_save_unit_layout', array( $this, 'save_unit_layout' ) );
 		add_action( 'wp_ajax_get_unit_layout', array( $this, 'get_unit_layout' ) );
 		add_action( 'wp_ajax_create_sample_units', array( $this, 'create_sample_units' ) );
 	}
 
-	/**
-	 * Add admin menu
-	 *
-	 * @return void
-	 */
-	public function add_admin_menu() {
-		add_submenu_page(
-			'royal-storage',
-			__( 'Unit Layouts', 'royal-storage' ),
-			__( 'Unit Layouts', 'royal-storage' ),
-			'manage_options',
-			'royal-storage-layouts',
-			array( $this, 'render_layout_page' )
-		);
-	}
 
 	/**
 	 * Enqueue admin assets

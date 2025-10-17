@@ -4,6 +4,74 @@
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
+/* Modal Styles */
+.royal-storage-modal {
+	display: none;
+	position: fixed;
+	z-index: 9999;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.royal-storage-modal.show {
+	display: block !important;
+}
+
+.royal-storage-modal-content {
+	background-color: #fefefe;
+	margin: 5% auto;
+	padding: 20px;
+	border: 1px solid #888;
+	border-radius: 4px;
+	width: 80%;
+	max-width: 600px;
+	position: relative;
+}
+
+.royal-storage-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #ddd;
+}
+
+.royal-storage-modal-title {
+	font-size: 18px;
+	font-weight: 600;
+	margin: 0;
+}
+
+.royal-storage-modal-close {
+	color: #aaa;
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
+	line-height: 1;
+}
+
+.royal-storage-modal-close:hover,
+.royal-storage-modal-close:focus {
+	color: #000;
+	text-decoration: none;
+}
+
+.royal-storage-modal-body {
+	margin-bottom: 20px;
+}
+
+.royal-storage-modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding-top: 10px;
+	border-top: 1px solid #ddd;
+}
+
 .royal-storage-admin .wrap {
 	max-width: 1200px;
 	margin: 20px auto;

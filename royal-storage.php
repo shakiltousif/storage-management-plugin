@@ -63,6 +63,11 @@ require_once ROYAL_STORAGE_DIR . 'includes/Models/class-storage-unit.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Models/class-parking-space.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Models/class-booking.php';
 
+// Load core classes
+require_once ROYAL_STORAGE_DIR . 'includes/class-booking-engine.php';
+require_once ROYAL_STORAGE_DIR . 'includes/class-pricing-engine.php';
+require_once ROYAL_STORAGE_DIR . 'includes/class-email-manager.php';
+
 // Load admin classes
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-admin.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-dashboard.php';
@@ -73,6 +78,8 @@ require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-customers.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-notifications.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-unit-layout-admin.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-payment-settings.php';
+require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-storage-units.php';
+require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-parking-spaces.php';
 
 // Load frontend classes
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-frontend.php';

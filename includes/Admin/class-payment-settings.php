@@ -17,25 +17,9 @@ class PaymentSettings {
 	 * Constructor
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
-	/**
-	 * Add admin menu page
-	 *
-	 * @return void
-	 */
-	public function add_admin_menu() {
-		add_submenu_page(
-			'royal-storage',
-			__( 'Payment Settings', 'royal-storage' ),
-			__( 'Payment Settings', 'royal-storage' ),
-			'manage_options',
-			'royal-storage-payment-settings',
-			array( $this, 'render_settings_page' )
-		);
-	}
 
 	/**
 	 * Register settings

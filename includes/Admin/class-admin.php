@@ -16,6 +16,8 @@ use RoyalStorage\Admin\Customers;
 use RoyalStorage\Admin\Notifications;
 use RoyalStorage\Admin\UnitLayoutAdmin;
 use RoyalStorage\Admin\PaymentSettings;
+use RoyalStorage\Admin\StorageUnits;
+use RoyalStorage\Admin\ParkingSpaces;
 
 /**
  * Admin class for handling admin functionality
@@ -44,6 +46,8 @@ class Admin {
 		new Notifications();
 		new UnitLayoutAdmin();
 		new PaymentSettings();
+		new StorageUnits();
+		new ParkingSpaces();
 
 		// Register hooks.
 		add_action( 'admin_init', array( $this, 'register_admin_hooks' ) );
@@ -116,6 +120,42 @@ class Admin {
 			'manage_options',
 			'royal-storage-customers',
 			array( $this, 'render_customers_page' )
+		);
+
+		add_submenu_page(
+			'royal-storage',
+			__( 'Storage Units', 'royal-storage' ),
+			__( 'Storage Units', 'royal-storage' ),
+			'manage_options',
+			'royal-storage-units',
+			array( $this, 'render_storage_units_page' )
+		);
+
+		add_submenu_page(
+			'royal-storage',
+			__( 'Parking Spaces', 'royal-storage' ),
+			__( 'Parking Spaces', 'royal-storage' ),
+			'manage_options',
+			'royal-storage-parking',
+			array( $this, 'render_parking_spaces_page' )
+		);
+
+		add_submenu_page(
+			'royal-storage',
+			__( 'Unit Layouts', 'royal-storage' ),
+			__( 'Unit Layouts', 'royal-storage' ),
+			'manage_options',
+			'royal-storage-layouts',
+			array( $this, 'render_unit_layouts_page' )
+		);
+
+		add_submenu_page(
+			'royal-storage',
+			__( 'Payment Settings', 'royal-storage' ),
+			__( 'Payment Settings', 'royal-storage' ),
+			'manage_options',
+			'royal-storage-payment-settings',
+			array( $this, 'render_payment_settings_page' )
 		);
 
 		add_submenu_page(
@@ -1809,6 +1849,46 @@ class Admin {
 		}
 
 		echo '</div>';
+	}
+
+	/**
+	 * Render storage units page
+	 *
+	 * @return void
+	 */
+	public function render_storage_units_page() {
+		$storage_units = new StorageUnits();
+		$storage_units->render_page();
+	}
+
+	/**
+	 * Render parking spaces page
+	 *
+	 * @return void
+	 */
+	public function render_parking_spaces_page() {
+		$parking_spaces = new ParkingSpaces();
+		$parking_spaces->render_page();
+	}
+
+	/**
+	 * Render unit layouts page
+	 *
+	 * @return void
+	 */
+	public function render_unit_layouts_page() {
+		$unit_layout_admin = new UnitLayoutAdmin();
+		$unit_layout_admin->render_layout_page();
+	}
+
+	/**
+	 * Render payment settings page
+	 *
+	 * @return void
+	 */
+	public function render_payment_settings_page() {
+		$payment_settings = new PaymentSettings();
+		$payment_settings->render_settings_page();
 	}
 }
 
