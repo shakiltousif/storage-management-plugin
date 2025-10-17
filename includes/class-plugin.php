@@ -85,6 +85,14 @@ class Plugin {
 
 		// Add settings link on plugins page.
 		add_filter( 'plugin_action_links_' . ROYAL_STORAGE_BASENAME, array( $this, 'add_settings_link' ) );
+
+		// Register AJAX hooks for booking functionality
+		add_action( 'wp_ajax_get_available_units', array( $this, 'ajax_get_available_units' ) );
+		add_action( 'wp_ajax_nopriv_get_available_units', array( $this, 'ajax_get_available_units' ) );
+		add_action( 'wp_ajax_calculate_booking_price', array( $this, 'ajax_calculate_booking_price' ) );
+		add_action( 'wp_ajax_nopriv_calculate_booking_price', array( $this, 'ajax_calculate_booking_price' ) );
+		add_action( 'wp_ajax_create_booking', array( $this, 'ajax_create_booking' ) );
+		add_action( 'wp_ajax_nopriv_create_booking', array( $this, 'ajax_create_booking' ) );
 	}
 
 	/**
@@ -177,6 +185,39 @@ class Plugin {
 		$settings_link = '<a href="' . admin_url( 'admin.php?page=royal-storage-settings' ) . '">' . esc_html__( 'Settings', 'royal-storage' ) . '</a>';
 		array_unshift( $links, $settings_link );
 		return $links;
+	}
+
+	/**
+	 * AJAX handler for getting available units
+	 *
+	 * @return void
+	 */
+	public function ajax_get_available_units() {
+		// Create a temporary Booking instance to handle the request
+		$booking = new \RoyalStorage\Frontend\Booking();
+		$booking->get_available_units();
+	}
+
+	/**
+	 * AJAX handler for calculating booking price
+	 *
+	 * @return void
+	 */
+	public function ajax_calculate_booking_price() {
+		// Create a temporary Booking instance to handle the request
+		$booking = new \RoyalStorage\Frontend\Booking();
+		$booking->ajax_calculate_booking_price();
+	}
+
+	/**
+	 * AJAX handler for creating booking
+	 *
+	 * @return void
+	 */
+	public function ajax_create_booking() {
+		// Create a temporary Booking instance to handle the request
+		$booking = new \RoyalStorage\Frontend\Booking();
+		$booking->create_booking();
 	}
 }
 

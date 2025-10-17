@@ -140,6 +140,10 @@ jQuery(document).ready(function($) {
         const endDate = $('#end_date').val();
         
         if (startDate && endDate) {
+            // Update booking data
+            bookingData.start_date = startDate;
+            bookingData.end_date = endDate;
+            
             // Update end date minimum to be after start date
             $('#end_date').attr('min', startDate);
             
@@ -167,6 +171,14 @@ jQuery(document).ready(function($) {
 
         $('#available-units').html('<p class="loading">Loading available units...</p>');
 
+        console.log('Sending AJAX request with data:', {
+            action: 'get_available_units',
+            nonce: royalStorageBooking.nonce,
+            unit_type: unitType,
+            start_date: startDate,
+            end_date: endDate
+        });
+        
         $.ajax({
             url: royalStorageBooking.ajaxUrl,
             type: 'POST',
@@ -178,13 +190,15 @@ jQuery(document).ready(function($) {
                 end_date: endDate
             },
             success: function(response) {
+                console.log('AJAX success response:', response);
                 if (response.success) {
                     displayAvailableUnits(response.data);
                 } else {
                     showError(response.data.message || 'Failed to load available units.');
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.log('AJAX error:', xhr, status, error);
                 showError('Failed to load available units. Please try again.');
             }
         });
@@ -204,9 +218,9 @@ jQuery(document).ready(function($) {
             html += `
                 <div class="unit-card" data-unit-id="${unit.id}" data-price="${unit.base_price}">
                     <div class="unit-size">${size}</div>
-                    <h4>${unitType === 'storage' ? 'Storage Unit' : 'Parking Space'} #${unit.id}</h4>
+                    <h4>${bookingData.unit_type === 'storage' ? 'Storage Unit' : 'Parking Space'} #${unit.id}</h4>
                     <div class="unit-details">
-                        ${unitType === 'storage' ? 
+                        ${bookingData.unit_type === 'storage' ? 
                             `Dimensions: ${unit.dimensions || 'N/A'}<br>
                              Amenities: ${unit.amenities || 'N/A'}` :
                             `Spot: ${unit.spot_number || 'N/A'}<br>

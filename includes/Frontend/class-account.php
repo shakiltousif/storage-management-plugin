@@ -11,7 +11,7 @@ namespace RoyalStorage\Frontend;
 /**
  * Account class for frontend account management
  */
-class Account {
+class Account {	
 
 	/**
 	 * Constructor

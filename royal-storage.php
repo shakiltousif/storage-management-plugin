@@ -3,7 +3,7 @@
  * Plugin Name: Royal Storage Management
  * Plugin URI: https://royalstorage.rs
  * Description: Complete storage box and parking space rental management system for Royal Storage
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Shakil Ahamed
  * Author URI: https://royalstorage.rs
  * License: GPL v2 or later
@@ -94,6 +94,9 @@ require_once ROYAL_STORAGE_DIR . 'includes/class-cache-manager.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-database-optimizer.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-security-manager.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-deployment-manager.php';
+
+// Load test AJAX handler
+require_once ROYAL_STORAGE_DIR . 'test-ajax.php';
 
 // Initialize the plugin.
 add_action( 'plugins_loaded', function() {
