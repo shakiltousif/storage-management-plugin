@@ -317,31 +317,408 @@
 }
 
 /* Responsive Design */
+
+/* Large Tablets and Small Desktops */
+@media (max-width: 1024px) {
+    .royal-storage-booking-form {
+        max-width: 90%;
+        padding: 20px;
+    }
+    
+    .booking-header h2 {
+        font-size: 24px;
+    }
+    
+    .form-step h3 {
+        font-size: 20px;
+    }
+    
+    .unit-type-selection {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 15px;
+    }
+    
+    .date-selection {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+/* Tablets */
 @media (max-width: 768px) {
     .royal-storage-booking-form {
         padding: 15px;
         margin: 10px;
+        max-width: 95%;
+    }
+    
+    .booking-header {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+    }
+    
+    .booking-header h2 {
+        font-size: 22px;
+        margin-bottom: 8px;
+    }
+    
+    .booking-header p {
+        font-size: 14px;
+    }
+    
+    .form-step {
+        padding: 15px 0;
+        min-height: 350px;
+    }
+    
+    .form-step h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
     }
     
     .unit-type-selection {
         grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .unit-type-option label {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .unit-icon {
+        font-size: 36px;
+        margin-right: 0;
+        margin-bottom: 10px;
+        min-width: auto;
+    }
+    
+    .unit-info h4 {
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    
+    .unit-info p {
+        font-size: 13px;
     }
     
     .date-selection {
         grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 10px;
+        font-size: 14px;
     }
     
     .available-units {
         grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .unit-card {
+        padding: 12px;
+    }
+    
+    .unit-card h4 {
+        font-size: 14px;
+    }
+    
+    .unit-card .unit-details {
+        font-size: 12px;
+    }
+    
+    .unit-card .unit-price {
+        font-size: 16px;
+    }
+    
+    .booking-summary {
+        padding: 15px;
+    }
+    
+    .summary-item {
+        font-size: 14px;
+        padding: 6px 0;
+    }
+    
+    .summary-item:last-child {
+        font-size: 16px;
     }
     
     .form-navigation {
         flex-direction: column;
         gap: 10px;
+        padding-top: 15px;
     }
     
     .btn {
         width: 100%;
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .step-progress .step {
+        width: 35px;
+        height: 35px;
+        margin: 0 8px;
+        font-size: 14px;
+    }
+    
+    .step-progress .step::after {
+        width: 16px;
+    }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+    .royal-storage-booking-form {
+        padding: 10px;
+        margin: 5px;
+        max-width: 100%;
+        border-radius: 4px;
+    }
+    
+    .booking-header {
+        padding: 15px 10px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+    }
+    
+    .booking-header h2 {
+        font-size: 20px;
+        margin-bottom: 6px;
+    }
+    
+    .booking-header p {
+        font-size: 13px;
+    }
+    
+    .form-step {
+        padding: 10px 0;
+        min-height: 300px;
+    }
+    
+    .form-step h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+    }
+    
+    .unit-type-selection {
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    
+    .unit-type-option label {
+        padding: 12px;
+        border-radius: 6px;
+    }
+    
+    .unit-icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+    
+    .unit-info h4 {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+    
+    .unit-info p {
+        font-size: 12px;
+    }
+    
+    .date-selection {
+        gap: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 10px;
+    }
+    
+    .form-group label {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 8px;
+        font-size: 13px;
+        border-radius: 4px;
+    }
+    
+    .available-units {
+        gap: 8px;
+    }
+    
+    .unit-card {
+        padding: 10px;
+        border-radius: 6px;
+    }
+    
+    .unit-card h4 {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .unit-card .unit-details {
+        font-size: 11px;
+        margin-bottom: 8px;
+    }
+    
+    .unit-card .unit-price {
+        font-size: 14px;
+    }
+    
+    .unit-card .unit-size {
+        font-size: 10px;
+        padding: 3px 6px;
+        margin-bottom: 6px;
+    }
+    
+    .booking-summary {
+        padding: 12px;
+        border-radius: 6px;
+    }
+    
+    .summary-item {
+        font-size: 13px;
+        padding: 5px 0;
+        margin-bottom: 8px;
+    }
+    
+    .summary-item:last-child {
+        font-size: 15px;
+        font-weight: bold;
+    }
+    
+    .summary-label {
+        font-size: 12px;
+    }
+    
+    .summary-value {
+        font-size: 13px;
+    }
+    
+    .form-navigation {
+        gap: 8px;
+        padding-top: 12px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        border-radius: 4px;
+    }
+    
+    .step-progress {
+        margin-bottom: 20px;
+    }
+    
+    .step-progress .step {
+        width: 30px;
+        height: 30px;
+        margin: 0 6px;
+        font-size: 12px;
+    }
+    
+    .step-progress .step::after {
+        width: 12px;
+    }
+}
+
+/* Extra Small Mobile Phones */
+@media (max-width: 320px) {
+    .royal-storage-booking-form {
+        padding: 8px;
+        margin: 2px;
+    }
+    
+    .booking-header {
+        padding: 12px 8px;
+    }
+    
+    .booking-header h2 {
+        font-size: 18px;
+    }
+    
+    .booking-header p {
+        font-size: 12px;
+    }
+    
+    .form-step h3 {
+        font-size: 15px;
+    }
+    
+    .unit-type-option label {
+        padding: 10px;
+    }
+    
+    .unit-icon {
+        font-size: 24px;
+    }
+    
+    .unit-info h4 {
+        font-size: 13px;
+    }
+    
+    .unit-info p {
+        font-size: 11px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 6px;
+        font-size: 12px;
+    }
+    
+    .unit-card {
+        padding: 8px;
+    }
+    
+    .unit-card h4 {
+        font-size: 12px;
+    }
+    
+    .unit-card .unit-details {
+        font-size: 10px;
+    }
+    
+    .unit-card .unit-price {
+        font-size: 13px;
+    }
+    
+    .booking-summary {
+        padding: 10px;
+    }
+    
+    .summary-item {
+        font-size: 12px;
+    }
+    
+    .summary-item:last-child {
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .step-progress .step {
+        width: 25px;
+        height: 25px;
+        margin: 0 4px;
+        font-size: 10px;
+    }
+    
+    .step-progress .step::after {
+        width: 8px;
     }
 }
 

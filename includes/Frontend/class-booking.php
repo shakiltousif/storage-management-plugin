@@ -124,7 +124,14 @@ class Booking {
 				</div>
 
 				<div class="form-step" data-step="2">
-					<h3><?php esc_html_e( 'Step 2: Select Dates', 'royal-storage' ); ?></h3>
+					<h3><?php esc_html_e( 'Step 2: Select Your Unit', 'royal-storage' ); ?></h3>
+					<div id="unit-selection-container">
+						<?php echo do_shortcode( '[royal_storage_unit_selection]' ); ?>
+					</div>
+				</div>
+
+				<div class="form-step" data-step="3">
+					<h3><?php esc_html_e( 'Step 3: Select Dates', 'royal-storage' ); ?></h3>
 					<div class="date-selection">
 						<div class="form-group">
 							<label for="start_date"><?php esc_html_e( 'Start Date', 'royal-storage' ); ?></label>
@@ -142,13 +149,6 @@ class Booking {
 								<option value="monthly" selected><?php esc_html_e( 'Monthly', 'royal-storage' ); ?></option>
 							</select>
 						</div>
-					</div>
-				</div>
-
-				<div class="form-step" data-step="3">
-					<h3><?php esc_html_e( 'Step 3: Select Unit', 'royal-storage' ); ?></h3>
-					<div id="available-units" class="available-units">
-						<p class="loading"><?php esc_html_e( 'Loading available units...', 'royal-storage' ); ?></p>
 					</div>
 				</div>
 

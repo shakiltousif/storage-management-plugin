@@ -30,6 +30,7 @@ class Frontend {
 		new Portal();
 		new Booking();
 		new Checkout();
+		new UnitSelection();
 
 		// Register hooks.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );

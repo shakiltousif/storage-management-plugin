@@ -32,6 +32,23 @@ jQuery(document).ready(function($) {
         // Period change
         $('#period').on('change', handlePeriodChange);
 
+        // Unit selection integration
+        $(document).on('click', '.btn-continue', function() {
+            const selectedUnit = window.unitSelection ? window.unitSelection.getSelectedUnit() : null;
+            if (selectedUnit) {
+                bookingData.selected_unit = selectedUnit;
+                bookingData.unit_id = selectedUnit.id;
+                bookingData.unit_type = selectedUnit.size.toLowerCase();
+                
+                // Move to next step
+                nextStep();
+            }
+        });
+
+        // Expose functions globally for unit selection integration
+        window.nextStep = nextStep;
+        window.previousStep = prevStep;
+
         // Initialize first step
         updateStepVisibility();
     }
@@ -64,9 +81,9 @@ jQuery(document).ready(function($) {
             case 1:
                 return validateUnitType();
             case 2:
-                return validateDates();
-            case 3:
                 return validateUnitSelection();
+            case 3:
+                return validateDates();
             case 4:
                 return true;
             default:
@@ -106,20 +123,27 @@ jQuery(document).ready(function($) {
     }
 
     function validateUnitSelection() {
+        const selectedUnit = window.unitSelection ? window.unitSelection.getSelectedUnit() : null;
         if (!selectedUnit) {
-            showError('Please select a unit.');
+            showError('Please select a unit from the grid.');
             return false;
         }
+        
+        // Store selected unit data
+        bookingData.selected_unit = selectedUnit;
+        bookingData.unit_id = selectedUnit.id;
+        bookingData.unit_type = selectedUnit.size.toLowerCase();
+        
         return true;
     }
 
     function handleStepChange() {
         switch (currentStep) {
             case 2:
-                handleDateChange();
+                // Unit selection step - no action needed, handled by unit selection component
                 break;
             case 3:
-                loadAvailableUnits();
+                handleDateChange();
                 break;
             case 4:
                 loadBookingSummary();
@@ -249,6 +273,7 @@ jQuery(document).ready(function($) {
     }
 
     function loadBookingSummary() {
+        const selectedUnit = bookingData.selected_unit;
         if (!selectedUnit) {
             return;
         }
@@ -281,6 +306,7 @@ jQuery(document).ready(function($) {
     }
 
     function displayBookingSummary(pricing) {
+        const selectedUnit = bookingData.selected_unit;
         const startDate = new Date(bookingData.start_date).toLocaleDateString();
         const endDate = new Date(bookingData.end_date).toLocaleDateString();
         const days = Math.ceil((new Date(bookingData.end_date) - new Date(bookingData.start_date)) / (1000 * 60 * 60 * 24));
@@ -289,11 +315,15 @@ jQuery(document).ready(function($) {
             <h4>Booking Summary</h4>
             <div class="summary-item">
                 <span class="summary-label">Unit Type:</span>
-                <span class="summary-value">${bookingData.unit_type === 'storage' ? 'Storage Unit' : 'Parking Space'}</span>
+                <span class="summary-value">${selectedUnit.size} Unit</span>
             </div>
             <div class="summary-item">
                 <span class="summary-label">Unit ID:</span>
                 <span class="summary-value">#${selectedUnit.id}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Dimensions:</span>
+                <span class="summary-value">${selectedUnit.dimensions || 'N/A'}</span>
             </div>
             <div class="summary-item">
                 <span class="summary-label">Start Date:</span>
@@ -310,6 +340,10 @@ jQuery(document).ready(function($) {
             <div class="summary-item">
                 <span class="summary-label">Billing Period:</span>
                 <span class="summary-value">${bookingData.period}</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Base Price:</span>
+                <span class="summary-value">${parseFloat(selectedUnit.base_price).toFixed(2)} RSD</span>
             </div>
             <div class="summary-item">
                 <span class="summary-label">Subtotal:</span>
@@ -332,6 +366,12 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         
         if (!validateCurrentStep()) {
+            return;
+        }
+
+        const selectedUnit = bookingData.selected_unit;
+        if (!selectedUnit) {
+            showError('Please select a unit.');
             return;
         }
 

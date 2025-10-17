@@ -71,6 +71,7 @@ require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-reports.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-bookings.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-customers.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-notifications.php';
+require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-unit-layout-admin.php';
 
 // Load frontend classes
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-frontend.php';
@@ -79,6 +80,7 @@ require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-booking.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-bookings.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-invoices.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-checkout.php';
+require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-unit-selection.php';
 
 // Load API classes
 require_once ROYAL_STORAGE_DIR . 'includes/API/class-api.php';
@@ -94,6 +96,7 @@ require_once ROYAL_STORAGE_DIR . 'includes/class-cache-manager.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-database-optimizer.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-security-manager.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-deployment-manager.php';
+require_once ROYAL_STORAGE_DIR . 'includes/class-unit-layout-manager.php';
 
 // Initialize the plugin.
 add_action( 'plugins_loaded', function() {

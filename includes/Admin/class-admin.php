@@ -33,6 +33,7 @@ class Admin {
 		new Bookings();
 		new Customers();
 		new Notifications();
+		new UnitLayoutAdmin();
 
 		// Register hooks.
 		add_action( 'admin_init', array( $this, 'register_admin_hooks' ) );

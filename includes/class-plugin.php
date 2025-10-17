@@ -197,9 +197,16 @@ class Plugin {
 	 * @return void
 	 */
 	public function ajax_get_available_units() {
-		// Create a temporary Booking instance to handle the request
-		$booking = new \RoyalStorage\Frontend\Booking();
-		$booking->get_available_units();
+		// Check if this is a unit selection request (no unit_type parameter)
+		if ( ! isset( $_POST['unit_type'] ) || empty( $_POST['unit_type'] ) ) {
+			// This is a unit selection request - use UnitSelection class
+			$unit_selection = new \RoyalStorage\Frontend\UnitSelection();
+			$unit_selection->get_available_units_for_selection();
+		} else {
+			// This is a booking request - use Booking class
+			$booking = new \RoyalStorage\Frontend\Booking();
+			$booking->get_available_units();
+		}
 	}
 
 	/**

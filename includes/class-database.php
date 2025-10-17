@@ -243,6 +243,73 @@ class Database {
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql );
 		}
+
+		// Unit Layouts table.
+		$layouts_table = $wpdb->prefix . 'royal_unit_layouts';
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $layouts_table ) ) !== $layouts_table ) {
+			$sql = "CREATE TABLE $layouts_table (
+				id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				facility_name VARCHAR(100) NOT NULL,
+				layout_data LONGTEXT,
+				grid_width INT DEFAULT 10,
+				grid_height INT DEFAULT 10,
+				unit_size INT DEFAULT 50,
+				is_active TINYINT(1) DEFAULT 1,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				PRIMARY KEY (id),
+				KEY facility_name (facility_name),
+				KEY is_active (is_active)
+			) $charset_collate;";
+
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql );
+		}
+
+		// Add new columns to existing storage units table
+		$this->add_storage_unit_columns();
+	}
+
+	/**
+	 * Add new columns to existing storage units table
+	 *
+	 * @return void
+	 */
+	private function add_storage_unit_columns() {
+		global $wpdb;
+
+		$storage_units_table = $wpdb->prefix . 'royal_storage_units';
+		
+		// Check if columns already exist
+		$columns = $wpdb->get_col( "DESCRIBE $storage_units_table" );
+		
+		$new_columns = array(
+			'position_x' => 'ADD COLUMN position_x INT DEFAULT 0',
+			'position_y' => 'ADD COLUMN position_y INT DEFAULT 0',
+			'unit_group' => 'ADD COLUMN unit_group VARCHAR(50)',
+			'access_code' => 'ADD COLUMN access_code VARCHAR(20)',
+			'visual_properties' => 'ADD COLUMN visual_properties LONGTEXT'
+		);
+
+		foreach ( $new_columns as $column => $sql ) {
+			if ( ! in_array( $column, $columns, true ) ) {
+				$wpdb->query( "ALTER TABLE $storage_units_table $sql" );
+			}
+		}
+
+		// Add indexes for new columns
+		$indexes = array(
+			'position' => 'ADD INDEX position (position_x, position_y)',
+			'unit_group' => 'ADD INDEX unit_group (unit_group)'
+		);
+
+		$existing_indexes = $wpdb->get_col( "SHOW INDEX FROM $storage_units_table" );
+		
+		foreach ( $indexes as $index_name => $sql ) {
+			if ( ! in_array( $index_name, $existing_indexes, true ) ) {
+				$wpdb->query( "ALTER TABLE $storage_units_table $sql" );
+			}
+		}
 	}
 
 	/**
