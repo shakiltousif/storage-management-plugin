@@ -72,7 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</button>
 						<?php endif; ?>
 						<?php if ( 'unpaid' === $booking->payment_status ) : ?>
-							<a href="<?php echo esc_url( add_query_arg( 'booking_id', $booking->id, home_url( '/checkout/' ) ) ); ?>" class="btn btn-small btn-success">
+							<a href="<?php echo esc_url( add_query_arg( 'booking_id', $booking->id, home_url( '/checkout-2/' ) ) ); ?>" class="btn btn-small btn-success">
 								<?php esc_html_e( 'Pay Now', 'royal-storage' ); ?>
 							</a>
 						<?php endif; ?>

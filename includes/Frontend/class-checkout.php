@@ -40,7 +40,6 @@ class Checkout {
 		add_action( 'wp_enqueue_scripts', array( $this, 'init' ) );
 		add_action( 'wp_ajax_process_booking', array( $this, 'process_booking' ) );
 		add_action( 'wp_ajax_nopriv_process_booking', array( $this, 'process_booking' ) );
-		add_action( 'wp_ajax_royal_storage_process_payment', array( $this, 'handle_payment' ) );
 		add_shortcode( 'royal_storage_checkout', array( $this, 'render_checkout' ) );
 	}
 
@@ -50,7 +49,15 @@ class Checkout {
 	 * @return void
 	 */
 	public function init() {
-		// Checkout initialization code will go here.
+		// Enqueue checkout assets
+		wp_enqueue_script( 'royal-storage-checkout', ROYAL_STORAGE_URL . 'assets/js/checkout.js', array( 'jquery' ), ROYAL_STORAGE_VERSION, true );
+		
+		// Localize script for AJAX
+		wp_localize_script( 'royal-storage-checkout', 'royalStorageCheckout', array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'portalUrl' => home_url( '/customer-portal-test/' ),
+			'nonce' => wp_create_nonce( 'royal_storage_payment' )
+		) );
 	}
 
 	/**
@@ -192,12 +199,57 @@ class Checkout {
 			wp_send_json_error( array( 'message' => __( 'Failed to create payment record', 'royal-storage' ) ) );
 		}
 
+		// For development/testing: Simulate successful payment
+		$this->simulate_payment_completion( $booking_id, $order, $payment_id );
+
 		wp_send_json_success(
 			array(
-				'message'    => __( 'Payment initiated', 'royal-storage' ),
+				'message'    => __( 'Payment completed successfully', 'royal-storage' ),
 				'order_id'   => $order->get_id(),
 				'payment_id' => $payment_id,
 			)
+		);
+	}
+
+	/**
+	 * Simulate payment completion for development/testing
+	 *
+	 * @param int $booking_id Booking ID.
+	 * @param object $order WooCommerce order.
+	 * @param int $payment_id Payment ID.
+	 * @return void
+	 */
+	private function simulate_payment_completion( $booking_id, $order, $payment_id ) {
+		global $wpdb;
+
+		// Update WooCommerce order status to completed
+		$order->set_status( 'completed' );
+		$order->save();
+
+		// Update booking payment status
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+		$wpdb->update(
+			$bookings_table,
+			array( 
+				'payment_status' => 'paid',
+				'status' => 'confirmed'
+			),
+			array( 'id' => $booking_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+
+		// Update payment record status
+		$payments_table = $wpdb->prefix . 'royal_payments';
+		$wpdb->update(
+			$payments_table,
+			array( 
+				'payment_status' => 'completed',
+				'transaction_id' => 'TXN_' . $payment_id . '_' . time()
+			),
+			array( 'id' => $payment_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
 		);
 	}
 

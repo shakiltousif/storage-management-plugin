@@ -219,6 +219,30 @@ class Database {
 			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 			dbDelta( $sql );
 		}
+
+		// Payments table.
+		$payments_table = $wpdb->prefix . 'royal_payments';
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $payments_table ) ) !== $payments_table ) {
+			$sql = "CREATE TABLE $payments_table (
+				id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				booking_id BIGINT(20) UNSIGNED NOT NULL,
+				amount DECIMAL(10, 2) NOT NULL,
+				payment_method VARCHAR(50) NOT NULL,
+				payment_status VARCHAR(20) DEFAULT 'pending',
+				transaction_id VARCHAR(100),
+				gateway_response LONGTEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				PRIMARY KEY (id),
+				KEY booking_id (booking_id),
+				KEY payment_status (payment_status),
+				KEY transaction_id (transaction_id),
+				KEY created_at (created_at)
+			) $charset_collate;";
+
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql );
+		}
 	}
 
 	/**

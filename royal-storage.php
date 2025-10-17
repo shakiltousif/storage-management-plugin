@@ -95,9 +95,6 @@ require_once ROYAL_STORAGE_DIR . 'includes/class-database-optimizer.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-security-manager.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-deployment-manager.php';
 
-// Load test AJAX handler
-require_once ROYAL_STORAGE_DIR . 'test-ajax.php';
-
 // Initialize the plugin.
 add_action( 'plugins_loaded', function() {
 	// Load text domain for translations.

@@ -93,6 +93,10 @@ class Plugin {
 		add_action( 'wp_ajax_nopriv_calculate_booking_price', array( $this, 'ajax_calculate_booking_price' ) );
 		add_action( 'wp_ajax_create_booking', array( $this, 'ajax_create_booking' ) );
 		add_action( 'wp_ajax_nopriv_create_booking', array( $this, 'ajax_create_booking' ) );
+		
+		// Register AJAX hooks for payment functionality
+		add_action( 'wp_ajax_royal_storage_process_payment', array( $this, 'ajax_process_payment' ) );
+		add_action( 'wp_ajax_nopriv_royal_storage_process_payment', array( $this, 'ajax_process_payment' ) );
 	}
 
 	/**
@@ -218,6 +222,17 @@ class Plugin {
 		// Create a temporary Booking instance to handle the request
 		$booking = new \RoyalStorage\Frontend\Booking();
 		$booking->create_booking();
+	}
+
+	/**
+	 * AJAX handler for processing payment
+	 *
+	 * @return void
+	 */
+	public function ajax_process_payment() {
+		// Create a temporary Checkout instance to handle the request
+		$checkout = new \RoyalStorage\Frontend\Checkout();
+		$checkout->handle_payment();
 	}
 }
 
