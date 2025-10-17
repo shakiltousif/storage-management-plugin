@@ -157,6 +157,10 @@ class Portal {
 		$current_user = wp_get_current_user();
 		$bookings = new Bookings();
 		$stats = $bookings->get_customer_stats( $current_user->ID );
+		
+		// Add missing stats for the dashboard
+		$stats->unpaid_invoices = $this->get_customer_unpaid_invoices_count( $current_user->ID );
+		$stats->unpaid_amount = $this->get_customer_unpaid_amount( $current_user->ID );
 
 		include ROYAL_STORAGE_DIR . 'templates/frontend/portal-dashboard.php';
 	}
@@ -374,6 +378,52 @@ class Portal {
 	public static function is_customer( $user_id ) {
 		$user = get_user_by( 'id', $user_id );
 		return $user && in_array( 'customer', $user->roles, true );
+	}
+
+	/**
+	 * Get customer unpaid invoices count
+	 *
+	 * @param int $customer_id Customer ID.
+	 * @return int
+	 */
+	private function get_customer_unpaid_invoices_count( $customer_id ) {
+		global $wpdb;
+
+		$invoices_table = $wpdb->prefix . 'royal_invoices';
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM $invoices_table i 
+				JOIN $bookings_table b ON i.booking_id = b.id 
+				WHERE b.customer_id = %d AND i.status = 'unpaid'",
+				$customer_id
+			)
+		);
+	}
+
+	/**
+	 * Get customer unpaid amount
+	 *
+	 * @param int $customer_id Customer ID.
+	 * @return float
+	 */
+	private function get_customer_unpaid_amount( $customer_id ) {
+		global $wpdb;
+
+		$invoices_table = $wpdb->prefix . 'royal_invoices';
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+
+		$result = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT SUM(i.amount) FROM $invoices_table i 
+				JOIN $bookings_table b ON i.booking_id = b.id 
+				WHERE b.customer_id = %d AND i.status = 'unpaid'",
+				$customer_id
+			)
+		);
+
+		return $result ? floatval( $result ) : 0;
 	}
 }
 

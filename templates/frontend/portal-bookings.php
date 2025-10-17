@@ -31,9 +31,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<span class="value">
 								<?php
 								if ( $booking->unit_id > 0 ) {
-									echo esc_html( 'Unit #' . $booking->unit_id );
-								} elseif ( $booking->space_id > 0 ) {
-									echo esc_html( 'Space #' . $booking->space_id );
+									echo esc_html( ucfirst( $booking->unit_type ) . ' #' . $booking->unit_id );
+								} else {
+									echo esc_html( 'N/A' );
 								}
 								?>
 							</span>
