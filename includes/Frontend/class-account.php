@@ -9,7 +9,7 @@
 namespace RoyalStorage\Frontend;
 
 /**
- * Account class for customer account management
+ * Account class for frontend account management
  */
 class Account {
 
@@ -17,32 +17,107 @@ class Account {
 	 * Constructor
 	 */
 	public function __construct() {
-		add_action( 'wp_ajax_royal_storage_update_profile', array( $this, 'handle_update_profile' ) );
-		add_action( 'wp_ajax_royal_storage_change_password', array( $this, 'handle_change_password' ) );
+		// Account functionality initialization
 	}
 
 	/**
-	 * Get account stats
+	 * Get customer account data
 	 *
 	 * @param int $customer_id Customer ID.
 	 * @return object
 	 */
-	public function get_account_stats( $customer_id ) {
+	public function get_customer_data( $customer_id ) {
+		$user = get_user_by( 'id', $customer_id );
+		
+		if ( ! $user ) {
+			return null;
+		}
+
+		return (object) array(
+			'id'           => $user->ID,
+			'display_name' => $user->display_name,
+			'email'        => $user->user_email,
+			'first_name'   => $user->first_name,
+			'last_name'    => $user->last_name,
+			'phone'        => get_user_meta( $customer_id, 'phone', true ),
+			'address'      => get_user_meta( $customer_id, 'address', true ),
+			'city'         => get_user_meta( $customer_id, 'city', true ),
+			'postcode'     => get_user_meta( $customer_id, 'postcode', true ),
+			'country'      => get_user_meta( $customer_id, 'country', true ),
+		);
+	}
+
+	/**
+	 * Update customer account data
+	 *
+	 * @param int   $customer_id Customer ID.
+	 * @param array $data Account data.
+	 * @return bool
+	 */
+	public function update_customer_data( $customer_id, $data ) {
+		$user_data = array();
+		
+		if ( isset( $data['display_name'] ) ) {
+			$user_data['display_name'] = sanitize_text_field( $data['display_name'] );
+		}
+		
+		if ( isset( $data['email'] ) ) {
+			$user_data['user_email'] = sanitize_email( $data['email'] );
+		}
+		
+		if ( isset( $data['first_name'] ) ) {
+			$user_data['first_name'] = sanitize_text_field( $data['first_name'] );
+		}
+		
+		if ( isset( $data['last_name'] ) ) {
+			$user_data['last_name'] = sanitize_text_field( $data['last_name'] );
+		}
+
+		// Update user data
+		if ( ! empty( $user_data ) ) {
+			$user_data['ID'] = $customer_id;
+			$result = wp_update_user( $user_data );
+			
+			if ( is_wp_error( $result ) ) {
+				return false;
+			}
+		}
+
+		// Update user meta
+		$meta_fields = array( 'phone', 'address', 'city', 'postcode', 'country' );
+		
+		foreach ( $meta_fields as $field ) {
+			if ( isset( $data[ $field ] ) ) {
+				update_user_meta( $customer_id, $field, sanitize_text_field( $data[ $field ] ) );
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get customer statistics
+	 *
+	 * @param int $customer_id Customer ID.
+	 * @return object
+	 */
+	public function get_customer_stats( $customer_id ) {
 		global $wpdb;
 
 		$bookings_table = $wpdb->prefix . 'royal_bookings';
 		$invoices_table = $wpdb->prefix . 'royal_invoices';
 
-		$active_bookings = $wpdb->get_var(
+		// Get booking statistics
+		$total_bookings = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM $bookings_table WHERE customer_id = %d AND status IN ('confirmed', 'active')",
+				"SELECT COUNT(*) FROM $bookings_table WHERE customer_id = %d",
 				$customer_id
 			)
 		);
 
-		$unpaid_invoices = $wpdb->get_var(
+		$active_bookings = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM $invoices_table WHERE customer_id = %d AND payment_status = 'unpaid'",
+				"SELECT COUNT(*) FROM $bookings_table WHERE customer_id = %d AND status = 'active'",
 				$customer_id
 			)
 		);
@@ -54,153 +129,31 @@ class Account {
 			)
 		);
 
-		$unpaid_amount = $wpdb->get_var(
+		// Get invoice statistics
+		$total_invoices = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT SUM(total_amount) FROM $invoices_table WHERE customer_id = %d AND payment_status = 'unpaid'",
+				"SELECT COUNT(*) FROM $invoices_table i 
+				JOIN $bookings_table b ON i.booking_id = b.id 
+				WHERE b.customer_id = %d",
+				$customer_id
+			)
+		);
+
+		$unpaid_invoices = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM $invoices_table i 
+				JOIN $bookings_table b ON i.booking_id = b.id 
+				WHERE b.customer_id = %d AND i.status = 'unpaid'",
 				$customer_id
 			)
 		);
 
 		return (object) array(
-			'active_bookings'  => $active_bookings,
-			'unpaid_invoices'  => $unpaid_invoices,
+			'total_bookings'   => intval( $total_bookings ?: 0 ),
+			'active_bookings'  => intval( $active_bookings ?: 0 ),
 			'total_spent'      => floatval( $total_spent ?: 0 ),
-			'unpaid_amount'    => floatval( $unpaid_amount ?: 0 ),
+			'total_invoices'   => intval( $total_invoices ?: 0 ),
+			'unpaid_invoices'  => intval( $unpaid_invoices ?: 0 ),
 		);
-	}
-
-	/**
-	 * Get customer info
-	 *
-	 * @param int $customer_id Customer ID.
-	 * @return object|null
-	 */
-	public function get_customer_info( $customer_id ) {
-		$user = get_user_by( 'id', $customer_id );
-
-		if ( ! $user ) {
-			return null;
-		}
-
-		return (object) array(
-			'id'           => $user->ID,
-			'name'         => $user->display_name,
-			'email'        => $user->user_email,
-			'phone'        => get_user_meta( $user->ID, 'phone', true ),
-			'address'      => get_user_meta( $user->ID, 'address', true ),
-			'city'         => get_user_meta( $user->ID, 'city', true ),
-			'postal_code'  => get_user_meta( $user->ID, 'postal_code', true ),
-			'country'      => get_user_meta( $user->ID, 'country', true ),
-			'company'      => get_user_meta( $user->ID, 'company', true ),
-			'tax_id'       => get_user_meta( $user->ID, 'tax_id', true ),
-		);
-	}
-
-	/**
-	 * Update customer profile
-	 *
-	 * @param int   $customer_id Customer ID.
-	 * @param array $data Profile data.
-	 * @return bool
-	 */
-	public function update_profile( $customer_id, $data ) {
-		$user_data = array(
-			'ID'           => $customer_id,
-			'display_name' => $data['name'] ?? '',
-		);
-
-		$result = wp_update_user( $user_data );
-
-		if ( is_wp_error( $result ) ) {
-			return false;
-		}
-
-		// Update user meta
-		update_user_meta( $customer_id, 'phone', $data['phone'] ?? '' );
-		update_user_meta( $customer_id, 'address', $data['address'] ?? '' );
-		update_user_meta( $customer_id, 'city', $data['city'] ?? '' );
-		update_user_meta( $customer_id, 'postal_code', $data['postal_code'] ?? '' );
-		update_user_meta( $customer_id, 'country', $data['country'] ?? '' );
-		update_user_meta( $customer_id, 'company', $data['company'] ?? '' );
-		update_user_meta( $customer_id, 'tax_id', $data['tax_id'] ?? '' );
-
-		return true;
-	}
-
-	/**
-	 * Change password
-	 *
-	 * @param int    $customer_id Customer ID.
-	 * @param string $new_password New password.
-	 * @return bool
-	 */
-	public function change_password( $customer_id, $new_password ) {
-		wp_set_password( $new_password, $customer_id );
-		return true;
-	}
-
-	/**
-	 * Handle update profile AJAX
-	 *
-	 * @return void
-	 */
-	public function handle_update_profile() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'royal_storage_portal' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed', 'royal-storage' ) ) );
-		}
-
-		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( array( 'message' => __( 'Not logged in', 'royal-storage' ) ) );
-		}
-
-		$customer_id = get_current_user_id();
-		$data = array(
-			'name'        => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
-			'phone'       => isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '',
-			'address'     => isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : '',
-			'city'        => isset( $_POST['city'] ) ? sanitize_text_field( wp_unslash( $_POST['city'] ) ) : '',
-			'postal_code' => isset( $_POST['postal_code'] ) ? sanitize_text_field( wp_unslash( $_POST['postal_code'] ) ) : '',
-			'country'     => isset( $_POST['country'] ) ? sanitize_text_field( wp_unslash( $_POST['country'] ) ) : '',
-			'company'     => isset( $_POST['company'] ) ? sanitize_text_field( wp_unslash( $_POST['company'] ) ) : '',
-			'tax_id'      => isset( $_POST['tax_id'] ) ? sanitize_text_field( wp_unslash( $_POST['tax_id'] ) ) : '',
-		);
-
-		if ( $this->update_profile( $customer_id, $data ) ) {
-			wp_send_json_success( array( 'message' => __( 'Profile updated successfully', 'royal-storage' ) ) );
-		} else {
-			wp_send_json_error( array( 'message' => __( 'Failed to update profile', 'royal-storage' ) ) );
-		}
-	}
-
-	/**
-	 * Handle change password AJAX
-	 *
-	 * @return void
-	 */
-	public function handle_change_password() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'royal_storage_portal' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Security check failed', 'royal-storage' ) ) );
-		}
-
-		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( array( 'message' => __( 'Not logged in', 'royal-storage' ) ) );
-		}
-
-		$customer_id = get_current_user_id();
-		$current_password = isset( $_POST['current_password'] ) ? sanitize_text_field( wp_unslash( $_POST['current_password'] ) ) : '';
-		$new_password = isset( $_POST['new_password'] ) ? sanitize_text_field( wp_unslash( $_POST['new_password'] ) ) : '';
-
-		$user = get_user_by( 'id', $customer_id );
-
-		if ( ! wp_check_password( $current_password, $user->user_pass, $customer_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'Current password is incorrect', 'royal-storage' ) ) );
-		}
-
-		if ( $this->change_password( $customer_id, $new_password ) ) {
-			wp_send_json_success( array( 'message' => __( 'Password changed successfully', 'royal-storage' ) ) );
-		} else {
-			wp_send_json_error( array( 'message' => __( 'Failed to change password', 'royal-storage' ) ) );
-		}
 	}
 }
-

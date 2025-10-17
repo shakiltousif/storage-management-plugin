@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $account = new \RoyalStorage\Frontend\Account();
-$customer_info = $account->get_customer_info( $current_user->ID );
+$customer_info = $account->get_customer_data( $current_user->ID );
 ?>
 
 <div class="portal-account">
@@ -20,8 +20,8 @@ $customer_info = $account->get_customer_info( $current_user->ID );
 
 		<form id="profile-form" class="account-form">
 			<div class="form-group">
-				<label for="name"><?php esc_html_e( 'Full Name', 'royal-storage' ); ?></label>
-				<input type="text" id="name" name="name" value="<?php echo esc_attr( $customer_info->name ); ?>" required>
+				<label for="display_name"><?php esc_html_e( 'Display Name', 'royal-storage' ); ?></label>
+				<input type="text" id="display_name" name="display_name" value="<?php echo esc_attr( $customer_info->display_name ); ?>" required>
 			</div>
 
 			<div class="form-group">
@@ -35,13 +35,13 @@ $customer_info = $account->get_customer_info( $current_user->ID );
 			</div>
 
 			<div class="form-group">
-				<label for="company"><?php esc_html_e( 'Company', 'royal-storage' ); ?></label>
-				<input type="text" id="company" name="company" value="<?php echo esc_attr( $customer_info->company ); ?>">
+				<label for="first_name"><?php esc_html_e( 'First Name', 'royal-storage' ); ?></label>
+				<input type="text" id="first_name" name="first_name" value="<?php echo esc_attr( $customer_info->first_name ); ?>">
 			</div>
 
 			<div class="form-group">
-				<label for="tax_id"><?php esc_html_e( 'Tax ID', 'royal-storage' ); ?></label>
-				<input type="text" id="tax_id" name="tax_id" value="<?php echo esc_attr( $customer_info->tax_id ); ?>">
+				<label for="last_name"><?php esc_html_e( 'Last Name', 'royal-storage' ); ?></label>
+				<input type="text" id="last_name" name="last_name" value="<?php echo esc_attr( $customer_info->last_name ); ?>">
 			</div>
 
 			<div class="form-group">
@@ -56,8 +56,8 @@ $customer_info = $account->get_customer_info( $current_user->ID );
 				</div>
 
 				<div class="form-group">
-					<label for="postal_code"><?php esc_html_e( 'Postal Code', 'royal-storage' ); ?></label>
-					<input type="text" id="postal_code" name="postal_code" value="<?php echo esc_attr( $customer_info->postal_code ); ?>">
+					<label for="postcode"><?php esc_html_e( 'Postal Code', 'royal-storage' ); ?></label>
+					<input type="text" id="postcode" name="postcode" value="<?php echo esc_attr( $customer_info->postcode ); ?>">
 				</div>
 
 				<div class="form-group">

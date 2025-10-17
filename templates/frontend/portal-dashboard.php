@@ -49,13 +49,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="dashboard-actions">
 		<h2><?php esc_html_e( 'Quick Actions', 'royal-storage' ); ?></h2>
 		<div class="action-buttons">
-			<a href="<?php echo esc_url( add_query_arg( 'tab', 'bookings' ) ); ?>" class="btn btn-primary">
+			<a href="<?php echo esc_url( $base_url . '?tab=bookings' ); ?>" class="btn btn-primary">
 				<?php esc_html_e( 'View My Bookings', 'royal-storage' ); ?>
 			</a>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', 'invoices' ) ); ?>" class="btn btn-primary">
+			<a href="<?php echo esc_url( $base_url . '?tab=invoices' ); ?>" class="btn btn-primary">
 				<?php esc_html_e( 'View Invoices', 'royal-storage' ); ?>
 			</a>
-			<a href="<?php echo esc_url( add_query_arg( 'tab', 'account' ) ); ?>" class="btn btn-secondary">
+			<a href="<?php echo esc_url( $base_url . '?tab=account' ); ?>" class="btn btn-secondary">
 				<?php esc_html_e( 'Edit Account', 'royal-storage' ); ?>
 			</a>
 		</div>
