@@ -36,12 +36,19 @@ jQuery(document).ready(function($) {
             data: formData,
             success: function(response) {
                 if (response.success) {
-                    showSuccess(response.data.message);
-                    
-                    // Redirect to success page or update UI
-                    setTimeout(function() {
-                        window.location.href = royalStorageCheckout.portalUrl;
-                    }, 2000);
+                    if (response.data.redirect && response.data.checkout_url) {
+                        // Redirect to WooCommerce checkout
+                        showSuccess('Redirecting to secure checkout...');
+                        setTimeout(function() {
+                            window.location.href = response.data.checkout_url;
+                        }, 1500);
+                    } else {
+                        // Fallback to success message
+                        showSuccess(response.data.message);
+                        setTimeout(function() {
+                            window.location.href = royalStorageCheckout.portalUrl;
+                        }, 2000);
+                    }
                 } else {
                     showError(response.data.message || 'Payment failed. Please try again.');
                     $submitBtn.prop('disabled', false).text(originalText);

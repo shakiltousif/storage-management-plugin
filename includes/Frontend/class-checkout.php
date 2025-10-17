@@ -178,18 +178,12 @@ class Checkout {
 			wp_send_json_error( array( 'message' => __( 'Invalid payment amount', 'royal-storage' ) ) );
 		}
 
-		// Get or create WooCommerce order
-		$order = $this->wc_integration->get_order_by_booking( $booking_id );
+		// Add product to cart and redirect to checkout
+		$customer_id = get_current_user_id();
+		$product_id = $this->wc_integration->create_order( $booking_id, $customer_id, $amount );
 
-		if ( ! $order ) {
-			$customer_id = get_current_user_id();
-			$order_id = $this->wc_integration->create_order( $booking_id, $customer_id, $amount );
-
-			if ( ! $order_id ) {
-				wp_send_json_error( array( 'message' => __( 'Failed to create order', 'royal-storage' ) ) );
-			}
-
-			$order = wc_get_order( $order_id );
+		if ( ! $product_id ) {
+			wp_send_json_error( array( 'message' => __( 'Failed to add product to cart', 'royal-storage' ) ) );
 		}
 
 		// Create payment record
@@ -199,16 +193,28 @@ class Checkout {
 			wp_send_json_error( array( 'message' => __( 'Failed to create payment record', 'royal-storage' ) ) );
 		}
 
-		// For development/testing: Simulate successful payment
-		$this->simulate_payment_completion( $booking_id, $order, $payment_id );
+		// Redirect to WooCommerce checkout
+		$checkout_url = $this->get_woocommerce_checkout_url();
 
 		wp_send_json_success(
 			array(
-				'message'    => __( 'Payment completed successfully', 'royal-storage' ),
-				'order_id'   => $order->get_id(),
-				'payment_id' => $payment_id,
+				'message'     => __( 'Redirecting to checkout...', 'royal-storage' ),
+				'product_id'  => $product_id,
+				'payment_id'  => $payment_id,
+				'checkout_url' => $checkout_url,
+				'redirect'    => true
 			)
 		);
+	}
+
+	/**
+	 * Get WooCommerce checkout URL
+	 *
+	 * @return string
+	 */
+	private function get_woocommerce_checkout_url() {
+		// Get WooCommerce checkout page URL
+		return wc_get_checkout_url();
 	}
 
 	/**

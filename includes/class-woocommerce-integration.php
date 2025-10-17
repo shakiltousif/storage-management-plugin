@@ -20,6 +20,8 @@ class WooCommerceIntegration {
 		add_action( 'woocommerce_order_status_completed', array( $this, 'handle_order_completed' ) );
 		add_action( 'woocommerce_order_status_failed', array( $this, 'handle_order_failed' ) );
 		add_action( 'woocommerce_order_status_refunded', array( $this, 'handle_order_refunded' ) );
+		add_action( 'woocommerce_checkout_order_processed', array( $this, 'handle_order_processed' ) );
+		add_filter( 'woocommerce_add_cart_item_data', array( $this, 'add_booking_meta_to_cart_item' ), 10, 3 );
 	}
 
 	/**
@@ -30,19 +32,72 @@ class WooCommerceIntegration {
 	 * @return int|false
 	 */
 	public function create_product( $booking_id, $price ) {
+		// Get booking details for better product description
+		global $wpdb;
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+		$booking = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $bookings_table WHERE id = %d", $booking_id ) );
+		
+		if ( ! $booking ) {
+			return false;
+		}
+
 		$product = new \WC_Product_Simple();
-		$product->set_name( 'Booking #' . $booking_id );
-		$product->set_description( 'Storage booking #' . $booking_id );
+		$product->set_name( sprintf( 'Storage Booking #%d - %s', $booking_id, $booking->unit_type ) );
+		$product->set_description( $this->get_booking_description( $booking ) );
+		$product->set_short_description( sprintf( 'Storage unit booking from %s to %s', 
+			date( 'M j, Y', strtotime( $booking->start_date ) ),
+			date( 'M j, Y', strtotime( $booking->end_date ) )
+		) );
 		$product->set_price( $price );
 		$product->set_regular_price( $price );
 		$product->set_manage_stock( false );
 		$product->set_status( 'publish' );
+		$product->set_virtual( true ); // Virtual product since it's a service
+		$product->set_downloadable( false );
+		
+		// Add booking meta
+		$product->add_meta_data( 'booking_id', $booking_id );
+		$product->add_meta_data( 'unit_type', $booking->unit_type );
+		$product->add_meta_data( 'start_date', $booking->start_date );
+		$product->add_meta_data( 'end_date', $booking->end_date );
+		$product->add_meta_data( 'royal_storage_booking_id', $booking_id );
 
 		return $product->save();
 	}
 
 	/**
-	 * Create WooCommerce order for booking
+	 * Get booking description for product
+	 *
+	 * @param object $booking Booking object.
+	 * @return string
+	 */
+	private function get_booking_description( $booking ) {
+		$description = sprintf(
+			'Storage unit booking details:
+			
+Booking ID: #%d
+Unit Type: %s
+Start Date: %s
+End Date: %s
+Duration: %d days
+Base Price: %s RSD
+Total Price: %s RSD
+
+This is a virtual product for your storage booking. Payment will be processed through our secure payment gateway.',
+			$booking->id,
+			ucfirst( $booking->unit_type ),
+			date( 'F j, Y', strtotime( $booking->start_date ) ),
+			date( 'F j, Y', strtotime( $booking->end_date ) ),
+			$booking->duration,
+			number_format( $booking->base_price, 2 ),
+			number_format( $booking->total_price, 2 )
+		);
+
+		return $description;
+	}
+
+	/**
+	 * Create WooCommerce product and add to cart for booking
 	 *
 	 * @param int   $booking_id Booking ID.
 	 * @param int   $customer_id Customer ID.
@@ -50,28 +105,110 @@ class WooCommerceIntegration {
 	 * @return int|false
 	 */
 	public function create_order( $booking_id, $customer_id, $total_price ) {
-		$order = wc_create_order( array( 'customer_id' => $customer_id ) );
+		// Create product for the booking
+		$product_id = $this->create_product( $booking_id, $total_price );
 
-		if ( is_wp_error( $order ) ) {
+		if ( ! $product_id ) {
 			return false;
 		}
 
-		// Add product to order
-		$product_id = $this->create_product( $booking_id, $total_price );
+		// Clear any existing cart items
+		WC()->cart->empty_cart();
 
-		if ( $product_id ) {
-			$order->add_product( wc_get_product( $product_id ), 1 );
+		// Add product to cart
+		$cart_item_key = WC()->cart->add_to_cart( $product_id, 1 );
+
+		if ( ! $cart_item_key ) {
+			return false;
 		}
 
-		// Set order total
-		$order->set_total( $total_price );
-		$order->save();
+		// Add booking meta to cart item
+		WC()->cart->cart_contents[ $cart_item_key ]['royal_storage_booking_id'] = $booking_id;
 
-		// Add booking ID as order meta
-		$order->update_meta_data( 'booking_id', $booking_id );
-		$order->save();
+		// Update cart totals
+		WC()->cart->calculate_totals();
 
-		return $order->get_id();
+		return $product_id;
+	}
+
+	/**
+	 * Set customer billing information for order
+	 *
+	 * @param \WC_Order $order Order object.
+	 * @param int       $customer_id Customer ID.
+	 * @return void
+	 */
+	private function set_customer_billing_info( $order, $customer_id ) {
+		$customer = new \WC_Customer( $customer_id );
+		
+		if ( $customer->get_id() ) {
+			$order->set_billing_first_name( $customer->get_first_name() );
+			$order->set_billing_last_name( $customer->get_last_name() );
+			$order->set_billing_email( $customer->get_email() );
+			$order->set_billing_phone( $customer->get_billing_phone() );
+			$order->set_billing_address_1( $customer->get_billing_address_1() );
+			$order->set_billing_address_2( $customer->get_billing_address_2() );
+			$order->set_billing_city( $customer->get_billing_city() );
+			$order->set_billing_state( $customer->get_billing_state() );
+			$order->set_billing_postcode( $customer->get_billing_postcode() );
+			$order->set_billing_country( $customer->get_billing_country() );
+		}
+	}
+
+	/**
+	 * Add booking meta to cart item data
+	 *
+	 * @param array $cart_item_data Cart item data.
+	 * @param int   $product_id Product ID.
+	 * @param int   $variation_id Variation ID.
+	 * @return array
+	 */
+	public function add_booking_meta_to_cart_item( $cart_item_data, $product_id, $variation_id ) {
+		$product = wc_get_product( $product_id );
+		
+		if ( $product ) {
+			$booking_id = $product->get_meta( 'royal_storage_booking_id' );
+			if ( $booking_id ) {
+				$cart_item_data['royal_storage_booking_id'] = $booking_id;
+			}
+		}
+		
+		return $cart_item_data;
+	}
+
+	/**
+	 * Handle order processed (when order is created)
+	 *
+	 * @param int $order_id Order ID.
+	 * @return void
+	 */
+	public function handle_order_processed( $order_id ) {
+		$order = wc_get_order( $order_id );
+		
+		// Check if this order contains a Royal Storage booking
+		foreach ( $order->get_items() as $item ) {
+			$product_id = $item->get_product_id();
+			$booking_id = $item->get_meta( 'royal_storage_booking_id' );
+			
+			if ( $booking_id ) {
+				// Add booking ID as order meta
+				$order->update_meta_data( 'booking_id', $booking_id );
+				$order->update_meta_data( '_royal_storage_booking', $booking_id );
+				$order->save();
+				
+				// Update booking status
+				global $wpdb;
+				$bookings_table = $wpdb->prefix . 'royal_bookings';
+				$wpdb->update(
+					$bookings_table,
+					array( 'status' => 'confirmed' ),
+					array( 'id' => $booking_id ),
+					array( '%s' ),
+					array( '%d' )
+				);
+				break;
+			}
+		}
 	}
 
 	/**

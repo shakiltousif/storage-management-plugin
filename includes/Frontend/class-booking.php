@@ -167,7 +167,7 @@ class Booking {
 						<?php esc_html_e( 'Next', 'royal-storage' ); ?>
 					</button>
 					<button type="submit" id="submit-booking" class="btn btn-success" style="display: none;">
-						<?php esc_html_e( 'Create Booking', 'royal-storage' ); ?>
+						<?php esc_html_e( 'Book Now & Pay', 'royal-storage' ); ?>
 					</button>
 				</div>
 			</form>
@@ -309,11 +309,23 @@ class Booking {
 		$booking_id = $this->create_booking_record( $customer_id, $unit_id, $unit_type, $start_date, $end_date, $pricing );
 
 		if ( $booking_id ) {
-			wp_send_json_success( array( 
-				'message' => __( 'Booking created successfully', 'royal-storage' ),
-				'booking_id' => $booking_id,
-				'redirect_url' => home_url( '/customer-portal-test/?tab=bookings' )
-			) );
+			// Add product to cart and redirect to checkout
+			$wc_integration = new \RoyalStorage\WooCommerceIntegration();
+			$product_id = $wc_integration->create_order( $booking_id, $customer_id, $pricing['total'] );
+			
+			if ( $product_id ) {
+				wp_send_json_success( array( 
+					'message' => __( 'Booking created successfully. Redirecting to checkout...', 'royal-storage' ),
+					'booking_id' => $booking_id,
+					'redirect_url' => wc_get_checkout_url()
+				) );
+			} else {
+				wp_send_json_success( array( 
+					'message' => __( 'Booking created successfully', 'royal-storage' ),
+					'booking_id' => $booking_id,
+					'redirect_url' => home_url( '/customer-portal-test/?tab=bookings' )
+				) );
+			}
 		} else {
 			wp_send_json_error( array( 'message' => __( 'Failed to create booking', 'royal-storage' ) ) );
 		}

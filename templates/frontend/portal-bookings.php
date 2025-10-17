@@ -72,9 +72,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</button>
 						<?php endif; ?>
 						<?php if ( 'unpaid' === $booking->payment_status ) : ?>
-							<a href="<?php echo esc_url( add_query_arg( 'booking_id', $booking->id, home_url( '/checkout-2/' ) ) ); ?>" class="btn btn-small btn-success">
+							<button class="btn btn-small btn-success pay-now-btn" data-booking-id="<?php echo esc_attr( $booking->id ); ?>" data-amount="<?php echo esc_attr( $booking->total_price ); ?>">
 								<?php esc_html_e( 'Pay Now', 'royal-storage' ); ?>
-							</a>
+							</button>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -254,4 +254,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 		color: #666;
 	}
 </style>
+
+<script>
+jQuery(document).ready(function($) {
+	// Handle Pay Now button clicks
+	$('.pay-now-btn').on('click', function(e) {
+		e.preventDefault();
+		
+		const $btn = $(this);
+		const bookingId = $btn.data('booking-id');
+		const amount = $btn.data('amount');
+		
+		// Show loading state
+		$btn.prop('disabled', true).text('Processing...');
+		
+		// Send AJAX request to add product to cart and get checkout URL
+		$.ajax({
+			url: '<?php echo admin_url('admin-ajax.php'); ?>',
+			type: 'POST',
+			data: {
+				action: 'royal_storage_process_payment',
+				nonce: '<?php echo wp_create_nonce('royal_storage_payment'); ?>',
+				booking_id: bookingId,
+				amount: amount,
+				payment_method: 'card'
+			},
+			success: function(response) {
+				if (response.success && response.data.redirect && response.data.checkout_url) {
+					// Redirect to WooCommerce checkout
+					window.location.href = response.data.checkout_url;
+				} else {
+					alert('Failed to process payment. Please try again.');
+					$btn.prop('disabled', false).text('Pay Now');
+				}
+			},
+			error: function() {
+				alert('Failed to process payment. Please try again.');
+				$btn.prop('disabled', false).text('Pay Now');
+			}
+		});
+	});
+});
+</script>
 

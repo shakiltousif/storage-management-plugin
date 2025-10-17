@@ -21,7 +21,10 @@ jQuery(document).ready(function($) {
         // Event listeners
         $('#next-step').on('click', nextStep);
         $('#prev-step').on('click', prevStep);
-        $('#royal-storage-booking-form').on('submit', handleFormSubmit);
+        $('#royal-storage-booking-form').on('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(e);
+        });
         
         // Unit type change
         $('input[name="unit_type"]').on('change', handleUnitTypeChange);
@@ -363,9 +366,8 @@ jQuery(document).ready(function($) {
     }
 
     function handleFormSubmit(e) {
-        e.preventDefault();
-        
         if (!validateCurrentStep()) {
+            console.log('Validation failed for current step');
             return;
         }
 
@@ -374,9 +376,25 @@ jQuery(document).ready(function($) {
             showError('Please select a unit.');
             return;
         }
+        
+        // Additional validation for required fields
+        if (!bookingData.unit_type) {
+            showError('Please select a unit type.');
+            return;
+        }
+        
+        if (!bookingData.start_date) {
+            showError('Please select a start date.');
+            return;
+        }
+        
+        if (!bookingData.end_date) {
+            showError('Please select an end date.');
+            return;
+        }
 
         // Show loading state
-        $('#submit-booking').prop('disabled', true).text('Creating Booking...');
+        $('#submit-booking').prop('disabled', true).text('Processing Booking...');
 
         $.ajax({
             url: royalStorageBooking.ajaxUrl,
@@ -398,12 +416,12 @@ jQuery(document).ready(function($) {
                     }, 2000);
                 } else {
                     showError(response.data.message || 'Failed to create booking.');
-                    $('#submit-booking').prop('disabled', false).text('Create Booking');
+                    $('#submit-booking').prop('disabled', false).text('Book Now & Pay');
                 }
             },
             error: function() {
                 showError('Failed to create booking. Please try again.');
-                $('#submit-booking').prop('disabled', false).text('Create Booking');
+                $('#submit-booking').prop('disabled', false).text('Book Now & Pay');
             }
         });
     }

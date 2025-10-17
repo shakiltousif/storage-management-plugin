@@ -8,6 +8,15 @@
 
 namespace RoyalStorage\Admin;
 
+use RoyalStorage\Admin\Dashboard;
+use RoyalStorage\Admin\Settings;
+use RoyalStorage\Admin\Reports;
+use RoyalStorage\Admin\Bookings;
+use RoyalStorage\Admin\Customers;
+use RoyalStorage\Admin\Notifications;
+use RoyalStorage\Admin\UnitLayoutAdmin;
+use RoyalStorage\Admin\PaymentSettings;
+
 /**
  * Admin class for handling admin functionality
  */
@@ -34,6 +43,7 @@ class Admin {
 		new Customers();
 		new Notifications();
 		new UnitLayoutAdmin();
+		new PaymentSettings();
 
 		// Register hooks.
 		add_action( 'admin_init', array( $this, 'register_admin_hooks' ) );

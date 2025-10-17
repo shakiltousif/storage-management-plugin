@@ -72,6 +72,7 @@ require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-bookings.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-customers.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-notifications.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-unit-layout-admin.php';
+require_once ROYAL_STORAGE_DIR . 'includes/Admin/class-payment-settings.php';
 
 // Load frontend classes
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-frontend.php';
