@@ -333,10 +333,88 @@ class Admin {
 	 * @return void
 	 */
 	public function render_bookings_page() {
+		$bookings = new Bookings();
+		
+		// Get pagination parameters
+		$page = isset( $_GET['paged'] ) ? max( 1, intval( $_GET['paged'] ) ) : 1;
+		$per_page = 20;
+		$offset = ( $page - 1 ) * $per_page;
+		
+		// Get search and filter parameters
+		$search = isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '';
+		$status_filter = isset( $_GET['status'] ) ? sanitize_text_field( $_GET['status'] ) : '';
+		
+		// Get bookings data
+		$bookings_data = $this->get_bookings_with_details( $bookings, $per_page, $offset, $search, $status_filter );
+		$total_bookings = $bookings->get_bookings_count();
+		$total_pages = ceil( $total_bookings / $per_page );
+		
+		// Handle messages
+		$message = isset( $_GET['message'] ) ? sanitize_text_field( $_GET['message'] ) : '';
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Bookings', 'royal-storage' ); ?></h1>
 			<p><?php esc_html_e( 'Manage all bookings and reservations.', 'royal-storage' ); ?></p>
+
+			<?php if ( $message ) : ?>
+				<div class="notice notice-<?php echo esc_attr( $message === 'error' ? 'error' : 'success' ); ?>">
+					<p>
+						<?php
+						switch ( $message ) {
+							case 'created':
+								esc_html_e( 'Booking created successfully!', 'royal-storage' );
+								break;
+							case 'cancelled':
+								esc_html_e( 'Booking cancelled successfully!', 'royal-storage' );
+								break;
+							case 'error':
+								esc_html_e( 'An error occurred. Please try again.', 'royal-storage' );
+								break;
+						}
+						?>
+					</p>
+				</div>
+			<?php endif; ?>
+
+			<!-- Search and Filters -->
+			<div class="royal-storage-bookings-filters">
+				<form method="get" action="">
+					<input type="hidden" name="page" value="royal-storage-bookings" />
+					<div class="search-box">
+						<label for="booking-search"><?php esc_html_e( 'Search Bookings:', 'royal-storage' ); ?></label>
+						<input type="search" id="booking-search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search by customer, unit, or booking ID...', 'royal-storage' ); ?>" />
+					</div>
+					<div class="filter-group">
+						<label for="status-filter"><?php esc_html_e( 'Status:', 'royal-storage' ); ?></label>
+						<select id="status-filter" name="status">
+							<option value=""><?php esc_html_e( 'All Statuses', 'royal-storage' ); ?></option>
+							<option value="pending" <?php selected( $status_filter, 'pending' ); ?>><?php esc_html_e( 'Pending', 'royal-storage' ); ?></option>
+							<option value="confirmed" <?php selected( $status_filter, 'confirmed' ); ?>><?php esc_html_e( 'Confirmed', 'royal-storage' ); ?></option>
+							<option value="active" <?php selected( $status_filter, 'active' ); ?>><?php esc_html_e( 'Active', 'royal-storage' ); ?></option>
+							<option value="cancelled" <?php selected( $status_filter, 'cancelled' ); ?>><?php esc_html_e( 'Cancelled', 'royal-storage' ); ?></option>
+							<option value="expired" <?php selected( $status_filter, 'expired' ); ?>><?php esc_html_e( 'Expired', 'royal-storage' ); ?></option>
+						</select>
+					</div>
+					<div class="filter-group">
+						<button type="submit" class="button"><?php esc_html_e( 'Filter', 'royal-storage' ); ?></button>
+						<?php if ( $search || $status_filter ) : ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=royal-storage-bookings' ) ); ?>" class="button"><?php esc_html_e( 'Clear', 'royal-storage' ); ?></a>
+						<?php endif; ?>
+					</div>
+				</form>
+			</div>
+
+			<!-- Bookings Table -->
+			<div class="royal-storage-bookings-table">
+				<?php $this->render_bookings_table( $bookings_data, $search, $status_filter ); ?>
+			</div>
+
+			<!-- Pagination -->
+			<?php if ( $total_pages > 1 ) : ?>
+				<div class="royal-storage-bookings-pagination">
+					<?php $this->render_bookings_pagination( $page, $total_pages, $search, $status_filter ); ?>
+				</div>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -1515,6 +1593,211 @@ class Admin {
 		$columns['status']         = __( 'Status', 'royal-storage' );
 		$columns['date']           = __( 'Date', 'royal-storage' );
 		return $columns;
+	}
+
+	/**
+	 * Get bookings with details
+	 *
+	 * @param Bookings $bookings Bookings instance.
+	 * @param int      $per_page Per page limit.
+	 * @param int      $offset Offset.
+	 * @param string   $search Search term.
+	 * @param string   $status_filter Status filter.
+	 * @return array
+	 */
+	private function get_bookings_with_details( $bookings, $per_page, $offset, $search = '', $status_filter = '' ) {
+		global $wpdb;
+
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+		$users_table = $wpdb->users;
+		$units_table = $wpdb->prefix . 'royal_storage_units';
+		$spaces_table = $wpdb->prefix . 'royal_parking_spaces';
+
+		$query = "
+			SELECT b.*, u.display_name as customer_name, u.user_email as customer_email,
+				COALESCE(su.size, sp.spot_number) as unit_info,
+				COALESCE(su.dimensions, sp.height_limit) as unit_details
+			FROM $bookings_table b
+			LEFT JOIN $users_table u ON b.customer_id = u.ID
+			LEFT JOIN $units_table su ON b.unit_id = su.id AND b.unit_type = 'storage'
+			LEFT JOIN $spaces_table sp ON b.unit_id = sp.id AND b.unit_type = 'parking'
+			WHERE 1=1
+		";
+
+		$params = array();
+
+		if ( ! empty( $search ) ) {
+			$query .= " AND (b.id LIKE %s OR u.display_name LIKE %s OR u.user_email LIKE %s OR b.access_code LIKE %s)";
+			$search_term = '%' . $wpdb->esc_like( $search ) . '%';
+			$params = array_merge( $params, array( $search_term, $search_term, $search_term, $search_term ) );
+		}
+
+		if ( ! empty( $status_filter ) ) {
+			$query .= " AND b.status = %s";
+			$params[] = $status_filter;
+		}
+
+		$query .= " ORDER BY b.created_at DESC LIMIT %d OFFSET %d";
+		$params[] = $per_page;
+		$params[] = $offset;
+
+		if ( ! empty( $params ) ) {
+			return $wpdb->get_results( $wpdb->prepare( $query, $params ) );
+		} else {
+			return $wpdb->get_results( $query );
+		}
+	}
+
+	/**
+	 * Render bookings table
+	 *
+	 * @param array  $bookings_data Bookings data.
+	 * @param string $search Search term.
+	 * @param string $status_filter Status filter.
+	 * @return void
+	 */
+	private function render_bookings_table( $bookings_data, $search, $status_filter ) {
+		?>
+		<table class="wp-list-table widefat fixed striped">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'ID', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Customer', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Unit', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Type', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Start Date', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'End Date', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Total Price', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Status', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Payment', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'royal-storage' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if ( ! empty( $bookings_data ) ) : ?>
+					<?php foreach ( $bookings_data as $booking ) : ?>
+						<tr>
+							<td><?php echo esc_html( $booking->id ); ?></td>
+							<td>
+								<strong><?php echo esc_html( $booking->customer_name ?: 'Unknown' ); ?></strong><br>
+								<small><?php echo esc_html( $booking->customer_email ?: 'No email' ); ?></small>
+							</td>
+							<td>
+								<?php echo esc_html( $booking->unit_info ?: 'N/A' ); ?><br>
+								<small><?php echo esc_html( $booking->unit_details ?: '' ); ?></small>
+							</td>
+							<td>
+								<span class="unit-type-<?php echo esc_attr( $booking->unit_type ); ?>">
+									<?php echo esc_html( ucfirst( $booking->unit_type ) ); ?>
+								</span>
+							</td>
+							<td><?php echo esc_html( date( 'M j, Y', strtotime( $booking->start_date ) ) ); ?></td>
+							<td><?php echo esc_html( date( 'M j, Y', strtotime( $booking->end_date ) ) ); ?></td>
+							<td><?php echo esc_html( number_format( $booking->total_price, 2 ) ); ?> RSD</td>
+							<td>
+								<span class="status-<?php echo esc_attr( $booking->status ); ?>">
+									<?php echo esc_html( ucfirst( $booking->status ) ); ?>
+								</span>
+							</td>
+							<td>
+								<span class="payment-<?php echo esc_attr( $booking->payment_status ); ?>">
+									<?php echo esc_html( ucfirst( $booking->payment_status ) ); ?>
+								</span>
+							</td>
+							<td>
+								<div class="booking-actions">
+									<?php if ( $booking->status !== 'cancelled' && $booking->status !== 'expired' ) : ?>
+										<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
+											<input type="hidden" name="action" value="royal_storage_cancel_booking" />
+											<input type="hidden" name="booking_id" value="<?php echo esc_attr( $booking->id ); ?>" />
+											<input type="hidden" name="nonce" value="<?php echo esc_attr( wp_create_nonce( 'royal_storage_cancel_booking' ) ); ?>" />
+											<button type="submit" class="button button-small" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to cancel this booking?', 'royal-storage' ); ?>')">
+												<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
+											</button>
+										</form>
+									<?php endif; ?>
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=royal-storage-bookings&view=' . $booking->id ) ); ?>" class="button button-small">
+										<?php esc_html_e( 'View', 'royal-storage' ); ?>
+									</a>
+								</div>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				<?php else : ?>
+					<tr>
+						<td colspan="10" class="no-items">
+							<?php if ( $search || $status_filter ) : ?>
+								<?php esc_html_e( 'No bookings found matching your criteria.', 'royal-storage' ); ?>
+							<?php else : ?>
+								<?php esc_html_e( 'No bookings found. Create your first booking to get started!', 'royal-storage' ); ?>
+							<?php endif; ?>
+						</td>
+					</tr>
+				<?php endif; ?>
+			</tbody>
+		</table>
+		<?php
+	}
+
+	/**
+	 * Render bookings pagination
+	 *
+	 * @param int    $current_page Current page.
+	 * @param int    $total_pages Total pages.
+	 * @param string $search Search term.
+	 * @param string $status_filter Status filter.
+	 * @return void
+	 */
+	private function render_bookings_pagination( $current_page, $total_pages, $search, $status_filter ) {
+		$base_url = admin_url( 'admin.php?page=royal-storage-bookings' );
+		$query_params = array();
+
+		if ( $search ) {
+			$query_params['s'] = $search;
+		}
+		if ( $status_filter ) {
+			$query_params['status'] = $status_filter;
+		}
+
+		if ( ! empty( $query_params ) ) {
+			$base_url .= '&' . http_build_query( $query_params );
+		}
+
+		echo '<div class="tablenav-pages">';
+		echo '<span class="displaying-num">' . sprintf( esc_html( _n( '%s item', '%s items', $total_pages, 'royal-storage' ) ), number_format_i18n( $total_pages ) ) . '</span>';
+
+		if ( $total_pages > 1 ) {
+			echo '<span class="pagination-links">';
+
+			// Previous page
+			if ( $current_page > 1 ) {
+				$prev_url = $base_url . '&paged=' . ( $current_page - 1 );
+				echo '<a class="prev-page button" href="' . esc_url( $prev_url ) . '">&laquo;</a>';
+			}
+
+			// Page numbers
+			$start_page = max( 1, $current_page - 2 );
+			$end_page = min( $total_pages, $current_page + 2 );
+
+			for ( $i = $start_page; $i <= $end_page; $i++ ) {
+				if ( $i === $current_page ) {
+					echo '<span class="current-page">' . $i . '</span>';
+				} else {
+					$page_url = $base_url . '&paged=' . $i;
+					echo '<a class="page-numbers" href="' . esc_url( $page_url ) . '">' . $i . '</a>';
+				}
+			}
+
+			// Next page
+			if ( $current_page < $total_pages ) {
+				$next_url = $base_url . '&paged=' . ( $current_page + 1 );
+				echo '<a class="next-page button" href="' . esc_url( $next_url ) . '">&raquo;</a>';
+			}
+
+			echo '</span>';
+		}
+
+		echo '</div>';
 	}
 }
 

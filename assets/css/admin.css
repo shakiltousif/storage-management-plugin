@@ -889,3 +889,264 @@
 	}
 }
 
+/* Bookings Page Styles */
+.royal-storage-bookings-filters {
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	padding: 20px;
+	margin: 20px 0;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.royal-storage-bookings-filters .search-box,
+.royal-storage-bookings-filters .filter-group {
+	display: inline-block;
+	margin-right: 20px;
+	vertical-align: top;
+}
+
+.royal-storage-bookings-filters .search-box label,
+.royal-storage-bookings-filters .filter-group label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 600;
+	color: #23282d;
+}
+
+.royal-storage-bookings-filters input[type="search"],
+.royal-storage-bookings-filters select {
+	width: 250px;
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.royal-storage-bookings-filters .button {
+	margin-top: 20px;
+}
+
+.royal-storage-bookings-table {
+	margin: 20px 0;
+}
+
+.royal-storage-bookings-table .wp-list-table {
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.royal-storage-bookings-table .wp-list-table th {
+	background: #f9f9f9;
+	font-weight: 600;
+	color: #23282d;
+	border-bottom: 1px solid #ccd0d4;
+}
+
+.royal-storage-bookings-table .wp-list-table td {
+	border-bottom: 1px solid #f0f0f1;
+	vertical-align: top;
+}
+
+.royal-storage-bookings-table .wp-list-table tr:hover {
+	background: #f6f7f7;
+}
+
+.royal-storage-bookings-table .no-items {
+	text-align: center;
+	padding: 40px 20px;
+	color: #666;
+	font-style: italic;
+}
+
+/* Status and Payment Status Styles */
+.status-pending {
+	color: #f56e28;
+	font-weight: 600;
+}
+
+.status-confirmed {
+	color: #00a32a;
+	font-weight: 600;
+}
+
+.status-active {
+	color: #0073aa;
+	font-weight: 600;
+}
+
+.status-cancelled {
+	color: #d63638;
+	font-weight: 600;
+}
+
+.status-expired {
+	color: #8c8f94;
+	font-weight: 600;
+}
+
+.payment-unpaid {
+	color: #d63638;
+	font-weight: 600;
+}
+
+.payment-pending {
+	color: #f56e28;
+	font-weight: 600;
+}
+
+.payment-paid {
+	color: #00a32a;
+	font-weight: 600;
+}
+
+.payment-overdue {
+	color: #d63638;
+	font-weight: 600;
+}
+
+.payment-refunded {
+	color: #8c8f94;
+	font-weight: 600;
+}
+
+/* Unit Type Styles */
+.unit-type-storage {
+	background: #e3f2fd;
+	color: #1976d2;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.unit-type-parking {
+	background: #f3e5f5;
+	color: #7b1fa2;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+/* Booking Actions */
+.booking-actions {
+	display: flex;
+	gap: 5px;
+	flex-wrap: wrap;
+}
+
+.booking-actions .button {
+	font-size: 11px;
+	padding: 4px 8px;
+	height: auto;
+	line-height: 1.4;
+}
+
+.booking-actions .button-small {
+	font-size: 11px;
+	padding: 4px 8px;
+	height: auto;
+	line-height: 1.4;
+}
+
+/* Pagination Styles */
+.royal-storage-bookings-pagination {
+	margin: 20px 0;
+	text-align: center;
+}
+
+.royal-storage-bookings-pagination .tablenav-pages {
+	display: inline-block;
+}
+
+.royal-storage-bookings-pagination .displaying-num {
+	margin-right: 20px;
+	color: #666;
+	font-size: 13px;
+}
+
+.royal-storage-bookings-pagination .pagination-links {
+	display: inline-block;
+}
+
+.royal-storage-bookings-pagination .page-numbers {
+	display: inline-block;
+	padding: 6px 10px;
+	margin: 0 2px;
+	border: 1px solid #ddd;
+	text-decoration: none;
+	color: #0073aa;
+	border-radius: 3px;
+	font-size: 13px;
+}
+
+.royal-storage-bookings-pagination .page-numbers:hover {
+	background: #f6f7f7;
+	border-color: #999;
+}
+
+.royal-storage-bookings-pagination .current-page {
+	display: inline-block;
+	padding: 6px 10px;
+	margin: 0 2px;
+	background: #0073aa;
+	color: #fff;
+	border: 1px solid #0073aa;
+	border-radius: 3px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.royal-storage-bookings-pagination .prev-page,
+.royal-storage-bookings-pagination .next-page {
+	display: inline-block;
+	padding: 6px 10px;
+	margin: 0 2px;
+	border: 1px solid #ddd;
+	text-decoration: none;
+	color: #0073aa;
+	border-radius: 3px;
+	font-size: 13px;
+}
+
+.royal-storage-bookings-pagination .prev-page:hover,
+.royal-storage-bookings-pagination .next-page:hover {
+	background: #f6f7f7;
+	border-color: #999;
+}
+
+/* Responsive Design for Bookings */
+@media (max-width: 768px) {
+	.royal-storage-bookings-filters .search-box,
+	.royal-storage-bookings-filters .filter-group {
+		display: block;
+		margin-bottom: 15px;
+		margin-right: 0;
+	}
+	
+	.royal-storage-bookings-filters input[type="search"],
+	.royal-storage-bookings-filters select {
+		width: 100%;
+		max-width: 300px;
+	}
+	
+	.royal-storage-bookings-table .wp-list-table {
+		font-size: 12px;
+	}
+	
+	.royal-storage-bookings-table .wp-list-table th,
+	.royal-storage-bookings-table .wp-list-table td {
+		padding: 8px 6px;
+	}
+	
+	.booking-actions {
+		flex-direction: column;
+		gap: 3px;
+	}
+}
+
