@@ -25,8 +25,7 @@ class PaymentProcessor {
 	 */
 	public function __construct() {
 		$this->wc_integration = new WooCommerceIntegration();
-		add_action( 'wp_ajax_royal_storage_process_payment', array( $this, 'handle_payment' ) );
-		add_action( 'wp_ajax_nopriv_royal_storage_process_payment', array( $this, 'handle_payment' ) );
+		// AJAX handlers are registered in the main Plugin class to avoid conflicts
 	}
 
 	/**

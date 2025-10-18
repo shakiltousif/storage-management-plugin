@@ -89,6 +89,7 @@ require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-bookings.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-invoices.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-checkout.php';
 require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-unit-selection.php';
+require_once ROYAL_STORAGE_DIR . 'includes/Frontend/class-account.php';
 
 // Load API classes
 require_once ROYAL_STORAGE_DIR . 'includes/API/class-api.php';

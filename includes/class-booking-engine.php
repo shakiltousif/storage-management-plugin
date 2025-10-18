@@ -176,8 +176,9 @@ class BookingEngine {
 		$query = $wpdb->prepare(
 			"SELECT * FROM {$table} 
 			WHERE id NOT IN (
-				SELECT unit_id FROM {$wpdb->prefix}royal_storage_bookings 
+				SELECT unit_id FROM {$wpdb->prefix}royal_bookings 
 				WHERE status != 'cancelled'
+				AND unit_type = 'storage'
 				AND (
 					(start_date <= %s AND end_date >= %s) OR
 					(start_date <= %s AND end_date >= %s) OR
@@ -210,8 +211,9 @@ class BookingEngine {
 		$query = $wpdb->prepare(
 			"SELECT * FROM {$table} 
 			WHERE id NOT IN (
-				SELECT space_id FROM {$wpdb->prefix}royal_storage_bookings 
+				SELECT unit_id FROM {$wpdb->prefix}royal_bookings 
 				WHERE status != 'cancelled'
+				AND unit_type = 'parking'
 				AND (
 					(start_date <= %s AND end_date >= %s) OR
 					(start_date <= %s AND end_date >= %s) OR

@@ -18,12 +18,7 @@ class Booking {
 	 */
 	public function __construct() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'init' ) );
-		add_action( 'wp_ajax_get_available_units', array( $this, 'get_available_units' ) );
-		add_action( 'wp_ajax_nopriv_get_available_units', array( $this, 'get_available_units' ) );
-		add_action( 'wp_ajax_calculate_booking_price', array( $this, 'ajax_calculate_booking_price' ) );
-		add_action( 'wp_ajax_nopriv_calculate_booking_price', array( $this, 'ajax_calculate_booking_price' ) );
-		add_action( 'wp_ajax_create_booking', array( $this, 'create_booking' ) );
-		add_action( 'wp_ajax_nopriv_create_booking', array( $this, 'create_booking' ) );
+		// AJAX handlers are registered in the main Plugin class to avoid conflicts
 		add_action( 'init', array( $this, 'register_shortcodes' ) );
 	}
 

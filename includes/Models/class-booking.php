@@ -102,13 +102,13 @@ class Booking {
 	 */
 	private function load() {
 		global $wpdb;
-		$table   = $wpdb->prefix . 'royal_storage_bookings';
+		$table   = $wpdb->prefix . 'royal_bookings';
 		$booking = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $this->id ) );
 
 		if ( $booking ) {
 			$this->customer_id   = $booking->customer_id;
 			$this->unit_id       = $booking->unit_id;
-			$this->space_id      = $booking->space_id;
+			$this->space_id      = ( $booking->unit_type === 'parking' ) ? $booking->unit_id : 0;
 			$this->start_date    = $booking->start_date;
 			$this->end_date      = $booking->end_date;
 			$this->status        = $booking->status;
@@ -305,12 +305,12 @@ class Booking {
 	 */
 	public function save() {
 		global $wpdb;
-		$table = $wpdb->prefix . 'royal_storage_bookings';
+		$table = $wpdb->prefix . 'royal_bookings';
 
 		$data = array(
 			'customer_id'    => $this->customer_id,
 			'unit_id'        => $this->unit_id,
-			'space_id'       => $this->space_id,
+			'unit_type'      => ( $this->space_id > 0 ) ? 'parking' : 'storage',
 			'start_date'     => $this->start_date,
 			'end_date'       => $this->end_date,
 			'status'         => $this->status,
@@ -337,7 +337,7 @@ class Booking {
 	 */
 	public function delete() {
 		global $wpdb;
-		$table = $wpdb->prefix . 'royal_storage_bookings';
+		$table = $wpdb->prefix . 'royal_bookings';
 		return $wpdb->delete( $table, array( 'id' => $this->id ) );
 	}
 

@@ -39,6 +39,7 @@ class Bookings {
 		add_action( 'admin_init', array( $this, 'init' ) );
 		add_action( 'admin_post_royal_storage_create_booking', array( $this, 'handle_create_booking' ) );
 		add_action( 'admin_post_royal_storage_cancel_booking', array( $this, 'handle_cancel_booking' ) );
+		add_action( 'admin_post_royal_storage_update_booking_status', array( $this, 'handle_update_booking_status' ) );
 	}
 
 	/**
@@ -191,6 +192,46 @@ class Bookings {
 		global $wpdb;
 		$bookings_table = $wpdb->prefix . 'royal_bookings';
 		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM $bookings_table" );
+	}
+
+	/**
+	 * Handle booking status update
+	 *
+	 * @return void
+	 */
+	public function handle_update_booking_status() {
+		// Verify nonce
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'royal_storage_update_booking_status' ) ) {
+			wp_die( esc_html__( 'Security check failed', 'royal-storage' ) );
+		}
+
+		// Check permissions
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to perform this action', 'royal-storage' ) );
+		}
+
+		$booking_id = isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+		$new_status = isset( $_POST['new_status'] ) ? sanitize_text_field( wp_unslash( $_POST['new_status'] ) ) : '';
+
+		if ( empty( $booking_id ) || empty( $new_status ) ) {
+			wp_die( esc_html__( 'Invalid booking ID or status', 'royal-storage' ) );
+		}
+
+		// Update booking status
+		$result = $this->update_booking( $booking_id, array( 'status' => $new_status ) );
+
+		if ( $result ) {
+			// Also update payment status if booking is confirmed
+			if ( $new_status === 'confirmed' ) {
+				$this->update_booking( $booking_id, array( 'payment_status' => 'paid' ) );
+			}
+
+			wp_redirect( admin_url( 'admin.php?page=royal-storage-bookings&updated=1' ) );
+			exit;
+		} else {
+			wp_redirect( admin_url( 'admin.php?page=royal-storage-bookings&error=1' ) );
+			exit;
+		}
 	}
 }
 

@@ -146,6 +146,13 @@ jQuery(document).ready(function($) {
         selectedUnit = unit;
         updateSelectionSummary();
         updateActionButtons();
+        
+        // Store selected unit in global booking data if available
+        if (typeof window.bookingData !== 'undefined') {
+            window.bookingData.selected_unit = selectedUnit;
+            window.bookingData.unit_id = selectedUnit.id;
+            window.bookingData.unit_type = selectedUnit.size.toLowerCase();
+        }
     }
 
     function updateSelectionSummary() {
@@ -262,5 +269,10 @@ jQuery(document).ready(function($) {
         refreshUnits: function() {
             loadUnits();
         }
+    };
+    
+    // Also expose selected unit to global booking data
+    window.getSelectedUnit = function() {
+        return selectedUnit;
     };
 });

@@ -9,151 +9,190 @@
 namespace RoyalStorage\Frontend;
 
 /**
- * Account class for frontend account management
+ * Account class for customer account management
  */
-class Account {	
+class Account {
 
 	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		// Account functionality initialization
+		// Account initialization
 	}
 
 	/**
-	 * Get customer account data
+	 * Get customer data
 	 *
-	 * @param int $customer_id Customer ID.
+	 * @param int $user_id User ID.
 	 * @return object
 	 */
-	public function get_customer_data( $customer_id ) {
-		$user = get_user_by( 'id', $customer_id );
+	public function get_customer_data( $user_id ) {
+		$user = get_user_by( 'id', $user_id );
 		
 		if ( ! $user ) {
-			return null;
+			return new \stdClass();
 		}
 
-		return (object) array(
-			'id'           => $user->ID,
-			'display_name' => $user->display_name,
-			'email'        => $user->user_email,
-			'first_name'   => $user->first_name,
-			'last_name'    => $user->last_name,
-			'phone'        => get_user_meta( $customer_id, 'phone', true ),
-			'address'      => get_user_meta( $customer_id, 'address', true ),
-			'city'         => get_user_meta( $customer_id, 'city', true ),
-			'postcode'     => get_user_meta( $customer_id, 'postcode', true ),
-			'country'      => get_user_meta( $customer_id, 'country', true ),
+		$customer_data = new \stdClass();
+		$customer_data->display_name = $user->display_name;
+		$customer_data->first_name = get_user_meta( $user_id, 'first_name', true );
+		$customer_data->last_name = get_user_meta( $user_id, 'last_name', true );
+		$customer_data->email = $user->user_email;
+		$customer_data->phone = get_user_meta( $user_id, 'billing_phone', true );
+		$customer_data->address = get_user_meta( $user_id, 'billing_address_1', true );
+		$customer_data->city = get_user_meta( $user_id, 'billing_city', true );
+		$customer_data->postcode = get_user_meta( $user_id, 'billing_postcode', true );
+		$customer_data->country = get_user_meta( $user_id, 'billing_country', true );
+		$customer_data->company = get_user_meta( $user_id, 'billing_company', true );
+		$customer_data->tax_id = get_user_meta( $user_id, 'billing_vat_number', true );
+		$customer_data->registration_date = $user->user_registered;
+		$customer_data->last_login = get_user_meta( $user_id, 'last_login', true );
+
+		// Get booking statistics
+		$customer_data->total_bookings = $this->get_total_bookings( $user_id );
+		$customer_data->active_bookings = $this->get_active_bookings( $user_id );
+		$customer_data->total_spent = $this->get_total_spent( $user_id );
+
+		return $customer_data;
+	}
+
+	/**
+	 * Get total bookings count
+	 *
+	 * @param int $user_id User ID.
+	 * @return int
+	 */
+	private function get_total_bookings( $user_id ) {
+		global $wpdb;
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+		
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$bookings_table} WHERE customer_id = %d",
+				$user_id
+			)
 		);
 	}
 
 	/**
-	 * Update customer account data
+	 * Get active bookings count
 	 *
-	 * @param int   $customer_id Customer ID.
-	 * @param array $data Account data.
+	 * @param int $user_id User ID.
+	 * @return int
+	 */
+	private function get_active_bookings( $user_id ) {
+		global $wpdb;
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+		
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$bookings_table} WHERE customer_id = %d AND status IN ('active', 'confirmed', 'pending')",
+				$user_id
+			)
+		);
+	}
+
+	/**
+	 * Get total amount spent
+	 *
+	 * @param int $user_id User ID.
+	 * @return float
+	 */
+	private function get_total_spent( $user_id ) {
+		global $wpdb;
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+		
+		$total = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT SUM(total_price) FROM {$bookings_table} WHERE customer_id = %d AND payment_status = 'paid'",
+				$user_id
+			)
+		);
+
+		return $total ? (float) $total : 0.0;
+	}
+
+	/**
+	 * Update customer profile
+	 *
+	 * @param int   $user_id User ID.
+	 * @param array $data Profile data.
 	 * @return bool
 	 */
-	public function update_customer_data( $customer_id, $data ) {
-		$user_data = array();
+	public function update_profile( $user_id, $data ) {
+		$user = get_user_by( 'id', $user_id );
 		
-		if ( isset( $data['display_name'] ) ) {
-			$user_data['display_name'] = sanitize_text_field( $data['display_name'] );
+		if ( ! $user ) {
+			return false;
 		}
-		
-		if ( isset( $data['email'] ) ) {
-			$user_data['user_email'] = sanitize_email( $data['email'] );
-		}
-		
+
+		// Update user basic info
 		if ( isset( $data['first_name'] ) ) {
-			$user_data['first_name'] = sanitize_text_field( $data['first_name'] );
+			update_user_meta( $user_id, 'first_name', sanitize_text_field( $data['first_name'] ) );
 		}
 		
 		if ( isset( $data['last_name'] ) ) {
-			$user_data['last_name'] = sanitize_text_field( $data['last_name'] );
+			update_user_meta( $user_id, 'last_name', sanitize_text_field( $data['last_name'] ) );
 		}
-
-		// Update user data
-		if ( ! empty( $user_data ) ) {
-			$user_data['ID'] = $customer_id;
-			$result = wp_update_user( $user_data );
-			
-			if ( is_wp_error( $result ) ) {
-				return false;
-			}
-		}
-
-		// Update user meta
-		$meta_fields = array( 'phone', 'address', 'city', 'postcode', 'country' );
 		
-		foreach ( $meta_fields as $field ) {
-			if ( isset( $data[ $field ] ) ) {
-				update_user_meta( $customer_id, $field, sanitize_text_field( $data[ $field ] ) );
-			}
+		if ( isset( $data['display_name'] ) ) {
+			wp_update_user( array(
+				'ID' => $user_id,
+				'display_name' => sanitize_text_field( $data['display_name'] )
+			) );
+		}
+
+		// Update billing information
+		if ( isset( $data['phone'] ) ) {
+			update_user_meta( $user_id, 'billing_phone', sanitize_text_field( $data['phone'] ) );
+		}
+		
+		if ( isset( $data['address'] ) ) {
+			update_user_meta( $user_id, 'billing_address_1', sanitize_text_field( $data['address'] ) );
+		}
+		
+		if ( isset( $data['city'] ) ) {
+			update_user_meta( $user_id, 'billing_city', sanitize_text_field( $data['city'] ) );
+		}
+		
+		if ( isset( $data['postcode'] ) ) {
+			update_user_meta( $user_id, 'billing_postcode', sanitize_text_field( $data['postcode'] ) );
+		}
+		
+		if ( isset( $data['country'] ) ) {
+			update_user_meta( $user_id, 'billing_country', sanitize_text_field( $data['country'] ) );
+		}
+		
+		if ( isset( $data['company'] ) ) {
+			update_user_meta( $user_id, 'billing_company', sanitize_text_field( $data['company'] ) );
+		}
+		
+		if ( isset( $data['tax_id'] ) ) {
+			update_user_meta( $user_id, 'billing_vat_number', sanitize_text_field( $data['tax_id'] ) );
 		}
 
 		return true;
 	}
 
 	/**
-	 * Get customer statistics
+	 * Change password
 	 *
-	 * @param int $customer_id Customer ID.
-	 * @return object
+	 * @param int    $user_id User ID.
+	 * @param string $new_password New password.
+	 * @return bool
 	 */
-	public function get_customer_stats( $customer_id ) {
-		global $wpdb;
+	public function change_password( $user_id, $new_password ) {
+		$user = get_user_by( 'id', $user_id );
+		
+		if ( ! $user ) {
+			return false;
+		}
 
-		$bookings_table = $wpdb->prefix . 'royal_bookings';
-		$invoices_table = $wpdb->prefix . 'royal_invoices';
-
-		// Get booking statistics
-		$total_bookings = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT COUNT(*) FROM $bookings_table WHERE customer_id = %d",
-				$customer_id
-			)
-		);
-
-		$active_bookings = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT COUNT(*) FROM $bookings_table WHERE customer_id = %d AND status = 'active'",
-				$customer_id
-			)
-		);
-
-		$total_spent = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT SUM(total_price) FROM $bookings_table WHERE customer_id = %d AND payment_status = 'paid'",
-				$customer_id
-			)
-		);
-
-		// Get invoice statistics
-		$total_invoices = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT COUNT(*) FROM $invoices_table i 
-				JOIN $bookings_table b ON i.booking_id = b.id 
-				WHERE b.customer_id = %d",
-				$customer_id
-			)
-		);
-
-		$unpaid_invoices = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT COUNT(*) FROM $invoices_table i 
-				JOIN $bookings_table b ON i.booking_id = b.id 
-				WHERE b.customer_id = %d AND i.status = 'unpaid'",
-				$customer_id
-			)
-		);
-
-		return (object) array(
-			'total_bookings'   => intval( $total_bookings ?: 0 ),
-			'active_bookings'  => intval( $active_bookings ?: 0 ),
-			'total_spent'      => floatval( $total_spent ?: 0 ),
-			'total_invoices'   => intval( $total_invoices ?: 0 ),
-			'unpaid_invoices'  => intval( $unpaid_invoices ?: 0 ),
-		);
+		wp_set_password( $new_password, $user_id );
+		
+		// Log out user after password change
+		wp_logout();
+		
+		return true;
 	}
 }

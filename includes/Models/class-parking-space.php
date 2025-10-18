@@ -238,11 +238,12 @@ class ParkingSpace {
 	 */
 	public function is_available( $start_date, $end_date ) {
 		global $wpdb;
-		$bookings_table = $wpdb->prefix . 'royal_storage_bookings';
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
 
 		$query = $wpdb->prepare(
 			"SELECT COUNT(*) FROM {$bookings_table} 
-			WHERE space_id = %d 
+			WHERE unit_id = %d 
+			AND unit_type = 'parking'
 			AND status != 'cancelled'
 			AND (
 				(start_date <= %s AND end_date >= %s) OR

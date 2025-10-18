@@ -126,7 +126,14 @@ jQuery(document).ready(function($) {
     }
 
     function validateUnitSelection() {
+        // Check if we have a selected unit from the unit selection process
         const selectedUnit = window.unitSelection ? window.unitSelection.getSelectedUnit() : null;
+        
+        // If not available from unit selection, check if we have unit data from the booking process
+        if (!selectedUnit && bookingData.selected_unit) {
+            return true; // Unit already selected and stored
+        }
+        
         if (!selectedUnit) {
             showError('Please select a unit from the grid.');
             return false;

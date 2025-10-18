@@ -1757,6 +1757,17 @@ class Admin {
 							</td>
 							<td>
 								<div class="booking-actions">
+									<?php if ( $booking->status === 'pending' ) : ?>
+										<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
+											<input type="hidden" name="action" value="royal_storage_update_booking_status" />
+											<input type="hidden" name="booking_id" value="<?php echo esc_attr( $booking->id ); ?>" />
+											<input type="hidden" name="new_status" value="confirmed" />
+											<input type="hidden" name="_wpnonce" value="<?php echo esc_attr( wp_create_nonce( 'royal_storage_update_booking_status' ) ); ?>" />
+											<button type="submit" class="button button-primary button-small">
+												<?php esc_html_e( 'Approve', 'royal-storage' ); ?>
+											</button>
+										</form>
+									<?php endif; ?>
 									<?php if ( $booking->status !== 'cancelled' && $booking->status !== 'expired' ) : ?>
 										<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
 											<input type="hidden" name="action" value="royal_storage_cancel_booking" />
