@@ -105,6 +105,11 @@ This is a virtual product for your storage booking. Payment will be processed th
 	 * @return int|false
 	 */
 	public function create_order( $booking_id, $customer_id, $total_price ) {
+		// Ensure WooCommerce and cart are available
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return false;
+		}
+
 		// Create product for the booking
 		$product_id = $this->create_product( $booking_id, $total_price );
 
@@ -127,6 +132,14 @@ This is a virtual product for your storage booking. Payment will be processed th
 
 		// Update cart totals
 		WC()->cart->calculate_totals();
+
+		// Verify cart has items before returning
+		if ( WC()->cart->is_empty() ) {
+			return false;
+		}
+
+		// Store booking ID in session for verification
+		WC()->session->set( 'royal_storage_booking_id', $booking_id );
 
 		return $product_id;
 	}
@@ -187,6 +200,10 @@ This is a virtual product for your storage booking. Payment will be processed th
 		
 		// Check if this order contains a Royal Storage booking
 		foreach ( $order->get_items() as $item ) {
+			if ( ! is_a( $item, 'WC_Order_Item_Product' ) ) {
+				continue;
+			}
+			
 			$product_id = $item->get_product_id();
 			$booking_id = $item->get_meta( 'royal_storage_booking_id' );
 			

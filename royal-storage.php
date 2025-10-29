@@ -106,6 +106,7 @@ require_once ROYAL_STORAGE_DIR . 'includes/class-database-optimizer.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-security-manager.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-deployment-manager.php';
 require_once ROYAL_STORAGE_DIR . 'includes/class-unit-layout-manager.php';
+require_once ROYAL_STORAGE_DIR . 'includes/class-guest-booking-handler.php';
 
 // Initialize the plugin.
 add_action( 'plugins_loaded', function() {

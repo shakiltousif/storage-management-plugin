@@ -68,8 +68,43 @@ class Checkout {
 	public function process_booking() {
 		check_ajax_referer( 'royal-storage-nonce', 'nonce' );
 
+		$customer_id = 0;
+		$is_guest = false;
+
+		// Handle guest checkout
 		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( array( 'message' => __( 'Please log in to book.', 'royal-storage' ) ) );
+			// Check if guest checkout is enabled
+			if ( ! \RoyalStorage\Guest_Booking_Handler::is_guest_checkout_enabled() ) {
+				wp_send_json_error( array( 'message' => __( 'Please log in to book.', 'royal-storage' ) ) );
+			}
+
+			// Get guest data
+			$guest_data = \RoyalStorage\Guest_Booking_Handler::get_guest_data_from_request();
+			if ( ! $guest_data ) {
+				wp_send_json_error( array( 'message' => __( 'Guest information is required.', 'royal-storage' ) ) );
+			}
+
+			// Validate guest data
+			$validation = \RoyalStorage\Guest_Booking_Handler::validate_guest_data( $guest_data );
+			if ( $validation !== true ) {
+				wp_send_json_error( array( 'message' => $validation ) );
+			}
+
+			// Create or get customer account
+			$customer_id = \RoyalStorage\Guest_Booking_Handler::create_or_get_guest_customer(
+				$guest_data['email'],
+				$guest_data['first_name'],
+				$guest_data['last_name'],
+				$guest_data['phone']
+			);
+
+			if ( ! $customer_id ) {
+				wp_send_json_error( array( 'message' => __( 'Failed to create customer account.', 'royal-storage' ) ) );
+			}
+
+			$is_guest = true;
+		} else {
+			$customer_id = get_current_user_id();
 		}
 
 		$unit_id = isset( $_POST['unit_id'] ) ? intval( $_POST['unit_id'] ) : 0;
@@ -119,9 +154,9 @@ class Checkout {
 
 		$bookings_table = $wpdb->prefix . 'royal_bookings';
 
-		// Calculate price.
-		$booking_obj = new Booking();
-		$price_data = $booking_obj->calculate_booking_price(
+		// Calculate price using PricingEngine
+		$pricing_engine = new \RoyalStorage\PricingEngine();
+		$price_data = $pricing_engine->calculate_price(
 			100, // Base price - should be fetched from unit.
 			$booking_data['start_date'],
 			$booking_data['end_date'],
@@ -214,7 +249,15 @@ class Checkout {
 	 */
 	private function get_woocommerce_checkout_url() {
 		// Get WooCommerce checkout page URL
-		return wc_get_checkout_url();
+		$checkout_url = wc_get_checkout_url();
+		
+		// Check if WooCommerce checkout is available and has items
+		if ( function_exists( 'WC' ) && WC()->cart && ! WC()->cart->is_empty() ) {
+			return $checkout_url;
+		}
+		
+		// Fallback to custom checkout page if WooCommerce cart is empty
+		return home_url( '/checkout/' );
 	}
 
 	/**
@@ -265,12 +308,25 @@ class Checkout {
 	 * @return string
 	 */
 	public function render_checkout() {
-		if ( ! is_user_logged_in() ) {
-			return '<p>' . esc_html__( 'Please log in to proceed with checkout.', 'royal-storage' ) . '</p>';
-		}
-
+		// Guest checkout is now allowed - no login check needed
+		
 		$booking_id = isset( $_GET['booking_id'] ) ? intval( $_GET['booking_id'] ) : 0;
 		$invoice_id = isset( $_GET['invoice_id'] ) ? intval( $_GET['invoice_id'] ) : 0;
+		
+		// If booking_id is provided but no booking found, try to get from session or WooCommerce cart
+		if ( $booking_id === 0 && function_exists( 'WC' ) && WC()->session ) {
+			$booking_id = WC()->session->get( 'royal_storage_booking_id', 0 );
+		}
+		
+		// If still no booking_id, try to get from cart items
+		if ( $booking_id === 0 && function_exists( 'WC' ) && WC()->cart && ! WC()->cart->is_empty() ) {
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+				if ( isset( $cart_item['royal_storage_booking_id'] ) ) {
+					$booking_id = intval( $cart_item['royal_storage_booking_id'] );
+					break;
+				}
+			}
+		}
 
 		ob_start();
 		?>
@@ -286,10 +342,17 @@ class Checkout {
 					?>
 				</div>
 
+				<?php if ( $booking_id > 0 || $invoice_id > 0 ) : ?>
 				<div class="checkout-form">
 					<h2><?php esc_html_e( 'Payment Details', 'royal-storage' ); ?></h2>
 					<?php $this->render_payment_form( $booking_id, $invoice_id ); ?>
 				</div>
+				<?php else : ?>
+				<div class="checkout-empty">
+					<p><?php esc_html_e( 'No booking or invoice found. Please create a booking first.', 'royal-storage' ); ?></p>
+					<p><a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="royal-storage-btn"><?php esc_html_e( 'Return to Home', 'royal-storage' ); ?></a></p>
+				</div>
+				<?php endif; ?>
 			</div>
 		</div>
 		<?php

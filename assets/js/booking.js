@@ -75,8 +75,8 @@ jQuery(document).ready(function($) {
         
         // Update navigation buttons
         $('#prev-step').toggle(currentStep > 1);
-        $('#next-step').toggle(currentStep < 4);
-        $('#submit-booking').toggle(currentStep === 4);
+        $('#next-step').toggle(currentStep < 5);
+        $('#submit-booking').toggle(currentStep === 5);
     }
 
     function validateCurrentStep() {
@@ -88,10 +88,45 @@ jQuery(document).ready(function($) {
             case 3:
                 return validateDates();
             case 4:
+                return validateGuestInformation();
+            case 5:
                 return true;
             default:
                 return false;
         }
+    }
+    
+    function validateGuestInformation() {
+        const isLoggedIn = window.royalStorageBooking.isLoggedIn || false;
+        
+        // If logged in, no guest validation needed
+        if (isLoggedIn) {
+            return true;
+        }
+        
+        // Validate guest fields
+        const guestEmail = $('#guest_email').val();
+        const guestFirstName = $('#guest_first_name').val();
+        const guestLastName = $('#guest_last_name').val();
+        const guestPhone = $('#guest_phone').val();
+        
+        if (!guestEmail || !guestFirstName || !guestLastName || !guestPhone) {
+            showError('Please fill in all required fields (Email, First Name, Last Name, and Phone Number).');
+            return false;
+        }
+        
+        if (!isValidEmail(guestEmail)) {
+            showError('Please enter a valid email address.');
+            return false;
+        }
+        
+        // Trim and check if empty after trim
+        if (!guestEmail.trim() || !guestFirstName.trim() || !guestLastName.trim() || !guestPhone.trim()) {
+            showError('Please fill in all required fields. Empty spaces are not allowed.');
+            return false;
+        }
+        
+        return true;
     }
 
     function validateUnitType() {
@@ -156,6 +191,9 @@ jQuery(document).ready(function($) {
                 handleDateChange();
                 break;
             case 4:
+                // Guest information step - validation handled in validateGuestInformation
+                break;
+            case 5:
                 loadBookingSummary();
                 break;
         }
@@ -285,6 +323,7 @@ jQuery(document).ready(function($) {
     function loadBookingSummary() {
         const selectedUnit = bookingData.selected_unit;
         if (!selectedUnit) {
+            $('#booking-summary').html('<p class="error">Please select a unit first.</p>');
             return;
         }
 
@@ -321,8 +360,36 @@ jQuery(document).ready(function($) {
         const endDate = new Date(bookingData.end_date).toLocaleDateString();
         const days = Math.ceil((new Date(bookingData.end_date) - new Date(bookingData.start_date)) / (1000 * 60 * 60 * 24));
         
+        // Get guest information if not logged in
+        let customerInfo = '';
+        const isLoggedIn = window.royalStorageBooking.isLoggedIn || false;
+        if (!isLoggedIn) {
+            const guestEmail = $('#guest_email').val();
+            const guestFirstName = $('#guest_first_name').val();
+            const guestLastName = $('#guest_last_name').val();
+            const guestPhone = $('#guest_phone').val();
+            customerInfo = `
+                <div class="summary-section">
+                    <h4>Customer Information</h4>
+                    <div class="summary-item">
+                        <span class="summary-label">Name:</span>
+                        <span class="summary-value">${guestFirstName} ${guestLastName}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Email:</span>
+                        <span class="summary-value">${guestEmail}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Phone:</span>
+                        <span class="summary-value">${guestPhone}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
         const html = `
             <h4>Booking Summary</h4>
+            ${customerInfo}
             <div class="summary-item">
                 <span class="summary-label">Unit Type:</span>
                 <span class="summary-value">${selectedUnit.size} Unit</span>
@@ -399,22 +466,44 @@ jQuery(document).ready(function($) {
             showError('Please select an end date.');
             return;
         }
+        
+        // Final validation before submit - this should already be validated in step 4, but double-check
+        const isLoggedIn = window.royalStorageBooking.isLoggedIn || false;
+        if (!isLoggedIn) {
+            if (!validateGuestInformation()) {
+                // If validation fails, go back to step 4
+                currentStep = 4;
+                updateStepVisibility();
+                return;
+            }
+        }
 
         // Show loading state
         $('#submit-booking').prop('disabled', true).text('Processing Booking...');
 
+        // Prepare AJAX data
+        const ajaxData = {
+            action: 'create_booking',
+            nonce: royalStorageBooking.nonce,
+            unit_id: selectedUnit.id,
+            unit_type: bookingData.unit_type,
+            start_date: bookingData.start_date,
+            end_date: bookingData.end_date,
+            period: bookingData.period
+        };
+        
+        // Add guest data if not logged in
+        if (!isLoggedIn) {
+            ajaxData.guest_email = $('#guest_email').val();
+            ajaxData.guest_first_name = $('#guest_first_name').val();
+            ajaxData.guest_last_name = $('#guest_last_name').val();
+            ajaxData.guest_phone = $('#guest_phone').val();
+        }
+
         $.ajax({
             url: royalStorageBooking.ajaxUrl,
             type: 'POST',
-            data: {
-                action: 'create_booking',
-                nonce: royalStorageBooking.nonce,
-                unit_id: selectedUnit.id,
-                unit_type: bookingData.unit_type,
-                start_date: bookingData.start_date,
-                end_date: bookingData.end_date,
-                period: bookingData.period
-            },
+            data: ajaxData,
             success: function(response) {
                 if (response.success) {
                     showSuccess(response.data.message);
@@ -434,15 +523,40 @@ jQuery(document).ready(function($) {
     }
 
     function showError(message) {
+        // Remove existing messages
         $('.error-message, .success-message').remove();
-        $('.royal-storage-booking-form').prepend(`<div class="error-message">${message}</div>`);
+        
+        // Show error message in a visible location
+        const errorHtml = `<div class="error-message" style="background: #dc3545; color: white; padding: 15px; margin-bottom: 20px; border-radius: 4px; font-weight: 500;">${message}</div>`;
+        
+        // Insert at the top of the form or in the current step
+        const currentStepElement = $(`.form-step[data-step="${currentStep}"]`);
+        if (currentStepElement.length) {
+            currentStepElement.prepend(errorHtml);
+        } else {
+            $('.royal-storage-booking-form').prepend(errorHtml);
+        }
+        
+        // Scroll to error
+        $('html, body').animate({
+            scrollTop: $('.error-message').offset().top - 100
+        }, 300);
+        
+        // Remove after 10 seconds
         setTimeout(function() {
-            $('.error-message').fadeOut();
-        }, 5000);
+            $('.error-message').fadeOut(function() {
+                $(this).remove();
+            });
+        }, 10000);
     }
 
     function showSuccess(message) {
         $('.error-message, .success-message').remove();
         $('.royal-storage-booking-form').prepend(`<div class="success-message">${message}</div>`);
+    }
+
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 });

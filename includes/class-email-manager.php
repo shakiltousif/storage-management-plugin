@@ -193,5 +193,95 @@ class EmailManager {
 
 		return 'Unknown';
 	}
+
+	/**
+	 * Send guest account created email
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $password User password.
+	 * @return bool
+	 */
+	public function send_guest_account_created_email( $user_id, $password ) {
+		$user = get_user_by( 'id', $user_id );
+
+		if ( ! $user ) {
+			return false;
+		}
+
+		$subject = __( 'Welcome to Royal Storage - Your Account Details', 'royal-storage' );
+		
+		$message = $this->get_guest_account_email_template( $user, $password );
+
+		return wp_mail( $user->user_email, $subject, $message, $this->get_email_headers() );
+	}
+
+	/**
+	 * Get guest account email template
+	 *
+	 * @param object $user User object.
+	 * @param string $password User password.
+	 * @return string
+	 */
+	private function get_guest_account_email_template( $user, $password ) {
+		$business_name = get_option( 'royal_storage_business_name', 'Royal Storage' );
+		$login_url = wp_login_url();
+		$portal_url = home_url( '/customer-portal-test/' );
+
+		ob_start();
+		?>
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="UTF-8">
+			<style>
+				body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+				.container { max-width: 600px; margin: 0 auto; padding: 20px; }
+				.header { background-color: #0073aa; color: white; padding: 20px; text-align: center; }
+				.content { background-color: #f9f9f9; padding: 20px; }
+				.account-details { background-color: white; padding: 15px; margin: 20px 0; border-left: 4px solid #0073aa; }
+				.button { display: inline-block; padding: 12px 24px; background-color: #0073aa; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+				.footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+			</style>
+		</head>
+		<body>
+			<div class="container">
+				<div class="header">
+					<h1><?php echo esc_html( $business_name ); ?></h1>
+				</div>
+				<div class="content">
+					<h2><?php esc_html_e( 'Welcome! Your Account Has Been Created', 'royal-storage' ); ?></h2>
+					
+					<p><?php esc_html_e( 'Hello', 'royal-storage' ); ?> <?php echo esc_html( $user->first_name ); ?>,</p>
+					
+					<p><?php esc_html_e( 'Thank you for choosing Royal Storage. An account has been created for you to manage your bookings and invoices.', 'royal-storage' ); ?></p>
+					
+					<div class="account-details">
+						<h3><?php esc_html_e( 'Your Account Details', 'royal-storage' ); ?></h3>
+						<p><strong><?php esc_html_e( 'Email:', 'royal-storage' ); ?></strong> <?php echo esc_html( $user->user_email ); ?></p>
+						<p><strong><?php esc_html_e( 'Username:', 'royal-storage' ); ?></strong> <?php echo esc_html( $user->user_login ); ?></p>
+						<p><strong><?php esc_html_e( 'Password:', 'royal-storage' ); ?></strong> <?php echo esc_html( $password ); ?></p>
+					</div>
+					
+					<p><?php esc_html_e( 'Please save these credentials securely. You can change your password after logging in.', 'royal-storage' ); ?></p>
+					
+					<p style="text-align: center;">
+						<a href="<?php echo esc_url( $login_url ); ?>" class="button"><?php esc_html_e( 'Login to Your Account', 'royal-storage' ); ?></a>
+					</p>
+					
+					<p><?php esc_html_e( 'You can also access your customer portal to view bookings, invoices, and manage your storage.', 'royal-storage' ); ?></p>
+					
+					<p style="text-align: center;">
+						<a href="<?php echo esc_url( $portal_url ); ?>" class="button"><?php esc_html_e( 'Visit Customer Portal', 'royal-storage' ); ?></a>
+					</p>
+				</div>
+				<div class="footer">
+					<p><?php esc_html_e( 'This is an automated message from Royal Storage. Please do not reply to this email.', 'royal-storage' ); ?></p>
+				</div>
+			</div>
+		</body>
+		</html>
+		<?php
+		return ob_get_clean();
+	}
 }
 

@@ -49,6 +49,7 @@ class Booking {
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'royal_storage_booking' ),
+				'isLoggedIn' => is_user_logged_in() ? true : false,
 			)
 		);
 	}
@@ -148,7 +149,51 @@ class Booking {
 				</div>
 
 				<div class="form-step" data-step="4">
-					<h3><?php esc_html_e( 'Step 4: Review & Confirm', 'royal-storage' ); ?></h3>
+					<h3><?php esc_html_e( 'Step 4: Customer Information', 'royal-storage' ); ?></h3>
+					
+					<?php if ( ! is_user_logged_in() ) : ?>
+					<div class="guest-information">
+						<p class="info-notice"><?php esc_html_e( 'Please provide your contact information to complete the booking.', 'royal-storage' ); ?></p>
+						
+						<div class="form-group">
+							<label for="guest_email"><?php esc_html_e( 'Email Address', 'royal-storage' ); ?> <span class="required">*</span></label>
+							<input type="email" id="guest_email" name="guest_email" required>
+						</div>
+						
+						<div class="form-row">
+							<div class="form-group">
+								<label for="guest_first_name"><?php esc_html_e( 'First Name', 'royal-storage' ); ?> <span class="required">*</span></label>
+								<input type="text" id="guest_first_name" name="guest_first_name" required>
+							</div>
+							
+							<div class="form-group">
+								<label for="guest_last_name"><?php esc_html_e( 'Last Name', 'royal-storage' ); ?> <span class="required">*</span></label>
+								<input type="text" id="guest_last_name" name="guest_last_name" required>
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label for="guest_phone"><?php esc_html_e( 'Phone Number', 'royal-storage' ); ?> <span class="required">*</span></label>
+							<input type="tel" id="guest_phone" name="guest_phone" required>
+						</div>
+						
+						<div class="form-group checkbox-group">
+							<label>
+								<input type="checkbox" name="create_account" value="1" checked>
+								<?php esc_html_e( 'Create an account to manage bookings and invoices', 'royal-storage' ); ?>
+							</label>
+						</div>
+					</div>
+					<?php else : ?>
+					<div class="logged-in-notice">
+						<p><?php esc_html_e( 'You are logged in as', 'royal-storage' ); ?> <?php echo esc_html( wp_get_current_user()->display_name ); ?></p>
+					</div>
+					<?php endif; ?>
+					
+				</div>
+
+				<div class="form-step" data-step="5">
+					<h3><?php esc_html_e( 'Step 5: Review & Confirm', 'royal-storage' ); ?></h3>
 					<div id="booking-summary" class="booking-summary">
 						<!-- Booking summary will be populated here -->
 					</div>
@@ -291,12 +336,44 @@ class Booking {
 			wp_send_json_error( array( 'message' => __( 'Missing required parameters', 'royal-storage' ) ) );
 		}
 
-		// Check if user is logged in
-		if ( ! is_user_logged_in() ) {
-			wp_send_json_error( array( 'message' => __( 'Please log in to create a booking', 'royal-storage' ) ) );
-		}
+		// Handle guest checkout
+		$customer_id = 0;
+		$is_guest = false;
 
-		$customer_id = get_current_user_id();
+		if ( ! is_user_logged_in() ) {
+			// Check if guest checkout is enabled
+			if ( ! \RoyalStorage\Guest_Booking_Handler::is_guest_checkout_enabled() ) {
+				wp_send_json_error( array( 'message' => __( 'Please log in to create a booking', 'royal-storage' ) ) );
+			}
+
+			// Get guest data
+			$guest_data = \RoyalStorage\Guest_Booking_Handler::get_guest_data_from_request();
+			if ( ! $guest_data ) {
+				wp_send_json_error( array( 'message' => __( 'Guest information is required.', 'royal-storage' ) ) );
+			}
+
+			// Validate guest data
+			$validation = \RoyalStorage\Guest_Booking_Handler::validate_guest_data( $guest_data );
+			if ( $validation !== true ) {
+				wp_send_json_error( array( 'message' => $validation ) );
+			}
+
+			// Create or get customer account
+			$customer_id = \RoyalStorage\Guest_Booking_Handler::create_or_get_guest_customer(
+				$guest_data['email'],
+				$guest_data['first_name'],
+				$guest_data['last_name'],
+				$guest_data['phone']
+			);
+
+			if ( ! $customer_id ) {
+				wp_send_json_error( array( 'message' => __( 'Failed to create customer account.', 'royal-storage' ) ) );
+			}
+
+			$is_guest = true;
+		} else {
+			$customer_id = get_current_user_id();
+		}
 		$base_price = $this->get_unit_base_price( $unit_id, $unit_type );
 		$pricing = $this->calculate_booking_price( $base_price, $start_date, $end_date, $period );
 
@@ -309,16 +386,35 @@ class Booking {
 			$product_id = $wc_integration->create_order( $booking_id, $customer_id, $pricing['total'] );
 			
 			if ( $product_id ) {
+				// Verify cart has items
+				if ( function_exists( 'WC' ) && WC()->cart && ! WC()->cart->is_empty() ) {
+					// Store booking ID in URL for checkout page
+					$checkout_url = add_query_arg( 'booking_id', $booking_id, wc_get_checkout_url() );
+					
+					wp_send_json_success( array( 
+						'message' => __( 'Booking created successfully. Redirecting to checkout...', 'royal-storage' ),
+						'booking_id' => $booking_id,
+						'redirect_url' => $checkout_url,
+						'cart_count' => WC()->cart->get_cart_contents_count()
+					) );
+				} else {
+					// Fallback if cart is empty - redirect to custom checkout or portal
+					$checkout_url = add_query_arg( 'booking_id', $booking_id, home_url( '/checkout/' ) );
+					
+					wp_send_json_success( array( 
+						'message' => __( 'Booking created successfully. Redirecting to checkout...', 'royal-storage' ),
+						'booking_id' => $booking_id,
+						'redirect_url' => $checkout_url
+					) );
+				}
+			} else {
+				// If WooCommerce cart failed, redirect to custom checkout page
+				$checkout_url = add_query_arg( 'booking_id', $booking_id, home_url( '/checkout/' ) );
+				
 				wp_send_json_success( array( 
 					'message' => __( 'Booking created successfully. Redirecting to checkout...', 'royal-storage' ),
 					'booking_id' => $booking_id,
-					'redirect_url' => wc_get_checkout_url()
-				) );
-			} else {
-				wp_send_json_success( array( 
-					'message' => __( 'Booking created successfully', 'royal-storage' ),
-					'booking_id' => $booking_id,
-					'redirect_url' => home_url( '/customer-portal-test/?tab=bookings' )
+					'redirect_url' => $checkout_url
 				) );
 			}
 		} else {

@@ -270,6 +270,59 @@
 	background: #005a87;
 }
 
+/* Guest Information Fields */
+.guest-information {
+	background: #f9f9f9;
+	padding: 20px;
+	border-radius: 8px;
+	margin-bottom: 20px;
+}
+
+.guest-information .info-notice {
+	color: #666;
+	font-size: 14px;
+	margin-bottom: 15px;
+	padding: 10px;
+	background: #e7f3ff;
+	border-left: 4px solid #0073aa;
+	border-radius: 4px;
+}
+
+.guest-information .form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 15px;
+}
+
+.guest-information .required {
+	color: #dc3545;
+	font-weight: 600;
+}
+
+.guest-information .checkbox-group {
+	padding: 10px 0;
+}
+
+.guest-information .checkbox-group input[type="checkbox"] {
+	width: auto;
+	margin-right: 8px;
+}
+
+.logged-in-notice {
+	background: #e7f3ff;
+	padding: 15px;
+	border-radius: 4px;
+	color: #333;
+	margin-bottom: 20px;
+}
+
+.form-step .booking-summary {
+	background: #f9f9f9;
+	padding: 20px;
+	border-radius: 8px;
+	margin-top: 20px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
 	.royal-storage-booking {
@@ -295,6 +348,10 @@
 		display: block;
 		margin-left: 0;
 		margin-bottom: 8px;
+	}
+
+	.guest-information .form-row {
+		grid-template-columns: 1fr;
 	}
 }
 

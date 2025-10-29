@@ -163,6 +163,19 @@ class Activator {
 		if ( ! get_option( 'royal_storage_monthly_rate' ) ) {
 			update_option( 'royal_storage_monthly_rate', 2000 );
 		}
+
+		// Guest checkout settings
+		if ( ! get_option( 'royal_storage_guest_checkout' ) ) {
+			update_option( 'royal_storage_guest_checkout', 'yes' );
+		}
+
+		if ( ! get_option( 'royal_storage_auto_create_account' ) ) {
+			update_option( 'royal_storage_auto_create_account', 'yes' );
+		}
+
+		if ( ! get_option( 'royal_storage_send_account_credentials' ) ) {
+			update_option( 'royal_storage_send_account_credentials', 'yes' );
+		}
 	}
 }
 

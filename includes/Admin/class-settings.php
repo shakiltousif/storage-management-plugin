@@ -50,6 +50,11 @@ class Settings {
 		// Payment settings.
 		register_setting( 'royal_storage_payment', 'royal_storage_bank_plugin_key' );
 		register_setting( 'royal_storage_payment', 'royal_storage_bank_plugin_secret' );
+
+		// Guest checkout settings.
+		register_setting( 'royal_storage_guest', 'royal_storage_guest_checkout', array( 'default' => 'yes' ) );
+		register_setting( 'royal_storage_guest', 'royal_storage_auto_create_account', array( 'default' => 'yes' ) );
+		register_setting( 'royal_storage_guest', 'royal_storage_send_account_credentials', array( 'default' => 'yes' ) );
 	}
 
 	/**
