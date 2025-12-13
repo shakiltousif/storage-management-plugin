@@ -17,33 +17,14 @@
 	 * Initialize portal
 	 */
 	function initPortal() {
-		// Handle tab navigation
-		$('.portal-nav a').on('click', function(e) {
-			e.preventDefault();
-			var tab = $(this).data('tab');
-			switchTab(tab);
-		});
-
-		// Set active tab from URL
+		// Tab navigation is now handled server-side via proper href links
+		// Just ensure active tab styling is correct on page load
 		var urlParams = new URLSearchParams(window.location.search);
 		var activeTab = urlParams.get('tab') || 'dashboard';
-		switchTab(activeTab);
-	}
-
-	/**
-	 * Switch tab
-	 */
-	function switchTab(tab) {
-		// Update URL
-		window.history.pushState({}, '', '?tab=' + tab);
-
-		// Update nav
+		
+		// Update nav to reflect current tab (in case JS runs before page fully loads)
 		$('.portal-nav a').removeClass('active');
-		$('.portal-nav a[data-tab="' + tab + '"]').addClass('active');
-
-		// Update content
-		$('.portal-content > div').hide();
-		$('.portal-' + tab).show();
+		$('.portal-nav a[data-tab="' + activeTab + '"]').addClass('active');
 	}
 
 	/**

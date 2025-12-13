@@ -52,10 +52,14 @@ class Checkout {
 		// Enqueue checkout assets
 		wp_enqueue_script( 'royal-storage-checkout', ROYAL_STORAGE_URL . 'assets/js/checkout.js', array( 'jquery' ), ROYAL_STORAGE_VERSION, true );
 		
+		// Get portal page URL
+		$portal_page_id = get_option( 'royal_storage_portal_page_id' );
+		$portal_url = $portal_page_id ? get_permalink( $portal_page_id ) : home_url( '/customer-portal/' );
+
 		// Localize script for AJAX
 		wp_localize_script( 'royal-storage-checkout', 'royalStorageCheckout', array(
 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'portalUrl' => home_url( '/customer-portal-test/' ),
+			'portalUrl' => $portal_url,
 			'nonce' => wp_create_nonce( 'royal_storage_payment' )
 		) );
 	}

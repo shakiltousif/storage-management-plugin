@@ -60,6 +60,11 @@ class Plugin {
 		// Load custom post types.
 		new PostTypes();
 
+		// Load WooCommerce integration (must be loaded early for hooks to work)
+		if ( class_exists( 'WooCommerce' ) ) {
+			new WooCommerceIntegration();
+		}
+
 		// Load admin class.
 		if ( is_admin() ) {
 			new Admin\Admin();

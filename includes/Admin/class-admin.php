@@ -1172,6 +1172,12 @@ class Admin {
 	 * @return void
 	 */
 	public function render_settings_page() {
+		// Handle page recreation
+		if ( isset( $_GET['recreate_pages'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'recreate_pages' ) ) {
+			\RoyalStorage\Activator::create_pages();
+			echo '<div class="notice notice-success"><p>' . esc_html__( 'Pages recreated successfully!', 'royal-storage' ) . '</p></div>';
+		}
+
 		// Handle form submission
 		if ( isset( $_POST['submit'] ) && wp_verify_nonce( $_POST['royal_storage_settings_nonce'], 'royal_storage_settings' ) ) {
 			$this->save_settings();
@@ -1187,8 +1193,10 @@ class Admin {
 				<?php wp_nonce_field( 'royal_storage_settings', 'royal_storage_settings_nonce' ); ?>
 
 				<div class="royal-storage-settings-container">
+					<?php $this->render_page_settings(); ?>
 					<?php $this->render_business_settings( $settings ); ?>
 					<?php $this->render_pricing_settings( $settings ); ?>
+					<?php $this->render_guest_checkout_settings( $settings ); ?>
 					<?php $this->render_email_settings( $settings ); ?>
 					<?php $this->render_payment_settings( $settings ); ?>
 					<?php $this->render_notification_settings( $settings ); ?>
@@ -1238,6 +1246,11 @@ class Admin {
 		$settings->update_setting( 'royal_storage_notify_expiry_days', intval( $_POST['royal_storage_notify_expiry_days'] ?? 7 ) );
 		$settings->update_setting( 'royal_storage_notify_overdue', sanitize_text_field( $_POST['royal_storage_notify_overdue'] ?? 'yes' ) );
 		$settings->update_setting( 'royal_storage_notify_new_booking', sanitize_text_field( $_POST['royal_storage_notify_new_booking'] ?? 'yes' ) );
+
+		// Guest checkout settings
+		$settings->update_setting( 'royal_storage_guest_checkout', sanitize_text_field( $_POST['royal_storage_guest_checkout'] ?? 'yes' ) );
+		$settings->update_setting( 'royal_storage_auto_create_account', sanitize_text_field( $_POST['royal_storage_auto_create_account'] ?? 'yes' ) );
+		$settings->update_setting( 'royal_storage_send_account_credentials', sanitize_text_field( $_POST['royal_storage_send_account_credentials'] ?? 'yes' ) );
 
 		// Advanced settings
 		$settings->update_setting( 'royal_storage_auto_cleanup_days', intval( $_POST['royal_storage_auto_cleanup_days'] ?? 90 ) );
@@ -1296,6 +1309,61 @@ class Admin {
 					<td>
 						<textarea id="royal_storage_business_address" name="royal_storage_business_address" 
 								  rows="3" cols="50" class="large-text"><?php echo esc_textarea( $settings->get_setting( 'royal_storage_business_address' ) ); ?></textarea>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render guest checkout settings section
+	 *
+	 * @param Settings $settings Settings instance.
+	 * @return void
+	 */
+	private function render_guest_checkout_settings( $settings ) {
+		?>
+		<div class="royal-storage-settings-section">
+			<h2><?php esc_html_e( 'Guest Checkout Settings', 'royal-storage' ); ?></h2>
+			<table class="form-table">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Enable Guest Checkout', 'royal-storage' ); ?></th>
+					<td>
+						<fieldset>
+							<label>
+								<input type="checkbox" name="royal_storage_guest_checkout" value="yes" 
+									   <?php checked( $settings->get_setting( 'royal_storage_guest_checkout', 'yes' ), 'yes' ); ?> />
+								<?php esc_html_e( 'Allow customers to book without creating an account first', 'royal-storage' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When enabled, customers can complete bookings without logging in. An account will be automatically created for them.', 'royal-storage' ); ?></p>
+						</fieldset>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Auto Create Account', 'royal-storage' ); ?></th>
+					<td>
+						<fieldset>
+							<label>
+								<input type="checkbox" name="royal_storage_auto_create_account" value="yes" 
+									   <?php checked( $settings->get_setting( 'royal_storage_auto_create_account', 'yes' ), 'yes' ); ?> />
+								<?php esc_html_e( 'Automatically create WordPress account for guest customers', 'royal-storage' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'If enabled, a WordPress user account will be automatically created when a guest makes a booking. This allows them to access their booking history later.', 'royal-storage' ); ?></p>
+						</fieldset>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Send Account Credentials', 'royal-storage' ); ?></th>
+					<td>
+						<fieldset>
+							<label>
+								<input type="checkbox" name="royal_storage_send_account_credentials" value="yes" 
+									   <?php checked( $settings->get_setting( 'royal_storage_send_account_credentials', 'yes' ), 'yes' ); ?> />
+								<?php esc_html_e( 'Email account login credentials to new guest customers', 'royal-storage' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When enabled, new guest customers will receive an email with their username and password after account creation.', 'royal-storage' ); ?></p>
+						</fieldset>
 					</td>
 				</tr>
 			</table>
@@ -1527,6 +1595,88 @@ class Admin {
 					</td>
 				</tr>
 			</table>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render page settings section
+	 *
+	 * @return void
+	 */
+	private function render_page_settings() {
+		$pages = array(
+			'booking' => array(
+				'option' => 'royal_storage_booking_page_id',
+				'title'  => __( 'Booking Page', 'royal-storage' ),
+				'slug'   => 'book-storage',
+				'shortcode' => '[royal_storage_booking]',
+			),
+			'portal' => array(
+				'option' => 'royal_storage_portal_page_id',
+				'title'  => __( 'Customer Portal Page', 'royal-storage' ),
+				'slug'   => 'customer-portal',
+				'shortcode' => '[royal_storage_portal]',
+			),
+			'login' => array(
+				'option' => 'royal_storage_login_page_id',
+				'title'  => __( 'Login Page', 'royal-storage' ),
+				'slug'   => 'storage-login',
+				'shortcode' => '[royal_storage_login]',
+			),
+			'checkout' => array(
+				'option' => 'royal_storage_checkout_page_id',
+				'title'  => __( 'Checkout Page', 'royal-storage' ),
+				'slug'   => 'checkout',
+				'shortcode' => '[royal_storage_checkout]',
+			),
+		);
+		?>
+		<div class="royal-storage-settings-section">
+			<h2><?php esc_html_e( 'Page Management', 'royal-storage' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'These pages are automatically created when the plugin is activated. You can recreate them if needed.', 'royal-storage' ); ?></p>
+			
+			<table class="form-table">
+				<?php foreach ( $pages as $key => $page ) : 
+					$page_id = get_option( $page['option'] );
+					$page_obj = $page_id ? get_post( $page_id ) : null;
+					$page_url = $page_obj ? get_permalink( $page_obj->ID ) : '';
+					$edit_url = $page_obj ? admin_url( 'post.php?post=' . $page_obj->ID . '&action=edit' ) : '';
+				?>
+				<tr>
+					<th scope="row"><?php echo esc_html( $page['title'] ); ?></th>
+					<td>
+						<?php if ( $page_obj && 'trash' !== $page_obj->post_status ) : ?>
+							<p>
+								<strong><?php echo esc_html( $page_obj->post_title ); ?></strong><br>
+								<code><?php echo esc_html( $page['shortcode'] ); ?></code><br>
+								<?php if ( $page_url ) : ?>
+									<a href="<?php echo esc_url( $page_url ); ?>" target="_blank" class="button button-small">
+										<?php esc_html_e( 'View Page', 'royal-storage' ); ?>
+									</a>
+								<?php endif; ?>
+								<?php if ( $edit_url ) : ?>
+									<a href="<?php echo esc_url( $edit_url ); ?>" class="button button-small">
+										<?php esc_html_e( 'Edit Page', 'royal-storage' ); ?>
+									</a>
+								<?php endif; ?>
+							</p>
+						<?php else : ?>
+							<p class="description" style="color: #d63638;">
+								<?php esc_html_e( 'Page not found. Click "Recreate Pages" below to create it.', 'royal-storage' ); ?>
+							</p>
+						<?php endif; ?>
+					</td>
+				</tr>
+				<?php endforeach; ?>
+			</table>
+			
+			<p>
+				<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'recreate_pages', '1' ), 'recreate_pages' ) ); ?>" class="button button-secondary">
+					<?php esc_html_e( 'Recreate Pages', 'royal-storage' ); ?>
+				</a>
+				<span class="description"><?php esc_html_e( 'This will recreate all plugin pages if they are missing or deleted.', 'royal-storage' ); ?></span>
+			</p>
 		</div>
 		<?php
 	}

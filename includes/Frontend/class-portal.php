@@ -104,8 +104,8 @@ class Portal {
 			$tab = 'dashboard';
 		}
 
-		// Get the current page URL for tab links
-		$base_url = 'http://localhost/wp_class/customer-portal-test/';
+		// Get the current page URL for tab links (without query parameters)
+		$base_url = remove_query_arg( 'tab', get_permalink() );
 
 		ob_start();
 		?>
@@ -121,16 +121,16 @@ class Portal {
 			</div>
 
 			<div class="portal-nav">
-				<a href="javascript:void(0)" data-tab="dashboard" class="nav-item <?php echo 'dashboard' === $tab ? 'active' : ''; ?>">
+				<a href="<?php echo esc_url( add_query_arg( 'tab', 'dashboard', $base_url ) ); ?>" data-tab="dashboard" class="nav-item <?php echo 'dashboard' === $tab ? 'active' : ''; ?>">
 					<?php esc_html_e( 'Dashboard', 'royal-storage' ); ?>
 				</a>
-				<a href="javascript:void(0)" data-tab="bookings" class="nav-item <?php echo 'bookings' === $tab ? 'active' : ''; ?>">
+				<a href="<?php echo esc_url( add_query_arg( 'tab', 'bookings', $base_url ) ); ?>" data-tab="bookings" class="nav-item <?php echo 'bookings' === $tab ? 'active' : ''; ?>">
 					<?php esc_html_e( 'My Bookings', 'royal-storage' ); ?>
 				</a>
-				<a href="javascript:void(0)" data-tab="invoices" class="nav-item <?php echo 'invoices' === $tab ? 'active' : ''; ?>">
+				<a href="<?php echo esc_url( add_query_arg( 'tab', 'invoices', $base_url ) ); ?>" data-tab="invoices" class="nav-item <?php echo 'invoices' === $tab ? 'active' : ''; ?>">
 					<?php esc_html_e( 'Invoices', 'royal-storage' ); ?>
 				</a>
-				<a href="javascript:void(0)" data-tab="account" class="nav-item <?php echo 'account' === $tab ? 'active' : ''; ?>">
+				<a href="<?php echo esc_url( add_query_arg( 'tab', 'account', $base_url ) ); ?>" data-tab="account" class="nav-item <?php echo 'account' === $tab ? 'active' : ''; ?>">
 					<?php esc_html_e( 'Account', 'royal-storage' ); ?>
 				</a>
 			</div>
@@ -153,26 +153,6 @@ class Portal {
 				?>
 			</div>
 		</div>
-
-		<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			const tabLinks = document.querySelectorAll('.portal-nav .nav-item');
-			
-			tabLinks.forEach(function(link) {
-				link.addEventListener('click', function(e) {
-					e.preventDefault();
-					const tab = this.getAttribute('data-tab');
-					
-					// Update active tab
-					tabLinks.forEach(function(l) { l.classList.remove('active'); });
-					this.classList.add('active');
-					
-					// Navigate to the tab
-					window.location.href = '<?php echo esc_url( $base_url ); ?>?tab=' + tab;
-				});
-			});
-		});
-		</script>
 		<?php
 		return ob_get_clean();
 	}
@@ -192,7 +172,7 @@ class Portal {
 		$stats->unpaid_amount = $this->get_customer_unpaid_amount( $current_user->ID );
 
 		// Get the current page URL for tab links
-		$base_url = 'http://localhost/wp_class/customer-portal-test/';
+		$base_url = get_permalink();
 
 		include ROYAL_STORAGE_DIR . 'templates/frontend/portal-dashboard.php';
 	}

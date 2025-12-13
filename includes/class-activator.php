@@ -25,6 +25,9 @@ class Activator {
 		// Set default options.
 		self::set_default_options();
 
+		// Create required pages with shortcodes.
+		self::create_pages();
+
 		// Flush rewrite rules.
 		flush_rewrite_rules();
 
@@ -175,6 +178,76 @@ class Activator {
 
 		if ( ! get_option( 'royal_storage_send_account_credentials' ) ) {
 			update_option( 'royal_storage_send_account_credentials', 'yes' );
+		}
+	}
+
+	/**
+	 * Create required pages with shortcodes
+	 *
+	 * @return void
+	 */
+	public static function create_pages() {
+		$pages = array(
+			'booking' => array(
+				'title'   => __( 'Book Storage', 'royal-storage' ),
+				'slug'    => 'book-storage',
+				'content' => '<!-- wp:shortcode -->[royal_storage_booking]<!-- /wp:shortcode -->',
+			),
+			'portal' => array(
+				'title'   => __( 'Customer Portal', 'royal-storage' ),
+				'slug'    => 'customer-portal',
+				'content' => '<!-- wp:shortcode -->[royal_storage_portal]<!-- /wp:shortcode -->',
+			),
+			'login' => array(
+				'title'   => __( 'Login', 'royal-storage' ),
+				'slug'    => 'storage-login',
+				'content' => '<!-- wp:shortcode -->[royal_storage_login]<!-- /wp:shortcode -->',
+			),
+			'checkout' => array(
+				'title'   => __( 'Checkout', 'royal-storage' ),
+				'slug'    => 'checkout',
+				'content' => '<!-- wp:shortcode -->[royal_storage_checkout]<!-- /wp:shortcode -->',
+			),
+		);
+
+		foreach ( $pages as $key => $page ) {
+			$option_name = 'royal_storage_' . $key . '_page_id';
+			$page_id = get_option( $option_name );
+
+			// Check if page already exists
+			if ( $page_id ) {
+				$existing_page = get_post( $page_id );
+				if ( $existing_page && 'page' === $existing_page->post_type && 'trash' !== $existing_page->post_status ) {
+					continue; // Page already exists and is valid
+				}
+			}
+
+			// Check if page with same slug exists
+			$existing_page = get_page_by_path( $page['slug'] );
+			if ( $existing_page && 'trash' !== $existing_page->post_status ) {
+				update_option( $option_name, $existing_page->ID );
+				continue;
+			}
+
+			// Create new page
+			$page_data = array(
+				'post_title'    => $page['title'],
+				'post_name'     => $page['slug'],
+				'post_content'  => $page['content'],
+				'post_status'   => 'publish',
+				'post_type'     => 'page',
+				'post_author'   => 1,
+				'comment_status' => 'closed',
+			);
+
+			$page_id = wp_insert_post( $page_data );
+
+			if ( $page_id && ! is_wp_error( $page_id ) ) {
+				update_option( $option_name, $page_id );
+				error_log( sprintf( 'Royal Storage: Created %s page with ID %d', $key, $page_id ) );
+			} else {
+				error_log( sprintf( 'Royal Storage: Failed to create %s page', $key ) );
+			}
 		}
 	}
 }
