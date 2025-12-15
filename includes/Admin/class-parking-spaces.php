@@ -17,7 +17,10 @@ class ParkingSpaces {
 	 * Constructor
 	 */
 	public function __construct() {
-		// Add any initialization code here
+		// Register AJAX handlers
+		add_action( 'wp_ajax_royal_storage_save_parking_space', array( $this, 'ajax_save_parking_space' ) );
+		add_action( 'wp_ajax_royal_storage_delete_parking_space', array( $this, 'ajax_delete_parking_space' ) );
+		add_action( 'wp_ajax_royal_storage_get_parking_space', array( $this, 'ajax_get_parking_space' ) );
 	}
 
 	/**
@@ -66,8 +69,8 @@ class ParkingSpaces {
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'Space ID', 'royal-storage' ); ?></th>
-								<th><?php esc_html_e( 'Type', 'royal-storage' ); ?></th>
-								<th><?php esc_html_e( 'Location', 'royal-storage' ); ?></th>
+								<th><?php esc_html_e( 'Spot Number', 'royal-storage' ); ?></th>
+								<th><?php esc_html_e( 'Height Limit', 'royal-storage' ); ?></th>
 								<th><?php esc_html_e( 'Price', 'royal-storage' ); ?></th>
 								<th><?php esc_html_e( 'Status', 'royal-storage' ); ?></th>
 								<th><?php esc_html_e( 'Actions', 'royal-storage' ); ?></th>
@@ -84,9 +87,9 @@ class ParkingSpaces {
 								<?php foreach ( $parking_spaces as $space ) : ?>
 									<tr>
 										<td><?php echo esc_html( $space['id'] ); ?></td>
-										<td><?php echo esc_html( $space['type'] ); ?></td>
-										<td><?php echo esc_html( $space['location'] ); ?></td>
-										<td><?php echo esc_html( number_format( $space['price'], 2 ) ); ?> RSD</td>
+										<td><?php echo esc_html( $space['spot_number'] ); ?></td>
+										<td><?php echo esc_html( $space['height_limit'] ? $space['height_limit'] : 'N/A' ); ?></td>
+										<td><?php echo esc_html( number_format( $space['base_price'], 2 ) ); ?> RSD</td>
 										<td>
 											<span class="status status-<?php echo esc_attr( $space['status'] ); ?>">
 												<?php echo esc_html( ucfirst( $space['status'] ) ); ?>
@@ -121,24 +124,20 @@ class ParkingSpaces {
 					<input type="hidden" id="space-id" name="space_id" value="">
 					
 					<div class="royal-storage-form-group">
-						<label for="space-type"><?php esc_html_e( 'Type', 'royal-storage' ); ?> *</label>
-						<select id="space-type" name="type" required>
-							<option value="covered"><?php esc_html_e( 'Covered', 'royal-storage' ); ?></option>
-							<option value="uncovered"><?php esc_html_e( 'Uncovered', 'royal-storage' ); ?></option>
-							<option value="garage"><?php esc_html_e( 'Garage', 'royal-storage' ); ?></option>
-						</select>
+						<label for="space-spot-number"><?php esc_html_e( 'Spot Number', 'royal-storage' ); ?> *</label>
+						<input type="number" id="space-spot-number" name="spot_number" min="1" required>
 					</div>
-					
+
 					<div class="royal-storage-form-group">
-						<label for="space-location"><?php esc_html_e( 'Location', 'royal-storage' ); ?> *</label>
-						<input type="text" id="space-location" name="location" placeholder="e.g., Level 1, Section A" required>
+						<label for="space-height-limit"><?php esc_html_e( 'Height Limit', 'royal-storage' ); ?></label>
+						<input type="text" id="space-height-limit" name="height_limit" placeholder="e.g., 2.5m">
 					</div>
-					
+
 					<div class="royal-storage-form-group">
 						<label for="space-price"><?php esc_html_e( 'Price (RSD)', 'royal-storage' ); ?> *</label>
 						<input type="number" id="space-price" name="price" step="0.01" min="0" required>
 					</div>
-					
+
 					<div class="royal-storage-form-group">
 						<label for="space-description"><?php esc_html_e( 'Description', 'royal-storage' ); ?></label>
 						<textarea id="space-description" name="description" rows="3"></textarea>
@@ -316,10 +315,33 @@ class ParkingSpaces {
 			// Edit space
 			$('.edit-space').on('click', function() {
 				var spaceId = $(this).data('space-id');
-				// Load space data and populate form
-				$('#modal-title').text('Edit Parking Space');
-				$('#space-id').val(spaceId);
-				$('#parking-space-modal').addClass('show');
+
+				// Load space data via AJAX
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'royal_storage_get_parking_space',
+						space_id: spaceId
+					},
+					success: function(response) {
+						if (response.success) {
+							var space = response.data;
+							$('#modal-title').text('Edit Parking Space');
+							$('#space-id').val(space.id);
+							$('#space-spot-number').val(space.spot_number);
+							$('#space-height-limit').val(space.height_limit || '');
+							$('#space-price').val(space.base_price);
+							$('#space-description').val(space.description || '');
+							$('#parking-space-modal').addClass('show');
+						} else {
+							alert('Error loading space data: ' + response.data.message);
+						}
+					},
+					error: function() {
+						alert('An error occurred while loading space data.');
+					}
+				});
 			});
 			
 			// Close modal
@@ -395,34 +417,12 @@ class ParkingSpaces {
 	 * @return array
 	 */
 	private function get_parking_spaces() {
-		// This would typically come from the database
-		// For now, return sample data
-		return array(
-			array(
-				'id' => 1,
-				'type' => 'Covered',
-				'location' => 'Level 1, Section A',
-				'price' => 5000,
-				'status' => 'available',
-				'description' => 'Covered parking space'
-			),
-			array(
-				'id' => 2,
-				'type' => 'Uncovered',
-				'location' => 'Level 2, Section B',
-				'price' => 3000,
-				'status' => 'occupied',
-				'description' => 'Uncovered parking space'
-			),
-			array(
-				'id' => 3,
-				'type' => 'Garage',
-				'location' => 'Level 3, Section C',
-				'price' => 8000,
-				'status' => 'available',
-				'description' => 'Private garage space'
-			)
-		);
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_parking_spaces';
+
+		$results = $wpdb->get_results( "SELECT * FROM $table_name ORDER BY id DESC", ARRAY_A );
+
+		return $results ? $results : array();
 	}
 
 	/**
@@ -435,5 +435,179 @@ class ParkingSpaces {
 		if ( isset( $_POST['add_sample_data'] ) ) {
 			// Add sample data logic
 		}
+	}
+
+	/**
+	 * AJAX handler for saving parking space
+	 *
+	 * @return void
+	 */
+	public function ajax_save_parking_space() {
+		// Verify nonce
+		if ( ! isset( $_POST['parking_space_nonce'] ) || ! wp_verify_nonce( $_POST['parking_space_nonce'], 'royal_storage_parking_space_form' ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid nonce' ) );
+		}
+
+		// Validate required fields
+		if ( empty( $_POST['spot_number'] ) || empty( $_POST['price'] ) ) {
+			wp_send_json_error( array( 'message' => 'All required fields must be filled' ) );
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_parking_spaces';
+
+		// Check if we're updating or creating
+		if ( ! empty( $_POST['space_id'] ) ) {
+			// Update existing space
+			$space_id = intval( $_POST['space_id'] );
+
+			// Get the space to find post_id
+			$space = $wpdb->get_row( $wpdb->prepare( "SELECT post_id FROM $table_name WHERE id = %d", $space_id ) );
+
+			// Update post content if post_id exists
+			if ( $space && ! empty( $space->post_id ) ) {
+				wp_update_post( array(
+					'ID' => $space->post_id,
+					'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : ''
+				) );
+			}
+
+			$space_data = array(
+				'spot_number' => intval( $_POST['spot_number'] ),
+				'height_limit' => isset( $_POST['height_limit'] ) ? sanitize_text_field( $_POST['height_limit'] ) : null,
+				'base_price' => floatval( $_POST['price'] ),
+				'status' => 'available'
+			);
+
+			$result = $wpdb->update(
+				$table_name,
+				$space_data,
+				array( 'id' => $space_id ),
+				array( '%d', '%s', '%f', '%s' ),
+				array( '%d' )
+			);
+
+			if ( $result !== false ) {
+				wp_send_json_success( array( 'message' => 'Space updated successfully', 'space_id' => $space_id ) );
+			} else {
+				wp_send_json_error( array( 'message' => 'Failed to update space' ) );
+			}
+		} else {
+			// Check if spot number already exists
+			$existing = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table_name WHERE spot_number = %d", intval( $_POST['spot_number'] ) ) );
+
+			if ( $existing ) {
+				wp_send_json_error( array( 'message' => 'Spot number already exists' ) );
+			}
+
+			// Create new space - need to create a post first
+			$post_data = array(
+				'post_title'   => 'Parking Space #' . intval( $_POST['spot_number'] ),
+				'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : '',
+				'post_status'  => 'publish',
+				'post_type'    => 'parking_space'
+			);
+
+			$post_id = wp_insert_post( $post_data );
+
+			if ( is_wp_error( $post_id ) ) {
+				wp_send_json_error( array( 'message' => 'Failed to create post' ) );
+			}
+
+			$space_data = array(
+				'post_id' => $post_id,
+				'spot_number' => intval( $_POST['spot_number'] ),
+				'height_limit' => isset( $_POST['height_limit'] ) ? sanitize_text_field( $_POST['height_limit'] ) : null,
+				'base_price' => floatval( $_POST['price'] ),
+				'status' => 'available'
+			);
+
+			$result = $wpdb->insert(
+				$table_name,
+				$space_data,
+				array( '%d', '%d', '%s', '%f', '%s' )
+			);
+
+			if ( $result ) {
+				wp_send_json_success( array( 'message' => 'Space created successfully', 'space_id' => $wpdb->insert_id ) );
+			} else {
+				// Delete the post if space creation failed
+				wp_delete_post( $post_id, true );
+				wp_send_json_error( array( 'message' => 'Failed to create space: ' . $wpdb->last_error ) );
+			}
+		}
+	}
+
+	/**
+	 * AJAX handler for deleting parking space
+	 *
+	 * @return void
+	 */
+	public function ajax_delete_parking_space() {
+		// Verify nonce
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'royal_storage_delete_space' ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid nonce' ) );
+		}
+
+		// Validate space ID
+		if ( empty( $_POST['space_id'] ) ) {
+			wp_send_json_error( array( 'message' => 'Space ID is required' ) );
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_parking_spaces';
+		$space_id = intval( $_POST['space_id'] );
+
+		// Check if space is occupied
+		$space = $wpdb->get_row( $wpdb->prepare( "SELECT status FROM $table_name WHERE id = %d", $space_id ) );
+
+		if ( ! $space ) {
+			wp_send_json_error( array( 'message' => 'Space not found' ) );
+		}
+
+		if ( $space->status === 'occupied' ) {
+			wp_send_json_error( array( 'message' => 'Cannot delete an occupied space' ) );
+		}
+
+		// Delete the space
+		$result = $wpdb->delete( $table_name, array( 'id' => $space_id ), array( '%d' ) );
+
+		if ( $result ) {
+			wp_send_json_success( array( 'message' => 'Space deleted successfully' ) );
+		} else {
+			wp_send_json_error( array( 'message' => 'Failed to delete space' ) );
+		}
+	}
+
+	/**
+	 * AJAX handler for getting parking space data
+	 *
+	 * @return void
+	 */
+	public function ajax_get_parking_space() {
+		// Validate space ID
+		if ( empty( $_POST['space_id'] ) ) {
+			wp_send_json_error( array( 'message' => 'Space ID is required' ) );
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_parking_spaces';
+		$space_id = intval( $_POST['space_id'] );
+
+		$space = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $space_id ), ARRAY_A );
+
+		if ( ! $space ) {
+			wp_send_json_error( array( 'message' => 'Space not found' ) );
+		}
+
+		// Get description from post content if post_id exists
+		if ( ! empty( $space['post_id'] ) ) {
+			$post = get_post( $space['post_id'] );
+			if ( $post ) {
+				$space['description'] = $post->post_content;
+			}
+		}
+
+		wp_send_json_success( $space );
 	}
 }

@@ -17,7 +17,10 @@ class StorageUnits {
 	 * Constructor
 	 */
 	public function __construct() {
-		// Add any initialization code here
+		// Register AJAX handlers
+		add_action( 'wp_ajax_royal_storage_save_storage_unit', array( $this, 'ajax_save_storage_unit' ) );
+		add_action( 'wp_ajax_royal_storage_delete_storage_unit', array( $this, 'ajax_delete_storage_unit' ) );
+		add_action( 'wp_ajax_royal_storage_get_storage_unit', array( $this, 'ajax_get_storage_unit' ) );
 	}
 
 	/**
@@ -84,9 +87,9 @@ class StorageUnits {
 								<?php foreach ( $storage_units as $unit ) : ?>
 									<tr>
 										<td><?php echo esc_html( $unit['id'] ); ?></td>
-										<td><?php echo esc_html( $unit['size'] ); ?></td>
+										<td><?php echo esc_html( strtoupper( $unit['size'] ) ); ?></td>
 										<td><?php echo esc_html( $unit['dimensions'] ); ?></td>
-										<td><?php echo esc_html( number_format( $unit['price'], 2 ) ); ?> RSD</td>
+										<td><?php echo esc_html( number_format( $unit['base_price'], 2 ) ); ?> RSD</td>
 										<td>
 											<span class="status status-<?php echo esc_attr( $unit['status'] ); ?>">
 												<?php echo esc_html( ucfirst( $unit['status'] ) ); ?>
@@ -317,10 +320,33 @@ class StorageUnits {
 			// Edit unit
 			$('.edit-unit').on('click', function() {
 				var unitId = $(this).data('unit-id');
-				// Load unit data and populate form
-				$('#modal-title').text('Edit Storage Unit');
-				$('#unit-id').val(unitId);
-				$('#storage-unit-modal').addClass('show');
+
+				// Load unit data via AJAX
+				$.ajax({
+					url: ajaxurl,
+					type: 'POST',
+					data: {
+						action: 'royal_storage_get_storage_unit',
+						unit_id: unitId
+					},
+					success: function(response) {
+						if (response.success) {
+							var unit = response.data;
+							$('#modal-title').text('Edit Storage Unit');
+							$('#unit-id').val(unit.id);
+							$('#unit-size').val(unit.size);
+							$('#unit-dimensions').val(unit.dimensions);
+							$('#unit-price').val(unit.base_price);
+							$('#unit-description').val(unit.description || '');
+							$('#storage-unit-modal').addClass('show');
+						} else {
+							alert('Error loading unit data: ' + response.data.message);
+						}
+					},
+					error: function() {
+						alert('An error occurred while loading unit data.');
+					}
+				});
 			});
 			
 			// Close modal
@@ -396,34 +422,12 @@ class StorageUnits {
 	 * @return array
 	 */
 	private function get_storage_units() {
-		// This would typically come from the database
-		// For now, return sample data
-		return array(
-			array(
-				'id' => 1,
-				'size' => 'M',
-				'dimensions' => '3x3x3',
-				'price' => 10000,
-				'status' => 'available',
-				'description' => 'Medium storage unit'
-			),
-			array(
-				'id' => 2,
-				'size' => 'L',
-				'dimensions' => '4x4x4',
-				'price' => 15000,
-				'status' => 'occupied',
-				'description' => 'Large storage unit'
-			),
-			array(
-				'id' => 3,
-				'size' => 'S',
-				'dimensions' => '2x2x2',
-				'price' => 5000,
-				'status' => 'available',
-				'description' => 'Small storage unit'
-			)
-		);
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_storage_units';
+
+		$results = $wpdb->get_results( "SELECT * FROM $table_name ORDER BY id DESC", ARRAY_A );
+
+		return $results ? $results : array();
 	}
 
 	/**
@@ -436,5 +440,172 @@ class StorageUnits {
 		if ( isset( $_POST['add_sample_data'] ) ) {
 			// Add sample data logic
 		}
+	}
+
+	/**
+	 * AJAX handler for saving storage unit
+	 *
+	 * @return void
+	 */
+	public function ajax_save_storage_unit() {
+		// Verify nonce
+		if ( ! isset( $_POST['storage_unit_nonce'] ) || ! wp_verify_nonce( $_POST['storage_unit_nonce'], 'royal_storage_storage_unit_form' ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid nonce' ) );
+		}
+
+		// Validate required fields
+		if ( empty( $_POST['size'] ) || empty( $_POST['dimensions'] ) || empty( $_POST['price'] ) ) {
+			wp_send_json_error( array( 'message' => 'All required fields must be filled' ) );
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_storage_units';
+
+		// Check if we're updating or creating
+		if ( ! empty( $_POST['unit_id'] ) ) {
+			// Update existing unit
+			$unit_id = intval( $_POST['unit_id'] );
+
+			// Get the unit to find post_id
+			$unit = $wpdb->get_row( $wpdb->prepare( "SELECT post_id FROM $table_name WHERE id = %d", $unit_id ) );
+
+			// Update post content if post_id exists
+			if ( $unit && ! empty( $unit->post_id ) ) {
+				wp_update_post( array(
+					'ID' => $unit->post_id,
+					'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : ''
+				) );
+			}
+
+			$unit_data = array(
+				'size' => sanitize_text_field( $_POST['size'] ),
+				'dimensions' => sanitize_text_field( $_POST['dimensions'] ),
+				'base_price' => floatval( $_POST['price'] ),
+				'status' => 'available'
+			);
+
+			$result = $wpdb->update(
+				$table_name,
+				$unit_data,
+				array( 'id' => $unit_id ),
+				array( '%s', '%s', '%f', '%s' ),
+				array( '%d' )
+			);
+
+			if ( $result !== false ) {
+				wp_send_json_success( array( 'message' => 'Unit updated successfully', 'unit_id' => $unit_id ) );
+			} else {
+				wp_send_json_error( array( 'message' => 'Failed to update unit' ) );
+			}
+		} else {
+			// Create new unit - need to create a post first
+			$post_data = array(
+				'post_title'   => 'Storage Unit ' . sanitize_text_field( $_POST['size'] ),
+				'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : '',
+				'post_status'  => 'publish',
+				'post_type'    => 'storage_unit'
+			);
+
+			$post_id = wp_insert_post( $post_data );
+
+			if ( is_wp_error( $post_id ) ) {
+				wp_send_json_error( array( 'message' => 'Failed to create post' ) );
+			}
+
+			$unit_data = array(
+				'post_id' => $post_id,
+				'size' => sanitize_text_field( $_POST['size'] ),
+				'dimensions' => sanitize_text_field( $_POST['dimensions'] ),
+				'base_price' => floatval( $_POST['price'] ),
+				'status' => 'available'
+			);
+
+			$result = $wpdb->insert(
+				$table_name,
+				$unit_data,
+				array( '%d', '%s', '%s', '%f', '%s' )
+			);
+
+			if ( $result ) {
+				wp_send_json_success( array( 'message' => 'Unit created successfully', 'unit_id' => $wpdb->insert_id ) );
+			} else {
+				// Delete the post if unit creation failed
+				wp_delete_post( $post_id, true );
+				wp_send_json_error( array( 'message' => 'Failed to create unit: ' . $wpdb->last_error ) );
+			}
+		}
+	}
+
+	/**
+	 * AJAX handler for deleting storage unit
+	 *
+	 * @return void
+	 */
+	public function ajax_delete_storage_unit() {
+		// Verify nonce
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'royal_storage_delete_unit' ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid nonce' ) );
+		}
+
+		// Validate unit ID
+		if ( empty( $_POST['unit_id'] ) ) {
+			wp_send_json_error( array( 'message' => 'Unit ID is required' ) );
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_storage_units';
+		$unit_id = intval( $_POST['unit_id'] );
+
+		// Check if unit is occupied
+		$unit = $wpdb->get_row( $wpdb->prepare( "SELECT status FROM $table_name WHERE id = %d", $unit_id ) );
+
+		if ( ! $unit ) {
+			wp_send_json_error( array( 'message' => 'Unit not found' ) );
+		}
+
+		if ( $unit->status === 'occupied' ) {
+			wp_send_json_error( array( 'message' => 'Cannot delete an occupied unit' ) );
+		}
+
+		// Delete the unit
+		$result = $wpdb->delete( $table_name, array( 'id' => $unit_id ), array( '%d' ) );
+
+		if ( $result ) {
+			wp_send_json_success( array( 'message' => 'Unit deleted successfully' ) );
+		} else {
+			wp_send_json_error( array( 'message' => 'Failed to delete unit' ) );
+		}
+	}
+
+	/**
+	 * AJAX handler for getting storage unit data
+	 *
+	 * @return void
+	 */
+	public function ajax_get_storage_unit() {
+		// Validate unit ID
+		if ( empty( $_POST['unit_id'] ) ) {
+			wp_send_json_error( array( 'message' => 'Unit ID is required' ) );
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_storage_units';
+		$unit_id = intval( $_POST['unit_id'] );
+
+		$unit = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $unit_id ), ARRAY_A );
+
+		if ( ! $unit ) {
+			wp_send_json_error( array( 'message' => 'Unit not found' ) );
+		}
+
+		// Get description from post content if post_id exists
+		if ( ! empty( $unit['post_id'] ) ) {
+			$post = get_post( $unit['post_id'] );
+			if ( $post ) {
+				$unit['description'] = $post->post_content;
+			}
+		}
+
+		wp_send_json_success( $unit );
 	}
 }

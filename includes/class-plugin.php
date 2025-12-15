@@ -63,6 +63,9 @@ class Plugin {
 		// Load WooCommerce integration (must be loaded early for hooks to work)
 		if ( class_exists( 'WooCommerce' ) ) {
 			new WooCommerceIntegration();
+
+			// Register Pay Later payment gateway
+			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_pay_later_gateway' ) );
 		}
 
 		// Load admin class.
@@ -245,6 +248,17 @@ class Plugin {
 		// Create a temporary Checkout instance to handle the request
 		$checkout = new \RoyalStorage\Frontend\Checkout();
 		$checkout->handle_payment();
+	}
+
+	/**
+	 * Add Pay Later gateway to WooCommerce
+	 *
+	 * @param array $gateways Existing gateways.
+	 * @return array
+	 */
+	public function add_pay_later_gateway( $gateways ) {
+		$gateways[] = 'RoyalStorage\PayLaterGateway';
+		return $gateways;
 	}
 }
 
