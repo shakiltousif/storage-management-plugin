@@ -14,11 +14,6 @@ $layout = $this->get_active_layout();
 ?>
 
 <div class="royal-storage-unit-selection">
-    <div class="unit-selection-header">
-        <h2><?php esc_html_e( 'Select Your Storage Unit', 'royal-storage' ); ?></h2>
-        <p><?php esc_html_e( 'Choose your preferred unit from the available options below. Click on a unit to select it.', 'royal-storage' ); ?></p>
-    </div>
-
     <!-- Legend -->
     <div class="unit-legend">
         <div class="legend-item">
@@ -52,16 +47,6 @@ $layout = $this->get_active_layout();
         <div class="selected-unit-info">
             <!-- Selected unit details will be populated via JavaScript -->
         </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="unit-selection-actions">
-        <button type="button" class="btn btn-secondary btn-back">
-            <?php esc_html_e( 'Back', 'royal-storage' ); ?>
-        </button>
-        <button type="button" class="btn btn-primary btn-continue" disabled>
-            <?php esc_html_e( 'Please Select a Unit', 'royal-storage' ); ?>
-        </button>
     </div>
 </div>
 

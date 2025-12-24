@@ -82,37 +82,61 @@ class Booking {
 		<div class="royal-storage-booking-form">
 			<div class="booking-header">
 				<h2><?php esc_html_e( 'Book Your Storage Space', 'royal-storage' ); ?></h2>
-				<p><?php esc_html_e( 'Select your preferred unit type and dates to get started.', 'royal-storage' ); ?></p>
+				<p><?php esc_html_e( 'Complete the steps below to secure your unit.', 'royal-storage' ); ?></p>
+			</div>
+
+			<div class="royal-storage-form-steps">
+				<div class="royal-storage-form-step active" data-step="1">
+					<div class="royal-storage-form-step-number">1</div>
+					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Type', 'royal-storage' ); ?></div>
+				</div>
+				<div class="royal-storage-form-step" data-step="2">
+					<div class="royal-storage-form-step-number">2</div>
+					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Unit', 'royal-storage' ); ?></div>
+				</div>
+				<div class="royal-storage-form-step" data-step="3">
+					<div class="royal-storage-form-step-number">3</div>
+					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Dates', 'royal-storage' ); ?></div>
+				</div>
+				<div class="royal-storage-form-step" data-step="4">
+					<div class="royal-storage-form-step-number">4</div>
+					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Details', 'royal-storage' ); ?></div>
+				</div>
+				<div class="royal-storage-form-step" data-step="5">
+					<div class="royal-storage-form-step-number">5</div>
+					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Confirm', 'royal-storage' ); ?></div>
+				</div>
 			</div>
 
 			<form id="royal-storage-booking-form" class="booking-form">
 				<?php wp_nonce_field( 'royal_storage_booking', 'booking_nonce' ); ?>
 				
 				<div class="form-step active" data-step="1">
-					<h3><?php esc_html_e( 'Step 1: Select Unit Type', 'royal-storage' ); ?></h3>
 					<div class="unit-type-selection">
 						<?php if ( 'true' === $atts['show_storage'] ) : ?>
-						<div class="unit-type-option">
+						<div class="unit-type-card" data-type="storage">
 							<input type="radio" id="unit_type_storage" name="unit_type" value="storage" <?php checked( $atts['unit_type'], 'storage' ); ?>>
 							<label for="unit_type_storage">
-								<div class="unit-icon">📦</div>
-								<div class="unit-info">
+								<div class="unit-type-icon">📦</div>
+								<div class="unit-type-content">
 									<h4><?php esc_html_e( 'Storage Units', 'royal-storage' ); ?></h4>
-									<p><?php esc_html_e( 'Secure storage units in various sizes', 'royal-storage' ); ?></p>
+									<p><?php esc_html_e( 'Secure boxes for your belongings.', 'royal-storage' ); ?></p>
 								</div>
+								<div class="unit-type-check"></div>
 							</label>
 						</div>
 						<?php endif; ?>
 
 						<?php if ( 'true' === $atts['show_parking'] ) : ?>
-						<div class="unit-type-option">
+						<div class="unit-type-card" data-type="parking">
 							<input type="radio" id="unit_type_parking" name="unit_type" value="parking" <?php checked( $atts['unit_type'], 'parking' ); ?>>
 							<label for="unit_type_parking">
-								<div class="unit-icon">🚗</div>
-								<div class="unit-info">
+								<div class="unit-type-icon">🚗</div>
+								<div class="unit-type-content">
 									<h4><?php esc_html_e( 'Parking Spaces', 'royal-storage' ); ?></h4>
-									<p><?php esc_html_e( 'Covered and uncovered parking spaces', 'royal-storage' ); ?></p>
+									<p><?php esc_html_e( 'Safe spots for your vehicles.', 'royal-storage' ); ?></p>
 								</div>
+								<div class="unit-type-check"></div>
 							</label>
 						</div>
 						<?php endif; ?>
@@ -120,14 +144,12 @@ class Booking {
 				</div>
 
 				<div class="form-step" data-step="2">
-					<h3><?php esc_html_e( 'Step 2: Select Your Unit', 'royal-storage' ); ?></h3>
 					<div id="unit-selection-container">
 						<?php echo do_shortcode( '[royal_storage_unit_selection]' ); ?>
 					</div>
 				</div>
 
 				<div class="form-step" data-step="3">
-					<h3><?php esc_html_e( 'Step 3: Select Dates', 'royal-storage' ); ?></h3>
 					<div class="date-selection">
 						<div class="form-group">
 							<label for="start_date"><?php esc_html_e( 'Start Date', 'royal-storage' ); ?></label>
@@ -149,7 +171,6 @@ class Booking {
 				</div>
 
 				<div class="form-step" data-step="4">
-					<h3><?php esc_html_e( 'Step 4: Customer Information', 'royal-storage' ); ?></h3>
 					
 					<?php if ( ! is_user_logged_in() ) : ?>
 					<div class="guest-information">
@@ -193,7 +214,6 @@ class Booking {
 				</div>
 
 				<div class="form-step" data-step="5">
-					<h3><?php esc_html_e( 'Step 5: Review & Confirm', 'royal-storage' ); ?></h3>
 					<div id="booking-summary" class="booking-summary">
 						<!-- Booking summary will be populated here -->
 					</div>

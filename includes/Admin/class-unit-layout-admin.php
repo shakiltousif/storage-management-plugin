@@ -21,6 +21,9 @@ class UnitLayoutAdmin {
 		add_action( 'wp_ajax_save_unit_layout', array( $this, 'save_unit_layout' ) );
 		add_action( 'wp_ajax_get_unit_layout', array( $this, 'get_unit_layout' ) );
 		add_action( 'wp_ajax_create_sample_units', array( $this, 'create_sample_units' ) );
+		add_action( 'wp_ajax_update_unit_data', array( $this, 'update_unit_data' ) );
+		add_action( 'wp_ajax_update_unit_position', array( $this, 'update_unit_position' ) );
+		add_action( 'wp_ajax_check_unit_has_bookings', array( $this, 'check_unit_has_bookings' ) );
 	}
 
 
@@ -43,9 +46,17 @@ class UnitLayoutAdmin {
 		);
 
 		wp_enqueue_script(
+			'royal-storage-utils',
+			ROYAL_STORAGE_URL . 'assets/js/royal-storage-utils.js',
+			array( 'jquery' ),
+			ROYAL_STORAGE_VERSION,
+			true
+		);
+
+		wp_enqueue_script(
 			'royal-storage-layout-admin',
 			ROYAL_STORAGE_URL . 'assets/js/layout-admin.js',
-			array( 'jquery' ),
+			array( 'jquery', 'royal-storage-utils' ),
 			ROYAL_STORAGE_VERSION,
 			true
 		);
@@ -222,5 +233,146 @@ class UnitLayoutAdmin {
 		} else {
 			wp_send_json_error( array( 'message' => __( 'Failed to create sample units', 'royal-storage' ) ) );
 		}
+	}
+
+	/**
+	 * Update unit data (AJAX)
+	 *
+	 * @return void
+	 */
+	public function update_unit_data() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'royal-storage' ) ) );
+		}
+
+		if ( empty( $_POST['unit_id'] ) || empty( $_POST['unit_data'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Missing required data', 'royal-storage' ) ) );
+		}
+
+		$unit_id = intval( $_POST['unit_id'] );
+		$unit_data = $_POST['unit_data'];
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_storage_units';
+
+		// Update the unit
+		$result = $wpdb->update(
+			$table_name,
+			array(
+				'size'         => sanitize_text_field( $unit_data['size'] ),
+				'dimensions'   => sanitize_text_field( $unit_data['dimensions'] ),
+				'status'       => sanitize_text_field( $unit_data['status'] ),
+				'base_price'   => floatval( $unit_data['base_price'] ),
+				'position_x'   => intval( $unit_data['position_x'] ),
+				'position_y'   => intval( $unit_data['position_y'] ),
+				'unit_group'   => sanitize_text_field( $unit_data['unit_group'] ),
+				'access_code'  => sanitize_text_field( $unit_data['access_code'] ),
+			),
+			array( 'id' => $unit_id ),
+			array( '%s', '%s', '%s', '%f', '%d', '%d', '%s', '%s' ),
+			array( '%d' )
+		);
+
+		if ( $result !== false ) {
+			wp_send_json_success( array( 'message' => __( 'Unit updated successfully', 'royal-storage' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to update unit', 'royal-storage' ) ) );
+		}
+	}
+
+	/**
+	 * Update unit position (AJAX)
+	 *
+	 * @return void
+	 */
+	public function update_unit_position() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'royal-storage' ) ) );
+		}
+
+		if ( empty( $_POST['unit_id'] ) || ! isset( $_POST['position_x'] ) || ! isset( $_POST['position_y'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Missing required data', 'royal-storage' ) ) );
+		}
+
+		$unit_id = intval( $_POST['unit_id'] );
+		$position_x = intval( $_POST['position_x'] );
+		$position_y = intval( $_POST['position_y'] );
+
+		global $wpdb;
+
+		// Check if unit has any bookings
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+		$has_bookings = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM $bookings_table WHERE unit_id = %d AND status NOT IN ('cancelled')",
+				$unit_id
+			)
+		);
+
+		if ( $has_bookings > 0 ) {
+			wp_send_json_error( array(
+				'message' => __( 'Cannot move this unit because it has active bookings. Please cancel all bookings first.', 'royal-storage' ),
+				'has_bookings' => true,
+			) );
+			return;
+		}
+
+		$table_name = $wpdb->prefix . 'royal_storage_units';
+
+		// Update the unit position
+		$result = $wpdb->update(
+			$table_name,
+			array(
+				'position_x' => $position_x,
+				'position_y' => $position_y,
+			),
+			array( 'id' => $unit_id ),
+			array( '%d', '%d' ),
+			array( '%d' )
+		);
+
+		if ( $result !== false ) {
+			wp_send_json_success( array(
+				'message' => __( 'Unit position updated successfully', 'royal-storage' ),
+				'unit_id' => $unit_id,
+				'position_x' => $position_x,
+				'position_y' => $position_y,
+			) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to update unit position', 'royal-storage' ) ) );
+		}
+	}
+
+	/**
+	 * Check if unit has bookings (AJAX)
+	 *
+	 * @return void
+	 */
+	public function check_unit_has_bookings() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'royal-storage' ) ) );
+		}
+
+		if ( empty( $_POST['unit_id'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Missing unit ID', 'royal-storage' ) ) );
+		}
+
+		$unit_id = intval( $_POST['unit_id'] );
+
+		global $wpdb;
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+
+		// Check for non-cancelled bookings
+		$booking_count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM $bookings_table WHERE unit_id = %d AND status NOT IN ('cancelled')",
+				$unit_id
+			)
+		);
+
+		wp_send_json_success( array(
+			'has_bookings' => $booking_count > 0,
+			'booking_count' => intval( $booking_count ),
+		) );
 	}
 }

@@ -44,83 +44,85 @@ $total_pages = ceil( $total / $limit );
 		</a>
 	</div>
 
-	<table class="wp-list-table widefat fixed striped">
-		<thead>
-			<tr>
-				<th><?php esc_html_e( 'ID', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'Customer', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'Unit/Space', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'Start Date', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'End Date', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'Total Price', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'Status', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'Payment', 'royal-storage' ); ?></th>
-				<th><?php esc_html_e( 'Actions', 'royal-storage' ); ?></th>
-			</tr>
-		</thead>
-		<tbody>
-			<?php if ( ! empty( $bookings ) ) : ?>
-				<?php foreach ( $bookings as $booking ) : ?>
-					<?php $customer = get_user_by( 'id', $booking->customer_id ); ?>
-					<tr>
-						<td><?php echo esc_html( $booking->id ); ?></td>
-						<td>
-							<?php if ( $customer ) : ?>
-								<a href="<?php echo esc_url( admin_url( 'admin.php?page=royal-storage-customers&customer=' . $booking->customer_id ) ); ?>">
-									<?php echo esc_html( $customer->display_name ); ?>
-								</a>
-							<?php else : ?>
-								<?php esc_html_e( 'Unknown', 'royal-storage' ); ?>
-							<?php endif; ?>
-						</td>
-						<td>
-							<?php
-							if ( $booking->unit_id > 0 ) {
-								echo esc_html( 'Unit #' . $booking->unit_id );
-							} elseif ( $booking->space_id > 0 ) {
-								echo esc_html( 'Space #' . $booking->space_id );
-							}
-							?>
-						</td>
-						<td><?php echo esc_html( $booking->start_date ); ?></td>
-						<td><?php echo esc_html( $booking->end_date ); ?></td>
-						<td><?php echo esc_html( number_format( $booking->total_price, 2 ) ); ?> RSD</td>
-						<td>
-							<span class="status-badge status-<?php echo esc_attr( $booking->status ); ?>">
-								<?php echo esc_html( ucfirst( $booking->status ) ); ?>
-							</span>
-						</td>
-						<td>
-							<span class="payment-badge payment-<?php echo esc_attr( $booking->payment_status ); ?>">
-								<?php echo esc_html( ucfirst( $booking->payment_status ) ); ?>
-							</span>
-						</td>
-						<td>
-							<a href="<?php echo esc_url( admin_url( 'admin.php?page=royal-storage-bookings&action=view&id=' . $booking->id ) ); ?>" class="button button-small">
-								<?php esc_html_e( 'View', 'royal-storage' ); ?>
-							</a>
-							<?php if ( 'cancelled' !== $booking->status ) : ?>
-								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
-									<input type="hidden" name="action" value="royal_storage_cancel_booking">
-									<input type="hidden" name="booking_id" value="<?php echo esc_attr( $booking->id ); ?>">
-									<?php wp_nonce_field( 'royal_storage_cancel_booking', 'nonce' ); ?>
-									<button type="submit" class="button button-small button-link-delete" onclick="return confirm('<?php esc_attr_e( 'Are you sure?', 'royal-storage' ); ?>');">
+	<div class="royal-storage-widget">
+		<table class="wp-list-table widefat fixed striped">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'ID', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Customer', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Unit/Space', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Start Date', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'End Date', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Total Price', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Status', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Payment', 'royal-storage' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'royal-storage' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if ( ! empty( $bookings ) ) : ?>
+					<?php foreach ( $bookings as $booking ) : ?>
+						<?php $customer = get_user_by( 'id', $booking->customer_id ); ?>
+						<tr>
+							<td><?php echo esc_html( $booking->id ); ?></td>
+							<td>
+								<?php if ( $customer ) : ?>
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=royal-storage-customers&customer=' . $booking->customer_id ) ); ?>">
+										<?php echo esc_html( $customer->display_name ); ?>
+									</a>
+								<?php else : ?>
+									<?php esc_html_e( 'Unknown', 'royal-storage' ); ?>
+								<?php endif; ?>
+							</td>
+							<td>
+								<?php
+								if ( $booking->unit_id > 0 ) {
+									echo esc_html( 'Unit #' . $booking->unit_id );
+								} elseif ( $booking->space_id > 0 ) {
+									echo esc_html( 'Space #' . $booking->space_id );
+								}
+								?>
+							</td>
+							<td><?php echo esc_html( $booking->start_date ); ?></td>
+							<td><?php echo esc_html( $booking->end_date ); ?></td>
+							<td><?php echo esc_html( number_format( $booking->total_price, 2 ) ); ?> RSD</td>
+							<td>
+								<span class="status-badge status-<?php echo esc_attr( $booking->status ); ?>">
+									<?php echo esc_html( ucfirst( $booking->status ) ); ?>
+								</span>
+							</td>
+							<td>
+								<span class="status-badge status-<?php echo esc_attr( $booking->payment_status ); ?>">
+									<?php echo esc_html( ucfirst( $booking->payment_status ) ); ?>
+								</span>
+							</td>
+							<td>
+								<button type="button" class="button button-small view-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
+									<?php esc_html_e( 'View', 'royal-storage' ); ?>
+								</button>
+								<?php if ( 'pending' === $booking->status ) : ?>
+									<button type="button" class="button button-small button-primary approve-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
+										<?php esc_html_e( 'Approve', 'royal-storage' ); ?>
+									</button>
+								<?php endif; ?>
+								<?php if ( 'cancelled' !== $booking->status && 'completed' !== $booking->status ) : ?>
+									<button type="button" class="button button-small button-link-delete cancel-booking-btn" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
 										<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
 									</button>
-								</form>
-							<?php endif; ?>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				<?php else : ?>
+					<tr>
+						<td colspan="9" class="no-customers">
+							<?php esc_html_e( 'No bookings found.', 'royal-storage' ); ?>
 						</td>
 					</tr>
-				<?php endforeach; ?>
-			<?php else : ?>
-				<tr>
-					<td colspan="9" style="text-align: center; padding: 20px;">
-						<?php esc_html_e( 'No bookings found.', 'royal-storage' ); ?>
-					</td>
-				</tr>
-			<?php endif; ?>
-		</tbody>
-	</table>
+				<?php endif; ?>
+			</tbody>
+		</table>
+	</div>
 
 	<?php if ( $total_pages > 1 ) : ?>
 		<div class="tablenav bottom">
@@ -143,57 +145,3 @@ $total_pages = ceil( $total / $limit );
 		</div>
 	<?php endif; ?>
 </div>
-
-<style>
-	.bookings-actions {
-		margin: 20px 0;
-	}
-
-	.status-badge,
-	.payment-badge {
-		display: inline-block;
-		padding: 5px 10px;
-		border-radius: 3px;
-		font-size: 12px;
-		font-weight: bold;
-		color: white;
-	}
-
-	.status-pending {
-		background-color: #f39c12;
-	}
-
-	.status-confirmed {
-		background-color: #3498db;
-	}
-
-	.status-active {
-		background-color: #27ae60;
-	}
-
-	.status-cancelled {
-		background-color: #e74c3c;
-	}
-
-	.status-expired {
-		background-color: #95a5a6;
-	}
-
-	.payment-pending,
-	.payment-unpaid {
-		background-color: #e74c3c;
-	}
-
-	.payment-paid {
-		background-color: #27ae60;
-	}
-
-	.payment-failed {
-		background-color: #c0392b;
-	}
-
-	.payment-refunded {
-		background-color: #95a5a6;
-	}
-</style>
-

@@ -12,23 +12,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 
 <div class="portal-bookings">
-	<h2><?php esc_html_e( 'My Bookings', 'royal-storage' ); ?></h2>
+	<h2 style="margin-bottom: 2rem;"><?php esc_html_e( 'My Bookings', 'royal-storage' ); ?></h2>
 
 	<?php if ( ! empty( $customer_bookings ) ) : ?>
 		<div class="bookings-list">
 			<?php foreach ( $customer_bookings as $booking ) : ?>
 				<div class="booking-card">
 					<div class="booking-header">
-						<h3><?php esc_html_e( 'Booking #', 'royal-storage' ); ?><?php echo esc_html( $booking->id ); ?></h3>
-						<span class="booking-status status-<?php echo esc_attr( $booking->status ); ?>">
+						<h3 style="margin: 0;"><?php esc_html_e( 'Booking #', 'royal-storage' ); ?><?php echo esc_html( $booking->id ); ?></h3>
+						<span class="status-badge status-<?php echo esc_attr( $booking->status ); ?>">
 							<?php echo esc_html( \RoyalStorage\Frontend\Bookings::get_status_label( $booking->status ) ); ?>
 						</span>
 					</div>
 
-					<div class="booking-details">
-						<div class="detail-row">
-							<span class="label"><?php esc_html_e( 'Unit/Space:', 'royal-storage' ); ?></span>
-							<span class="value">
+					<div class="booking-details" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
+						<div class="detail-item">
+							<span class="rs-text-muted" style="display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;"><?php esc_html_e( 'Unit/Space', 'royal-storage' ); ?></span>
+							<span style="font-weight: 600;">
 								<?php
 								if ( $booking->unit_id > 0 ) {
 									echo esc_html( ucfirst( $booking->unit_type ) . ' #' . $booking->unit_id );
@@ -39,40 +39,35 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</span>
 						</div>
 
-						<div class="detail-row">
-							<span class="label"><?php esc_html_e( 'Start Date:', 'royal-storage' ); ?></span>
-							<span class="value"><?php echo esc_html( $booking->start_date ); ?></span>
+						<div class="detail-item">
+							<span class="rs-text-muted" style="display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;"><?php esc_html_e( 'Duration', 'royal-storage' ); ?></span>
+							<span style="font-weight: 600;"><?php echo esc_html( $booking->start_date ); ?> - <?php echo esc_html( $booking->end_date ); ?></span>
 						</div>
 
-						<div class="detail-row">
-							<span class="label"><?php esc_html_e( 'End Date:', 'royal-storage' ); ?></span>
-							<span class="value"><?php echo esc_html( $booking->end_date ); ?></span>
+						<div class="detail-item">
+							<span class="rs-text-muted" style="display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;"><?php esc_html_e( 'Total Price', 'royal-storage' ); ?></span>
+							<span style="font-weight: 800; color: var(--rs-primary);"><?php echo esc_html( number_format( $booking->total_price, 2 ) ); ?> RSD</span>
 						</div>
 
-						<div class="detail-row">
-							<span class="label"><?php esc_html_e( 'Total Price:', 'royal-storage' ); ?></span>
-							<span class="value"><?php echo esc_html( number_format( $booking->total_price, 2 ) ); ?> RSD</span>
-						</div>
-
-						<div class="detail-row">
-							<span class="label"><?php esc_html_e( 'Payment Status:', 'royal-storage' ); ?></span>
-							<span class="payment-status payment-<?php echo esc_attr( $booking->payment_status ); ?>">
+						<div class="detail-item">
+							<span class="rs-text-muted" style="display: block; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;"><?php esc_html_e( 'Payment', 'royal-storage' ); ?></span>
+							<span class="status-badge status-<?php echo esc_attr( $booking->payment_status ); ?>" style="margin-top: 0.25rem;">
 								<?php echo esc_html( \RoyalStorage\Frontend\Bookings::get_payment_status_label( $booking->payment_status ) ); ?>
 							</span>
 						</div>
 					</div>
 
-					<div class="booking-actions">
+					<div class="booking-actions" style="display: flex; gap: 0.75rem; justify-content: flex-end; border-top: 1px solid var(--rs-border); pt: 1.25rem; margin-top: 1.25rem; padding-top: 1.25rem;">
 						<?php if ( 'active' === $booking->status || 'confirmed' === $booking->status ) : ?>
-							<button class="btn btn-small btn-primary renew-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
+							<button class="royal-storage-btn renew-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>" style="width: auto; padding: 0.5rem 1.25rem; font-size: 0.875rem;">
 								<?php esc_html_e( 'Renew', 'royal-storage' ); ?>
 							</button>
-							<button class="btn btn-small btn-danger cancel-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
+							<button class="royal-storage-btn royal-storage-btn-secondary cancel-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>" style="width: auto; padding: 0.5rem 1.25rem; font-size: 0.875rem;">
 								<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
 							</button>
 						<?php endif; ?>
 						<?php if ( 'unpaid' === $booking->payment_status ) : ?>
-							<button class="btn btn-small btn-success pay-now-btn" data-booking-id="<?php echo esc_attr( $booking->id ); ?>" data-amount="<?php echo esc_attr( $booking->total_price ); ?>">
+							<button class="royal-storage-btn pay-now-btn" data-booking-id="<?php echo esc_attr( $booking->id ); ?>" data-amount="<?php echo esc_attr( $booking->total_price ); ?>" style="width: auto; padding: 0.5rem 1.25rem; font-size: 0.875rem; background: var(--rs-success);">
 								<?php esc_html_e( 'Pay Now', 'royal-storage' ); ?>
 							</button>
 						<?php endif; ?>
@@ -81,194 +76,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php endforeach; ?>
 		</div>
 	<?php else : ?>
-		<div class="no-bookings">
-			<p><?php esc_html_e( 'You have no bookings yet.', 'royal-storage' ); ?></p>
-			<a href="<?php echo esc_url( home_url( '/booking/' ) ); ?>" class="btn btn-primary">
-				<?php esc_html_e( 'Create a Booking', 'royal-storage' ); ?>
+		<div class="no-bookings" style="text-align: center; padding: 4rem 2rem; background: var(--rs-bg-main); border-radius: var(--rs-radius-lg); border: 2px dashed var(--rs-border);">
+			<p style="font-size: 1.125rem; margin-bottom: 1.5rem;"><?php esc_html_e( 'You have no bookings yet.', 'royal-storage' ); ?></p>
+			<a href="<?php echo esc_url( home_url( '/booking/' ) ); ?>" class="royal-storage-btn" style="width: auto;">
+				<?php esc_html_e( 'Create your first booking', 'royal-storage' ); ?>
 			</a>
 		</div>
 	<?php endif; ?>
 </div>
 
-<style>
-	.portal-bookings {
-		padding: 20px;
-	}
-
-	.portal-bookings h2 {
-		margin-top: 0;
-	}
-
-	.bookings-list {
-		display: grid;
-		gap: 20px;
-	}
-
-	.booking-card {
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		padding: 20px;
-		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-	}
-
-	.booking-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 15px;
-		padding-bottom: 15px;
-		border-bottom: 1px solid #f0f0f0;
-	}
-
-	.booking-header h3 {
-		margin: 0;
-	}
-
-	.booking-status {
-		display: inline-block;
-		padding: 5px 10px;
-		border-radius: 3px;
-		font-size: 12px;
-		font-weight: bold;
-		color: white;
-	}
-
-	.status-pending {
-		background: #f39c12;
-	}
-
-	.status-confirmed {
-		background: #3498db;
-	}
-
-	.status-active {
-		background: #27ae60;
-	}
-
-	.status-cancelled {
-		background: #e74c3c;
-	}
-
-	.booking-details {
-		margin-bottom: 15px;
-	}
-
-	.detail-row {
-		display: flex;
-		justify-content: space-between;
-		padding: 8px 0;
-		border-bottom: 1px solid #f5f5f5;
-	}
-
-	.detail-row .label {
-		font-weight: bold;
-		color: #666;
-	}
-
-	.detail-row .value {
-		color: #333;
-	}
-
-	.payment-status {
-		display: inline-block;
-		padding: 3px 8px;
-		border-radius: 3px;
-		font-size: 12px;
-		font-weight: bold;
-		color: white;
-	}
-
-	.payment-paid {
-		background: #27ae60;
-	}
-
-	.payment-unpaid {
-		background: #e74c3c;
-	}
-
-	.payment-pending {
-		background: #f39c12;
-	}
-
-	.booking-actions {
-		display: flex;
-		gap: 10px;
-		flex-wrap: wrap;
-		margin-top: 15px;
-	}
-
-	.btn {
-		padding: 8px 15px;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		text-decoration: none;
-		font-weight: bold;
-		display: inline-block;
-		transition: all 0.3s ease;
-	}
-
-	.btn-small {
-		padding: 6px 12px;
-		font-size: 12px;
-	}
-
-	.btn-primary {
-		background: #667eea;
-		color: white;
-	}
-
-	.btn-primary:hover {
-		background: #5568d3;
-	}
-
-	.btn-danger {
-		background: #e74c3c;
-		color: white;
-	}
-
-	.btn-danger:hover {
-		background: #c0392b;
-	}
-
-	.btn-success {
-		background: #27ae60;
-		color: white;
-	}
-
-	.btn-success:hover {
-		background: #229954;
-	}
-
-	.no-bookings {
-		background: white;
-		padding: 40px;
-		border-radius: 8px;
-		text-align: center;
-		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-	}
-
-	.no-bookings p {
-		margin: 0 0 20px 0;
-		color: #666;
-	}
-</style>
-
 <script>
 jQuery(document).ready(function($) {
-	// Handle Pay Now button clicks
 	$('.pay-now-btn').on('click', function(e) {
 		e.preventDefault();
-		
 		const $btn = $(this);
 		const bookingId = $btn.data('booking-id');
 		const amount = $btn.data('amount');
-		
-		// Show loading state
 		$btn.prop('disabled', true).text('Processing...');
-		
-		// Send AJAX request to add product to cart and get checkout URL
 		$.ajax({
 			url: '<?php echo admin_url('admin-ajax.php'); ?>',
 			type: 'POST',
@@ -281,7 +105,6 @@ jQuery(document).ready(function($) {
 			},
 			success: function(response) {
 				if (response.success && response.data.redirect && response.data.checkout_url) {
-					// Redirect to WooCommerce checkout
 					window.location.href = response.data.checkout_url;
 				} else {
 					alert('Failed to process payment. Please try again.');
@@ -296,4 +119,3 @@ jQuery(document).ready(function($) {
 	});
 });
 </script>
-

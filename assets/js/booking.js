@@ -6,53 +6,50 @@ jQuery(document).ready(function($) {
     'use strict';
 
     let currentStep = 1;
-    let selectedUnit = null;
-    let bookingData = {};
+    let bookingData = {
+        unit_type: null,
+        unit_id: null,
+        selected_unit: null,
+        start_date: null,
+        end_date: null,
+        period: 'monthly'
+    };
 
-    // Initialize booking form
     initBookingForm();
 
     function initBookingForm() {
-        // Set minimum date to today
+        // Set min dates
         const today = new Date().toISOString().split('T')[0];
-        $('#start_date').attr('min', today);
-        $('#end_date').attr('min', today);
+        $('#start_date, #end_date').attr('min', today);
 
-        // Event listeners
+        // Event: Unit Type Card Click
+        $('.unit-type-card').on('click', function() {
+            const type = $(this).find('input[name="unit_type"]').val();
+            $(this).find('input[name="unit_type"]').prop('checked', true);
+            bookingData.unit_type = type;
+            
+            // Auto move to next step
+            setTimeout(() => nextStep(), 300);
+        });
+
+        // Event: Unit Selection from Grid
+        $(document).on('unit_selected', function(e, unit) {
+            bookingData.selected_unit = unit;
+            bookingData.unit_id = unit.id;
+            
+            // Enable next button or auto-advance
+            $('#next-step').prop('disabled', false).text('Continue with Unit #' + unit.id);
+        });
+
+        // Navigation
         $('#next-step').on('click', nextStep);
         $('#prev-step').on('click', prevStep);
-        $('#royal-storage-booking-form').on('submit', function(e) {
+        
+        $('#royal-storage-booking-form').on('submit', (e) => {
             e.preventDefault();
-            handleFormSubmit(e);
-        });
-        
-        // Unit type change
-        $('input[name="unit_type"]').on('change', handleUnitTypeChange);
-        
-        // Date change
-        $('#start_date, #end_date').on('change', handleDateChange);
-        
-        // Period change
-        $('#period').on('change', handlePeriodChange);
-
-        // Unit selection integration
-        $(document).on('click', '.btn-continue', function() {
-            const selectedUnit = window.unitSelection ? window.unitSelection.getSelectedUnit() : null;
-            if (selectedUnit) {
-                bookingData.selected_unit = selectedUnit;
-                bookingData.unit_id = selectedUnit.id;
-                bookingData.unit_type = selectedUnit.size.toLowerCase();
-                
-                // Move to next step
-                nextStep();
-            }
+            handleFormSubmit();
         });
 
-        // Expose functions globally for unit selection integration
-        window.nextStep = nextStep;
-        window.previousStep = prevStep;
-
-        // Initialize first step
         updateStepVisibility();
     }
 
@@ -61,502 +58,202 @@ jQuery(document).ready(function($) {
             currentStep++;
             updateStepVisibility();
             handleStepChange();
+            window.scrollTo({ top: $('.royal-storage-booking').offset().top - 50, behavior: 'smooth' });
         }
     }
 
     function prevStep() {
         currentStep--;
         updateStepVisibility();
+        window.scrollTo({ top: $('.royal-storage-booking').offset().top - 50, behavior: 'smooth' });
     }
 
     function updateStepVisibility() {
         $('.form-step').removeClass('active');
         $(`.form-step[data-step="${currentStep}"]`).addClass('active');
         
-        // Update navigation buttons
+        // Progress Steps
+        $('.royal-storage-form-step').removeClass('active completed');
+        $('.royal-storage-form-step').each(function() {
+            const s = $(this).data('step');
+            if (s < currentStep) $(this).addClass('completed');
+            if (s === currentStep) $(this).addClass('active');
+        });
+
+        // Buttons
         $('#prev-step').toggle(currentStep > 1);
         $('#next-step').toggle(currentStep < 5);
         $('#submit-booking').toggle(currentStep === 5);
+
+        // Step-specific button state
+        if (currentStep === 2) {
+            const hasUnit = !!(window.unitSelection && window.unitSelection.getSelectedUnit());
+            $('#next-step').prop('disabled', !hasUnit);
+            if (!hasUnit) $('#next-step').text('Select a Unit to Continue');
+        } else if (currentStep === 5) {
+            // Keep submit button disabled until summary loads
+            $('#submit-booking').prop('disabled', true).text('Loading Summary...');
+        } else {
+            $('#next-step').prop('disabled', false).text('Next Step');
+        }
     }
 
     function validateCurrentStep() {
         switch (currentStep) {
             case 1:
-                return validateUnitType();
-            case 2:
-                return validateUnitSelection();
-            case 3:
-                return validateDates();
-            case 4:
-                return validateGuestInformation();
-            case 5:
+                if (!bookingData.unit_type) {
+                    RoyalStorageUtils.showToast('Please select a unit type', 'error');
+                    return false;
+                }
                 return true;
+            case 2:
+                const unit = window.unitSelection ? window.unitSelection.getSelectedUnit() : null;
+                if (!unit) {
+                    RoyalStorageUtils.showToast('Please select a unit from the grid', 'error');
+                    return false;
+                }
+                bookingData.selected_unit = unit;
+                bookingData.unit_id = unit.id;
+                return true;
+            case 3:
+                const start = $('#start_date').val();
+                const end = $('#end_date').val();
+                if (!start || !end) {
+                    RoyalStorageUtils.showToast('Please select both dates', 'error');
+                    return false;
+                }
+                if (new Date(start) >= new Date(end)) {
+                    RoyalStorageUtils.showToast('End date must be after start date', 'error');
+                    return false;
+                }
+                bookingData.start_date = start;
+                bookingData.end_date = end;
+                bookingData.period = $('#period').val();
+                return true;
+            case 4:
+                return validateCustomerInfo();
             default:
-                return false;
+                return true;
         }
-    }
-    
-    function validateGuestInformation() {
-        const isLoggedIn = window.royalStorageBooking.isLoggedIn || false;
-        
-        // If logged in, no guest validation needed
-        if (isLoggedIn) {
-            return true;
-        }
-        
-        // Validate guest fields
-        const guestEmail = $('#guest_email').val();
-        const guestFirstName = $('#guest_first_name').val();
-        const guestLastName = $('#guest_last_name').val();
-        const guestPhone = $('#guest_phone').val();
-        
-        if (!guestEmail || !guestFirstName || !guestLastName || !guestPhone) {
-            showError('Please fill in all required fields (Email, First Name, Last Name, and Phone Number).');
-            return false;
-        }
-        
-        if (!isValidEmail(guestEmail)) {
-            showError('Please enter a valid email address.');
-            return false;
-        }
-        
-        // Trim and check if empty after trim
-        if (!guestEmail.trim() || !guestFirstName.trim() || !guestLastName.trim() || !guestPhone.trim()) {
-            showError('Please fill in all required fields. Empty spaces are not allowed.');
-            return false;
-        }
-        
-        return true;
     }
 
-    function validateUnitType() {
-        const unitType = $('input[name="unit_type"]:checked').val();
-        if (!unitType) {
-            showError('Please select a unit type.');
-            return false;
-        }
-        bookingData.unit_type = unitType;
-        return true;
-    }
+    function validateCustomerInfo() {
+        if (window.royalStorageBooking.isLoggedIn) return true;
+        
+        const email = $('#guest_email').val();
+        const fname = $('#guest_first_name').val();
+        const lname = $('#guest_last_name').val();
+        const phone = $('#guest_phone').val();
 
-    function validateDates() {
-        const startDate = $('#start_date').val();
-        const endDate = $('#end_date').val();
-        
-        if (!startDate || !endDate) {
-            showError('Please select both start and end dates.');
+        if (!email || !fname || !lname || !phone) {
+            RoyalStorageUtils.showToast('All fields are required', 'error');
             return false;
         }
-        
-        if (new Date(startDate) >= new Date(endDate)) {
-            showError('End date must be after start date.');
-            return false;
-        }
-        
-        bookingData.start_date = startDate;
-        bookingData.end_date = endDate;
-        bookingData.period = $('#period').val();
-        
-        return true;
-    }
-
-    function validateUnitSelection() {
-        // Check if we have a selected unit from the unit selection process
-        const selectedUnit = window.unitSelection ? window.unitSelection.getSelectedUnit() : null;
-        
-        // If not available from unit selection, check if we have unit data from the booking process
-        if (!selectedUnit && bookingData.selected_unit) {
-            return true; // Unit already selected and stored
-        }
-        
-        if (!selectedUnit) {
-            showError('Please select a unit from the grid.');
-            return false;
-        }
-        
-        // Store selected unit data
-        bookingData.selected_unit = selectedUnit;
-        bookingData.unit_id = selectedUnit.id;
-        bookingData.unit_type = selectedUnit.size.toLowerCase();
-        
         return true;
     }
 
     function handleStepChange() {
-        switch (currentStep) {
-            case 2:
-                // Unit selection step - no action needed, handled by unit selection component
-                break;
-            case 3:
-                handleDateChange();
-                break;
-            case 4:
-                // Guest information step - validation handled in validateGuestInformation
-                break;
-            case 5:
-                loadBookingSummary();
-                break;
+        if (currentStep === 2 && window.unitSelection) {
+            window.unitSelection.refreshUnits();
+        }
+        if (currentStep === 5) {
+            loadSummary();
         }
     }
 
-    function handleUnitTypeChange() {
-        // Reset selected unit when unit type changes
-        selectedUnit = null;
-        if (currentStep >= 3) {
-            loadAvailableUnits();
-        }
-    }
-
-    function handleDateChange() {
-        const startDate = $('#start_date').val();
-        const endDate = $('#end_date').val();
-        
-        if (startDate && endDate) {
-            // Update booking data
-            bookingData.start_date = startDate;
-            bookingData.end_date = endDate;
-            
-            // Update end date minimum to be after start date
-            $('#end_date').attr('min', startDate);
-            
-            // Load available units if we're on step 3
-            if (currentStep >= 3) {
-                loadAvailableUnits();
-            }
-        }
-    }
-
-    function handlePeriodChange() {
-        if (selectedUnit && currentStep >= 4) {
-            loadBookingSummary();
-        }
-    }
-
-    function loadAvailableUnits() {
-        const unitType = bookingData.unit_type;
-        const startDate = bookingData.start_date;
-        const endDate = bookingData.end_date;
-        
-        if (!unitType || !startDate || !endDate) {
-            return;
-        }
-
-        $('#available-units').html('<p class="loading">Loading available units...</p>');
-
-        console.log('Sending AJAX request with data:', {
-            action: 'get_available_units',
-            nonce: royalStorageBooking.nonce,
-            unit_type: unitType,
-            start_date: startDate,
-            end_date: endDate
-        });
-        
-        $.ajax({
+    function loadSummary() {
+        RoyalStorageUtils.ajax({
             url: royalStorageBooking.ajaxUrl,
-            type: 'POST',
-            data: {
-                action: 'get_available_units',
-                nonce: royalStorageBooking.nonce,
-                unit_type: unitType,
-                start_date: startDate,
-                end_date: endDate
-            },
-            success: function(response) {
-                console.log('AJAX success response:', response);
-                if (response.success) {
-                    displayAvailableUnits(response.data);
-                } else {
-                    showError(response.data.message || 'Failed to load available units.');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.log('AJAX error:', xhr, status, error);
-                showError('Failed to load available units. Please try again.');
-            }
-        });
-    }
-
-    function displayAvailableUnits(units) {
-        if (units.length === 0) {
-            $('#available-units').html('<p>No units available for the selected dates.</p>');
-            return;
-        }
-
-        let html = '';
-        units.forEach(function(unit) {
-            const size = unit.size || unit.spot_number || 'N/A';
-            const price = parseFloat(unit.base_price).toFixed(2);
-            
-            html += `
-                <div class="unit-card" data-unit-id="${unit.id}" data-price="${unit.base_price}">
-                    <div class="unit-size">${size}</div>
-                    <h4>${bookingData.unit_type === 'storage' ? 'Storage Unit' : 'Parking Space'} #${unit.id}</h4>
-                    <div class="unit-details">
-                        ${bookingData.unit_type === 'storage' ? 
-                            `Dimensions: ${unit.dimensions || 'N/A'}<br>
-                             Amenities: ${unit.amenities || 'N/A'}` :
-                            `Spot: ${unit.spot_number || 'N/A'}<br>
-                             Height Limit: ${unit.height_limit || 'N/A'}`
-                        }
-                    </div>
-                    <div class="unit-price">${price} RSD</div>
-                </div>
-            `;
-        });
-
-        $('#available-units').html(html);
-
-        // Add click handlers for unit selection
-        $('.unit-card').on('click', function() {
-            $('.unit-card').removeClass('selected');
-            $(this).addClass('selected');
-            
-            selectedUnit = {
-                id: $(this).data('unit-id'),
-                price: $(this).data('price')
-            };
-            
-            bookingData.unit_id = selectedUnit.id;
-        });
-    }
-
-    function loadBookingSummary() {
-        const selectedUnit = bookingData.selected_unit;
-        if (!selectedUnit) {
-            $('#booking-summary').html('<p class="error">Please select a unit first.</p>');
-            return;
-        }
-
-        $('#booking-summary').html('<p class="loading">Calculating pricing...</p>');
-
-        $.ajax({
-            url: royalStorageBooking.ajaxUrl,
-            type: 'POST',
             data: {
                 action: 'calculate_booking_price',
                 nonce: royalStorageBooking.nonce,
-                unit_id: selectedUnit.id,
+                unit_id: bookingData.unit_id,
                 unit_type: bookingData.unit_type,
                 start_date: bookingData.start_date,
                 end_date: bookingData.end_date,
                 period: bookingData.period
             },
-            success: function(response) {
-                if (response.success) {
-                    displayBookingSummary(response.data);
-                } else {
-                    showError(response.data.message || 'Failed to calculate pricing.');
-                }
+            beforeSend: () => {
+                $('#booking-summary').html(`
+                    <div class="summary-card skeleton">
+                        <div class="summary-section">
+                            <div class="skeleton-line" style="width: 40%; height: 20px; margin-bottom: 1rem;"></div>
+                            <div class="skeleton-line" style="width: 100%; height: 15px; margin-bottom: 0.5rem;"></div>
+                            <div class="skeleton-line" style="width: 80%; height: 15px;"></div>
+                        </div>
+                        <div class="summary-section">
+                            <div class="skeleton-line" style="width: 30%; height: 20px; margin-bottom: 1rem;"></div>
+                            <div class="skeleton-line" style="width: 100%; height: 15px;"></div>
+                        </div>
+                    </div>
+                `);
+                $('#submit-booking').prop('disabled', true).text('Calculating...');
             },
-            error: function() {
-                showError('Failed to calculate pricing. Please try again.');
+            success: function(response) {
+                renderSummary(response.data);
+                $('#submit-booking').prop('disabled', false).text('Book Now & Pay');
+            },
+            onError: () => {
+                $('#booking-summary').html('<div class="error-notice">Failed to load summary. Please go back and try again.</div>');
+                $('#submit-booking').prop('disabled', true).text('Error Loading Summary');
             }
         });
     }
 
-    function displayBookingSummary(pricing) {
-        const selectedUnit = bookingData.selected_unit;
-        const startDate = new Date(bookingData.start_date).toLocaleDateString();
-        const endDate = new Date(bookingData.end_date).toLocaleDateString();
-        const days = Math.ceil((new Date(bookingData.end_date) - new Date(bookingData.start_date)) / (1000 * 60 * 60 * 24));
-        
-        // Get guest information if not logged in
-        let customerInfo = '';
-        const isLoggedIn = window.royalStorageBooking.isLoggedIn || false;
-        if (!isLoggedIn) {
-            const guestEmail = $('#guest_email').val();
-            const guestFirstName = $('#guest_first_name').val();
-            const guestLastName = $('#guest_last_name').val();
-            const guestPhone = $('#guest_phone').val();
-            customerInfo = `
-                <div class="summary-section">
-                    <h4>Customer Information</h4>
-                    <div class="summary-item">
-                        <span class="summary-label">Name:</span>
-                        <span class="summary-value">${guestFirstName} ${guestLastName}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Email:</span>
-                        <span class="summary-value">${guestEmail}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Phone:</span>
-                        <span class="summary-value">${guestPhone}</span>
-                    </div>
-                </div>
-            `;
-        }
-        
+    function renderSummary(pricing) {
+        const u = bookingData.selected_unit;
         const html = `
-            <h4>Booking Summary</h4>
-            ${customerInfo}
-            <div class="summary-item">
-                <span class="summary-label">Unit Type:</span>
-                <span class="summary-value">${selectedUnit.size} Unit</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Unit ID:</span>
-                <span class="summary-value">#${selectedUnit.id}</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Dimensions:</span>
-                <span class="summary-value">${selectedUnit.dimensions || 'N/A'}</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Start Date:</span>
-                <span class="summary-value">${startDate}</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">End Date:</span>
-                <span class="summary-value">${endDate}</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Duration:</span>
-                <span class="summary-value">${days} days</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Billing Period:</span>
-                <span class="summary-value">${bookingData.period}</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Base Price:</span>
-                <span class="summary-value">${parseFloat(selectedUnit.base_price).toFixed(2)} RSD</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Subtotal:</span>
-                <span class="summary-value">${parseFloat(pricing.subtotal).toFixed(2)} RSD</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">VAT (20%):</span>
-                <span class="summary-value">${parseFloat(pricing.vat).toFixed(2)} RSD</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Total:</span>
-                <span class="summary-value">${parseFloat(pricing.total).toFixed(2)} RSD</span>
-            </div>
-        `;
-
+            <div class="summary-card">
+                <div class="summary-section">
+                    <h4><span class="icon">📦</span> Unit Information</h4>
+                    <div class="summary-row"><span>Type</span><span>${bookingData.unit_type.toUpperCase()}</span></div>
+                    <div class="summary-row"><span>Unit ID</span><span>#${u.id}</span></div>
+                    <div class="summary-row"><span>Size</span><span>${u.size}</span></div>
+                </div>
+                <div class="summary-section">
+                    <h4><span class="icon">📅</span> Schedule</h4>
+                    <div class="summary-row"><span>Start</span><span>${bookingData.start_date}</span></div>
+                    <div class="summary-row"><span>End</span><span>${bookingData.end_date}</span></div>
+                    <div class="summary-row"><span>Billing</span><span>${bookingData.period}</span></div>
+                </div>
+                <div class="summary-section total">
+                    <div class="summary-row"><span>Subtotal</span><span>${parseFloat(pricing.subtotal).toFixed(2)} RSD</span></div>
+                    <div class="summary-row"><span>VAT (20%)</span><span>${parseFloat(pricing.vat).toFixed(2)} RSD</span></div>
+                    <div class="summary-row final"><span>Total Due</span><strong>${parseFloat(pricing.total).toFixed(2)} RSD</strong></div>
+                </div>
+            </div>`;
         $('#booking-summary').html(html);
     }
 
-    function handleFormSubmit(e) {
-        if (!validateCurrentStep()) {
-            console.log('Validation failed for current step');
-            return;
-        }
-
-        const selectedUnit = bookingData.selected_unit;
-        if (!selectedUnit) {
-            showError('Please select a unit.');
-            return;
-        }
-        
-        // Additional validation for required fields
-        if (!bookingData.unit_type) {
-            showError('Please select a unit type.');
-            return;
-        }
-        
-        if (!bookingData.start_date) {
-            showError('Please select a start date.');
-            return;
-        }
-        
-        if (!bookingData.end_date) {
-            showError('Please select an end date.');
-            return;
-        }
-        
-        // Final validation before submit - this should already be validated in step 4, but double-check
-        const isLoggedIn = window.royalStorageBooking.isLoggedIn || false;
-        if (!isLoggedIn) {
-            if (!validateGuestInformation()) {
-                // If validation fails, go back to step 4
-                currentStep = 4;
-                updateStepVisibility();
-                return;
-            }
-        }
-
-        // Show loading state
-        $('#submit-booking').prop('disabled', true).text('Processing Booking...');
-
-        // Prepare AJAX data
-        const ajaxData = {
+    function handleFormSubmit() {
+        const data = {
             action: 'create_booking',
             nonce: royalStorageBooking.nonce,
-            unit_id: selectedUnit.id,
-            unit_type: bookingData.unit_type,
-            start_date: bookingData.start_date,
-            end_date: bookingData.end_date,
-            period: bookingData.period
+            ...bookingData
         };
-        
-        // Add guest data if not logged in
-        if (!isLoggedIn) {
-            ajaxData.guest_email = $('#guest_email').val();
-            ajaxData.guest_first_name = $('#guest_first_name').val();
-            ajaxData.guest_last_name = $('#guest_last_name').val();
-            ajaxData.guest_phone = $('#guest_phone').val();
+
+        if (!window.royalStorageBooking.isLoggedIn) {
+            data.guest_email = $('#guest_email').val();
+            data.guest_first_name = $('#guest_first_name').val();
+            data.guest_last_name = $('#guest_last_name').val();
+            data.guest_phone = $('#guest_phone').val();
+            data.create_account = $('input[name="create_account"]').is(':checked') ? 1 : 0;
         }
 
-        $.ajax({
+        RoyalStorageUtils.ajax({
             url: royalStorageBooking.ajaxUrl,
-            type: 'POST',
-            data: ajaxData,
-            success: function(response) {
-                if (response.success) {
-                    showSuccess(response.data.message);
-                    setTimeout(function() {
-                        window.location.href = response.data.redirect_url;
-                    }, 2000);
-                } else {
-                    showError(response.data.message || 'Failed to create booking.');
-                    $('#submit-booking').prop('disabled', false).text('Book Now & Pay');
-                }
+            data: data,
+            beforeSend: () => {
+                RoyalStorageUtils.showLoading('Processing your booking...');
+                $('#submit-booking').prop('disabled', true).text('Processing...');
             },
-            error: function() {
-                showError('Failed to create booking. Please try again.');
+            success: function(response) {
+                RoyalStorageUtils.showToast('Booking successful! Redirecting to payment...', 'success');
+                setTimeout(() => window.location.href = response.data.redirect_url, 2000);
+            },
+            onError: () => {
                 $('#submit-booking').prop('disabled', false).text('Book Now & Pay');
             }
         });
-    }
-
-    function showError(message) {
-        // Remove existing messages
-        $('.error-message, .success-message').remove();
-        
-        // Show error message in a visible location
-        const errorHtml = `<div class="error-message" style="background: #dc3545; color: white; padding: 15px; margin-bottom: 20px; border-radius: 4px; font-weight: 500;">${message}</div>`;
-        
-        // Insert at the top of the form or in the current step
-        const currentStepElement = $(`.form-step[data-step="${currentStep}"]`);
-        if (currentStepElement.length) {
-            currentStepElement.prepend(errorHtml);
-        } else {
-            $('.royal-storage-booking-form').prepend(errorHtml);
-        }
-        
-        // Scroll to error
-        $('html, body').animate({
-            scrollTop: $('.error-message').offset().top - 100
-        }, 300);
-        
-        // Remove after 10 seconds
-        setTimeout(function() {
-            $('.error-message').fadeOut(function() {
-                $(this).remove();
-            });
-        }, 10000);
-    }
-
-    function showSuccess(message) {
-        $('.error-message, .success-message').remove();
-        $('.royal-storage-booking-form').prepend(`<div class="success-message">${message}</div>`);
-    }
-
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
     }
 });

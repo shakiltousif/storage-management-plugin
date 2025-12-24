@@ -1,8 +1,5 @@
 /**
  * Layout Admin JavaScript
- *
- * @package RoyalStorage
- * @since 1.0.0
  */
 
 jQuery(document).ready(function($) {
@@ -11,8 +8,8 @@ jQuery(document).ready(function($) {
     let currentLayout = null;
     let currentUnits = [];
     let selectedCell = null;
+    let unitsWithBookings = new Set(); // Track units that have bookings
 
-    // Initialize layout admin
     initLayoutAdmin();
 
     function initLayoutAdmin() {
@@ -21,26 +18,47 @@ jQuery(document).ready(function($) {
     }
 
     function loadLayout() {
-        $.ajax({
+        RoyalStorageUtils.ajax({
             url: royalStorageLayoutAdmin.ajaxUrl,
-            type: 'POST',
             data: {
                 action: 'get_unit_layout',
                 nonce: royalStorageLayoutAdmin.nonce
             },
             success: function(response) {
-                if (response.success) {
-                    currentLayout = response.data.layout;
-                    currentUnits = response.data.units;
-                    renderLayoutGrid();
-                    updateUnitsTable();
-                } else {
-                    showError('Failed to load layout: ' + response.data.message);
-                }
-            },
-            error: function() {
-                showError('Failed to load layout. Please try again.');
+                currentLayout = response.data.layout;
+                currentUnits = response.data.units;
+                checkUnitsBookings();
             }
+        });
+    }
+
+    function checkUnitsBookings() {
+        // Check each unit for bookings
+        let checkPromises = currentUnits.map(unit => {
+            return new Promise((resolve) => {
+                RoyalStorageUtils.ajax({
+                    url: royalStorageLayoutAdmin.ajaxUrl,
+                    data: {
+                        action: 'check_unit_has_bookings',
+                        nonce: royalStorageLayoutAdmin.nonce,
+                        unit_id: unit.id
+                    },
+                    success: function(response) {
+                        if (response.data.has_bookings) {
+                            unitsWithBookings.add(unit.id);
+                        }
+                        resolve();
+                    },
+                    error: function() {
+                        resolve(); // Continue even if check fails
+                    }
+                });
+            });
+        });
+
+        // Render grid after all checks complete
+        Promise.all(checkPromises).then(() => {
+            renderLayoutGrid();
         });
     }
 
@@ -52,141 +70,187 @@ jQuery(document).ready(function($) {
 
         const gridWidth = parseInt($('#grid-width').val()) || currentLayout.grid_width;
         const gridHeight = parseInt($('#grid-height').val()) || currentLayout.grid_height;
-        const unitSize = parseInt($('#unit-size').val()) || currentLayout.unit_size;
 
-        // Set grid dimensions
         $grid.css({
             'grid-template-columns': `repeat(${gridWidth}, 1fr)`,
             'grid-template-rows': `repeat(${gridHeight}, 1fr)`
         });
 
-        // Create grid cells
         for (let y = 0; y < gridHeight; y++) {
             for (let x = 0; x < gridWidth; x++) {
-                const unit = findUnitAtPosition(x, y);
+                const unit = currentUnits.find(u => u.position_x == x && u.position_y == y);
                 const $cell = createGridCell(unit, x, y);
                 $grid.append($cell);
             }
         }
     }
 
-    function findUnitAtPosition(x, y) {
-        return currentUnits.find(unit => 
-            unit.position_x == x && unit.position_y == y
-        );
-    }
-
     function createGridCell(unit, x, y) {
-        const $cell = $('<div class="grid-cell"></div>');
-        $cell.attr('data-x', x);
-        $cell.attr('data-y', y);
-        
+        const $cell = $('<div class="grid-cell"></div>').attr({ 'data-x': x, 'data-y': y });
+
+        // Add position label to all cells
+        const $posLabel = $('<div class="position-label"></div>').text(`${x},${y}`);
+        $cell.append($posLabel);
+
         if (unit) {
-            // Unit exists at this position
-            const visualProps = unit.visual_properties || {};
-            const status = getUnitStatus(unit);
-            
-            $cell.addClass(status);
-            $cell.addClass(getUnitTypeClass(unit.size));
-            $cell.attr('data-unit-id', unit.id);
-            
-            // Add unit content
-            const $content = $('<div class="cell-content"></div>');
-            
-            // Add unit icon
-            const $icon = $('<div class="unit-icon"></div>');
-            $icon.addClass(visualProps.icon || 'single-rect');
-            $content.append($icon);
-            
-            // Add unit number
-            if (visualProps.unit_number) {
-                const $number = $('<div class="cell-number"></div>');
-                $number.text(visualProps.unit_number);
-                $content.append($number);
+            const hasBookings = unitsWithBookings.has(unit.id);
+            const isDraggable = !hasBookings;
+
+            $cell.addClass(unit.status || 'available')
+                .addClass(getUnitTypeClass(unit.size))
+                .attr({
+                    'data-unit-id': unit.id,
+                    'draggable': isDraggable ? 'true' : 'false'
+                });
+
+            // Add locked class if unit has bookings
+            if (hasBookings) {
+                $cell.addClass('locked');
             }
-            
+
+            const $content = $('<div class="cell-content"></div>');
+            if (unit.visual_properties && unit.visual_properties.unit_number) {
+                $content.append($('<div class="cell-number"></div>').text(unit.visual_properties.unit_number));
+            }
+            $content.append($('<div class="unit-type-label"></div>').text(unit.size));
+
+            // Add lock icon if unit has bookings
+            if (hasBookings) {
+                $content.append($('<div class="lock-icon" title="Unit has active bookings">🔒</div>'));
+            }
+
             $cell.append($content);
-            
-            // Add click handler
-            $cell.on('click', function() {
-                selectCell($(this), unit);
-            });
+
+            // Drag events for units (only if draggable)
+            if (isDraggable) {
+                $cell.on('dragstart', (e) => handleDragStart(e, unit));
+                $cell.on('dragend', handleDragEnd);
+            }
         } else {
-            // Empty cell
             $cell.addClass('empty');
-            $cell.on('click', function() {
-                selectCell($(this), null);
-            });
         }
-        
+
+        // Drop events for all cells (so you can drop on empty cells too)
+        $cell.on('dragover', handleDragOver);
+        $cell.on('drop', (e) => handleDrop(e, x, y));
+        $cell.on('dragleave', handleDragLeave);
+        $cell.on('click', () => selectCell($cell, unit));
+
         return $cell;
     }
 
-    function getUnitStatus(unit) {
-        if (unit.status === 'available') {
-            return 'available';
-        } else if (unit.status === 'occupied') {
-            return 'occupied';
-        } else if (unit.status === 'reserved') {
-            return 'reserved';
-        } else {
-            return 'disabled';
-        }
-    }
-
     function getUnitTypeClass(size) {
-        const classes = {
-            'M': 'm-size',
-            'L': 'l-size',
-            'XL': 'xl-size',
-            'PARKING': 'parking'
-        };
+        const classes = { 'M': 'm-size', 'L': 'l-size', 'XL': 'xl-size', 'PARKING': 'parking' };
         return classes[size] || 'm-size';
     }
 
     function selectCell($cell, unit) {
-        // Remove previous selection
         $('.grid-cell.selected').removeClass('selected');
-        
-        // Add selection to new cell
         $cell.addClass('selected');
-        selectedCell = {
-            element: $cell,
-            unit: unit,
-            x: parseInt($cell.attr('data-x')),
-            y: parseInt($cell.attr('data-y'))
-        };
+        if (unit) editUnit(unit.id);
     }
 
-    function updateUnitsTable() {
-        // This would update the units table if needed
-        // For now, the table is rendered server-side
+    // Drag and Drop Handlers
+    let draggedUnit = null;
+
+    function handleDragStart(e, unit) {
+        // Check if unit has bookings
+        if (unitsWithBookings.has(unit.id)) {
+            e.preventDefault();
+            RoyalStorageUtils.showToast('Cannot move this unit because it has active bookings', 'error');
+            return false;
+        }
+
+        draggedUnit = unit;
+        $(e.currentTarget).addClass('dragging');
+        e.originalEvent.dataTransfer.effectAllowed = 'move';
+        e.originalEvent.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
+    }
+
+    function handleDragEnd(e) {
+        $(e.currentTarget).removeClass('dragging');
+        $('.grid-cell').removeClass('drag-over');
+        draggedUnit = null;
+    }
+
+    function handleDragOver(e) {
+        if (e.preventDefault) e.preventDefault();
+        e.originalEvent.dataTransfer.dropEffect = 'move';
+        $(e.currentTarget).addClass('drag-over');
+        return false;
+    }
+
+    function handleDragLeave(e) {
+        $(e.currentTarget).removeClass('drag-over');
+    }
+
+    function handleDrop(e, targetX, targetY) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (!draggedUnit) return false;
+
+        const $target = $(e.currentTarget);
+        $target.removeClass('drag-over');
+
+        // Check if target cell is already occupied
+        const targetOccupied = currentUnits.find(u => u.position_x == targetX && u.position_y == targetY);
+        if (targetOccupied && targetOccupied.id !== draggedUnit.id) {
+            RoyalStorageUtils.showToast('Position already occupied', 'error');
+            return false;
+        }
+
+        const oldX = draggedUnit.position_x;
+        const oldY = draggedUnit.position_y;
+
+        if (oldX == targetX && oldY == targetY) {
+            return false; // Same position, no change
+        }
+
+        // Update unit position
+        updateUnitPosition(draggedUnit.id, targetX, targetY, oldX, oldY);
+
+        return false;
+    }
+
+    function updateUnitPosition(unitId, newX, newY, oldX, oldY) {
+        RoyalStorageUtils.ajax({
+            url: royalStorageLayoutAdmin.ajaxUrl,
+            data: {
+                action: 'update_unit_position',
+                nonce: royalStorageLayoutAdmin.nonce,
+                unit_id: unitId,
+                position_x: newX,
+                position_y: newY
+            },
+            success: function(response) {
+                // Update local state
+                const idx = currentUnits.findIndex(u => u.id == unitId);
+                if (idx !== -1) {
+                    currentUnits[idx].position_x = newX;
+                    currentUnits[idx].position_y = newY;
+                }
+                renderLayoutGrid();
+                RoyalStorageUtils.showToast(`Unit moved from (${oldX},${oldY}) to (${newX},${newY})`);
+            },
+            error: function(response) {
+                // If unit has bookings, add it to the locked set
+                if (response.data && response.data.has_bookings) {
+                    unitsWithBookings.add(unitId);
+                }
+                // Show error message
+                const message = response.data && response.data.message ? response.data.message : 'Failed to update unit position';
+                RoyalStorageUtils.showToast(message, 'error');
+                // Re-render to show locked state
+                renderLayoutGrid();
+            }
+        });
     }
 
     function bindEvents() {
-        // Save layout
-        $('#save-layout').on('click', function() {
-            saveLayout();
+        $('#save-layout').on('click', saveLayout);
+        $('#reset-layout').on('click', () => {
+            if (confirm(royalStorageLayoutAdmin.strings.confirm_reset)) resetLayout();
         });
-
-        // Reset layout
-        $('#reset-layout').on('click', function() {
-            if (confirm(royalStorageLayoutAdmin.strings.confirm_reset)) {
-                resetLayout();
-            }
-        });
-
-        // Create sample units
-        $('#create-sample-units').on('click', function() {
-            createSampleUnits();
-        });
-
-        // Grid dimension changes
-        $('#grid-width, #grid-height, #unit-size').on('change', function() {
-            renderLayoutGrid();
-        });
-
-        // Edit unit
+        $('#grid-width, #grid-height, #unit-size').on('change', renderLayoutGrid);
         $(document).on('click', '.edit-unit', function() {
             const unitId = $(this).data('unit-id');
             editUnit(unitId);
@@ -194,79 +258,33 @@ jQuery(document).ready(function($) {
     }
 
     function saveLayout() {
-        const layoutData = {
-            facility_name: $('#facility-name').val(),
-            grid_width: parseInt($('#grid-width').val()),
-            grid_height: parseInt($('#grid-height').val()),
-            unit_size: parseInt($('#unit-size').val()),
-            units: currentUnits
-        };
-
-        $.ajax({
+        RoyalStorageUtils.ajax({
             url: royalStorageLayoutAdmin.ajaxUrl,
-            type: 'POST',
             data: {
                 action: 'save_unit_layout',
                 nonce: royalStorageLayoutAdmin.nonce,
-                layout_data: JSON.stringify(layoutData),
-                facility_name: layoutData.facility_name,
-                grid_width: layoutData.grid_width,
-                grid_height: layoutData.grid_height,
-                unit_size: layoutData.unit_size
+                facility_name: $('#facility-name').val(),
+                grid_width: parseInt($('#grid-width').val()),
+                grid_height: parseInt($('#grid-height').val()),
+                unit_size: parseInt($('#unit-size').val()),
+                layout_data: JSON.stringify({ units: currentUnits })
             },
-            success: function(response) {
-                if (response.success) {
-                    showSuccess(royalStorageLayoutAdmin.strings.save_success);
-                } else {
-                    showError(royalStorageLayoutAdmin.strings.save_error);
-                }
-            },
-            error: function() {
-                showError(royalStorageLayoutAdmin.strings.save_error);
+            success: function() {
+                RoyalStorageUtils.showToast('Layout saved successfully');
             }
         });
     }
 
     function resetLayout() {
-        $.ajax({
+        RoyalStorageUtils.ajax({
             url: royalStorageLayoutAdmin.ajaxUrl,
-            type: 'POST',
             data: {
                 action: 'create_sample_units',
                 nonce: royalStorageLayoutAdmin.nonce
             },
-            success: function(response) {
-                if (response.success) {
-                    showSuccess('Layout reset successfully!');
-                    loadLayout();
-                } else {
-                    showError('Failed to reset layout.');
-                }
-            },
-            error: function() {
-                showError('Failed to reset layout.');
-            }
-        });
-    }
-
-    function createSampleUnits() {
-        $.ajax({
-            url: royalStorageLayoutAdmin.ajaxUrl,
-            type: 'POST',
-            data: {
-                action: 'create_sample_units',
-                nonce: royalStorageLayoutAdmin.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    showSuccess('Sample units created successfully!');
-                    loadLayout();
-                } else {
-                    showError('Failed to create sample units.');
-                }
-            },
-            error: function() {
-                showError('Failed to create sample units.');
+            success: function() {
+                RoyalStorageUtils.showToast('Layout reset');
+                loadLayout();
             }
         });
     }
@@ -275,126 +293,91 @@ jQuery(document).ready(function($) {
         const unit = currentUnits.find(u => u.id == unitId);
         if (!unit) return;
 
-        // Create modal for editing unit
-        const modal = createEditUnitModal(unit);
-        $('body').append(modal);
-        modal.show();
-    }
-
-    function createEditUnitModal(unit) {
-        const $modal = $(`
-            <div class="modal" id="edit-unit-modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>Edit Unit #${unit.id}</h3>
-                        <span class="modal-close">&times;</span>
-                    </div>
-                    <div class="modal-body">
-                        <form id="edit-unit-form">
-                            <div class="form-group">
-                                <label for="unit-size">Unit Size:</label>
-                                <select id="unit-size" name="size">
-                                    <option value="M" ${unit.size === 'M' ? 'selected' : ''}>M Size</option>
-                                    <option value="L" ${unit.size === 'L' ? 'selected' : ''}>L Size</option>
-                                    <option value="XL" ${unit.size === 'XL' ? 'selected' : ''}>XL Size</option>
-                                    <option value="PARKING" ${unit.size === 'PARKING' ? 'selected' : ''}>Parking</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="unit-status">Status:</label>
-                                <select id="unit-status" name="status">
-                                    <option value="available" ${unit.status === 'available' ? 'selected' : ''}>Available</option>
-                                    <option value="occupied" ${unit.status === 'occupied' ? 'selected' : ''}>Occupied</option>
-                                    <option value="reserved" ${unit.status === 'reserved' ? 'selected' : ''}>Reserved</option>
-                                    <option value="disabled" ${unit.status === 'disabled' ? 'selected' : ''}>Disabled</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="unit-price">Base Price (RSD):</label>
-                                <input type="number" id="unit-price" name="base_price" value="${unit.base_price}" step="0.01" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="unit-dimensions">Dimensions:</label>
-                                <input type="text" id="unit-dimensions" name="dimensions" value="${unit.dimensions || ''}">
-                            </div>
-                            <div class="form-group">
-                                <label for="unit-amenities">Amenities:</label>
-                                <textarea id="unit-amenities" name="amenities" rows="3">${unit.amenities || ''}</textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="unit-access-code">Access Code:</label>
-                                <input type="text" id="unit-access-code" name="access_code" value="${unit.access_code || ''}">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="button button-secondary" id="cancel-edit">Cancel</button>
-                        <button type="button" class="button button-primary" id="save-edit">Save Changes</button>
-                    </div>
+        const content = `
+            <form id="edit-unit-form" class="royal-storage-form">
+                <div class="royal-storage-form-group">
+                    <label>Unit Size</label>
+                    <select name="size">
+                        <option value="M" ${unit.size === 'M' ? 'selected' : ''}>M Size</option>
+                        <option value="L" ${unit.size === 'L' ? 'selected' : ''}>L Size</option>
+                        <option value="XL" ${unit.size === 'XL' ? 'selected' : ''}>XL Size</option>
+                        <option value="PARKING" ${unit.size === 'PARKING' ? 'selected' : ''}>Parking</option>
+                    </select>
                 </div>
-            </div>
-        `);
+                <div class="royal-storage-form-group">
+                    <label>Dimensions</label>
+                    <input type="text" name="dimensions" value="${unit.dimensions || ''}" placeholder="e.g., 3x3x3">
+                </div>
+                <div class="royal-storage-form-group">
+                    <label>Status</label>
+                    <select name="status">
+                        <option value="available" ${unit.status === 'available' ? 'selected' : ''}>Available</option>
+                        <option value="occupied" ${unit.status === 'occupied' ? 'selected' : ''}>Occupied</option>
+                    </select>
+                </div>
+                <div class="royal-storage-form-group">
+                    <label>Base Price (RSD)</label>
+                    <input type="number" name="base_price" value="${unit.base_price}" step="0.01">
+                </div>
+                <div class="royal-storage-form-group">
+                    <label>Position X</label>
+                    <input type="number" name="position_x" value="${unit.position_x || 0}" min="0">
+                </div>
+                <div class="royal-storage-form-group">
+                    <label>Position Y</label>
+                    <input type="number" name="position_y" value="${unit.position_y || 0}" min="0">
+                </div>
+                <div class="royal-storage-form-group">
+                    <label>Unit Group</label>
+                    <input type="text" name="unit_group" value="${unit.unit_group || ''}" placeholder="e.g., m_boxes">
+                </div>
+                <div class="royal-storage-form-group">
+                    <label>Access Code</label>
+                    <input type="text" name="access_code" value="${unit.access_code || ''}" placeholder="e.g., ABC123">
+                </div>
+            </form>`;
 
-        // Bind modal events
-        $modal.find('.modal-close, #cancel-edit').on('click', function() {
-            $modal.remove();
-        });
+        const footer = `
+            <button class="royal-storage-btn royal-storage-btn-secondary modal-cancel">Cancel</button>
+            <button class="royal-storage-btn modal-save">Save Changes</button>`;
 
-        $modal.find('#save-edit').on('click', function() {
-            saveUnitChanges(unit.id, $modal);
-        });
+        const $modal = RoyalStorageUtils.openModal({
+            title: `Edit Unit #${unit.id}`,
+            content: content,
+            footer: footer,
+            onOpen: ($m) => {
+                $m.find('.modal-cancel').on('click', () => $m.find('.royal-storage-modal-close').click());
+                $m.find('.modal-save').on('click', () => {
+                    const formData = {
+                        size: $m.find('[name="size"]').val(),
+                        dimensions: $m.find('[name="dimensions"]').val(),
+                        status: $m.find('[name="status"]').val(),
+                        base_price: parseFloat($m.find('[name="base_price"]').val()),
+                        position_x: parseInt($m.find('[name="position_x"]').val()),
+                        position_y: parseInt($m.find('[name="position_y"]').val()),
+                        unit_group: $m.find('[name="unit_group"]').val(),
+                        access_code: $m.find('[name="access_code"]').val()
+                    };
 
-        // Close modal when clicking outside
-        $modal.on('click', function(e) {
-            if (e.target === this) {
-                $modal.remove();
+                    // Save to database via AJAX
+                    RoyalStorageUtils.ajax({
+                        url: royalStorageLayoutAdmin.ajaxUrl,
+                        data: {
+                            action: 'update_unit_data',
+                            nonce: royalStorageLayoutAdmin.nonce,
+                            unit_id: unitId,
+                            unit_data: formData
+                        },
+                        success: function() {
+                            const idx = currentUnits.findIndex(u => u.id == unitId);
+                            if (idx !== -1) currentUnits[idx] = { ...currentUnits[idx], ...formData };
+                            renderLayoutGrid();
+                            $m.find('.royal-storage-modal-close').click();
+                            RoyalStorageUtils.showToast('Unit updated successfully');
+                        }
+                    });
+                });
             }
         });
-
-        return $modal;
-    }
-
-    function saveUnitChanges(unitId, $modal) {
-        const formData = {
-            size: $modal.find('#unit-size').val(),
-            status: $modal.find('#unit-status').val(),
-            base_price: parseFloat($modal.find('#unit-price').val()),
-            dimensions: $modal.find('#unit-dimensions').val(),
-            amenities: $modal.find('#unit-amenities').val(),
-            access_code: $modal.find('#unit-access-code').val()
-        };
-
-        // Update unit in current units array
-        const unitIndex = currentUnits.findIndex(u => u.id == unitId);
-        if (unitIndex !== -1) {
-            currentUnits[unitIndex] = { ...currentUnits[unitIndex], ...formData };
-        }
-
-        // Re-render grid and table
-        renderLayoutGrid();
-        updateUnitsTable();
-
-        // Close modal
-        $modal.remove();
-        showSuccess('Unit updated successfully!');
-    }
-
-    function showSuccess(message) {
-        showNotice(message, 'success');
-    }
-
-    function showError(message) {
-        showNotice(message, 'error');
-    }
-
-    function showNotice(message, type) {
-        const $notice = $(`<div class="notice notice-${type}"><p>${message}</p></div>`);
-        $('.layout-admin-container').prepend($notice);
-        
-        setTimeout(function() {
-            $notice.fadeOut(300, function() {
-                $notice.remove();
-            });
-        }, 3000);
     }
 });

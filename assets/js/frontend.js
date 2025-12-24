@@ -15,7 +15,7 @@
 			$(document).on('change', '.royal-storage-start-date', this.onDateChange.bind(this));
 			$(document).on('change', '.royal-storage-end-date', this.onDateChange.bind(this));
 			$(document).on('click', '.royal-storage-unit-card', this.selectUnit.bind(this));
-			$(document).on('submit', '.royal-storage-booking-form', this.submitBooking.bind(this));
+			$(document).on('submit', 'form.royal-storage-booking-form', this.submitBooking.bind(this));
 		},
 
 		onUnitTypeChange: function(e) {
@@ -109,6 +109,21 @@
 		},
 
 		submitBooking: function(e) {
+			var $form = $(e.target);
+
+			// Check if this form has the old booking fields
+			// If not, let the new booking.js handle it
+			var hasOldFields = $form.find('.royal-storage-selected-unit').length > 0 ||
+			                   $form.find('.royal-storage-unit-type').length > 0;
+
+			console.log('Frontend.js submitBooking - Has old fields:', hasOldFields);
+
+			if (!hasOldFields) {
+				console.log('Frontend.js: Skipping - letting booking.js handle this');
+				return; // Let booking.js handle this - don't prevent default
+			}
+
+			console.log('Frontend.js: Handling submit with old form logic');
 			e.preventDefault();
 
 			var unitId = $('.royal-storage-selected-unit').val();

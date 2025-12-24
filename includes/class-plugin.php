@@ -123,6 +123,15 @@ class Plugin {
 	 * @return void
 	 */
 	public function enqueue_frontend_assets() {
+		// Enqueue global utils.
+		wp_enqueue_script(
+			'royal-storage-utils',
+			ROYAL_STORAGE_URL . 'assets/js/royal-storage-utils.js',
+			array( 'jquery' ),
+			ROYAL_STORAGE_VERSION,
+			true
+		);
+
 		// Enqueue frontend CSS.
 		wp_enqueue_style(
 			'royal-storage-frontend',
@@ -135,7 +144,7 @@ class Plugin {
 		wp_enqueue_script(
 			'royal-storage-frontend',
 			ROYAL_STORAGE_URL . 'assets/js/frontend.js',
-			array( 'jquery' ),
+			array( 'jquery', 'royal-storage-utils' ),
 			ROYAL_STORAGE_VERSION,
 			true
 		);
@@ -157,6 +166,15 @@ class Plugin {
 	 * @return void
 	 */
 	public function enqueue_admin_assets() {
+		// Enqueue global utils.
+		wp_enqueue_script(
+			'royal-storage-utils',
+			ROYAL_STORAGE_URL . 'assets/js/royal-storage-utils.js',
+			array( 'jquery' ),
+			ROYAL_STORAGE_VERSION,
+			true
+		);
+
 		// Enqueue admin CSS.
 		wp_enqueue_style(
 			'royal-storage-admin',
@@ -169,7 +187,7 @@ class Plugin {
 		wp_enqueue_script(
 			'royal-storage-admin',
 			ROYAL_STORAGE_URL . 'assets/js/admin.js',
-			array( 'jquery' ),
+			array( 'jquery', 'royal-storage-utils' ),
 			ROYAL_STORAGE_VERSION,
 			true
 		);

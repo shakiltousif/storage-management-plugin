@@ -1,1220 +1,649 @@
-/* Royal Storage Admin Styles */
+/* Royal Storage Admin - Modern UI Design System */
+
+:root {
+	--rs-primary: #3b82f6;
+	--rs-primary-hover: #2563eb;
+	--rs-secondary: #64748b;
+	--rs-secondary-hover: #475569;
+	--rs-success: #10b981;
+	--rs-danger: #ef4444;
+	--rs-warning: #f59e0b;
+	--rs-info: #0ea5e9;
+	--rs-bg-main: #f8fafc;
+	--rs-bg-card: #ffffff;
+	--rs-text-main: #1e293b;
+	--rs-text-muted: #64748b;
+	--rs-border: #e2e8f0;
+	--rs-radius-sm: 6px;
+	--rs-radius-md: 10px;
+	--rs-radius-lg: 16px;
+	--rs-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--rs-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--rs-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--rs-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 .royal-storage-admin {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-}
-
-/* Modal Styles */
-.royal-storage-modal {
-	display: none;
-	position: fixed;
-	z-index: 9999;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	background-color: rgba(0, 0, 0, 0.5);
-}
-
-.royal-storage-modal.show {
-	display: block !important;
-}
-
-.royal-storage-modal-content {
-	background-color: #fefefe;
-	margin: 5% auto;
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	color: var(--rs-text-main);
+	background-color: var(--rs-bg-main);
 	padding: 20px;
-	border: 1px solid #888;
-	border-radius: 4px;
-	width: 80%;
-	max-width: 600px;
-	position: relative;
-}
-
-.royal-storage-modal-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-	padding-bottom: 10px;
-	border-bottom: 1px solid #ddd;
-}
-
-.royal-storage-modal-title {
-	font-size: 18px;
-	font-weight: 600;
-	margin: 0;
-}
-
-.royal-storage-modal-close {
-	color: #aaa;
-	font-size: 28px;
-	font-weight: bold;
-	cursor: pointer;
-	line-height: 1;
-}
-
-.royal-storage-modal-close:hover,
-.royal-storage-modal-close:focus {
-	color: #000;
-	text-decoration: none;
-}
-
-.royal-storage-modal-body {
-	margin-bottom: 20px;
-}
-
-.royal-storage-modal-footer {
-	display: flex;
-	justify-content: flex-end;
-	gap: 10px;
-	padding-top: 10px;
-	border-top: 1px solid #ddd;
 }
 
 .royal-storage-admin .wrap {
-	max-width: 1200px;
-	margin: 20px auto;
+	max-width: 1400px;
+	margin: 0 auto;
 }
 
+/* Typography */
 .royal-storage-admin h1 {
-	color: #1a1a1a;
-	margin-bottom: 20px;
-	font-size: 32px;
-	font-weight: 600;
+	font-size: 1.875rem;
+	font-weight: 700;
+	color: var(--rs-text-main);
+	margin-bottom: 1.5rem;
+	letter-spacing: -0.025em;
 }
 
 .royal-storage-admin h2 {
-	color: #1a1a1a;
-	margin-top: 30px;
-	margin-bottom: 15px;
-	font-size: 24px;
+	font-size: 1.25rem;
 	font-weight: 600;
+	color: var(--rs-text-main);
+	margin: 2rem 0 1rem;
 }
 
-/* Dashboard Container */
-.royal-storage-dashboard-container {
-	margin-top: 20px;
+/* Cards & Sections */
+.dashboard-section, 
+.royal-storage-widget, 
+.royal-storage-settings-section {
+	background: var(--rs-bg-card);
+	border: 1px solid var(--rs-border);
+	border-radius: var(--rs-radius-md);
+	padding: 1.5rem;
+	margin-bottom: 1.5rem;
+	box-shadow: var(--rs-shadow-sm);
+	transition: var(--rs-transition);
 }
 
-/* Dashboard Actions */
-.royal-storage-dashboard-actions {
-	margin-bottom: 20px;
-	padding: 15px;
-	background: #f8f9fa;
-	border: 1px solid #e9ecef;
-	border-radius: 4px;
+.dashboard-section:hover, 
+.royal-storage-widget:hover {
+	box-shadow: var(--rs-shadow);
 }
 
-/* Dashboard Metrics */
-.royal-storage-metrics {
-	margin-bottom: 30px;
-}
-
-.metrics-row {
+/* Metrics Grid */
+.metrics-grid, .metrics-row {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-	gap: 20px;
-	margin-bottom: 20px;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1.25rem;
+	margin-bottom: 2rem;
 }
 
 .metric-card {
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
-	padding: 20px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	background: var(--rs-bg-card);
+	border: 1px solid var(--rs-border);
+	border-radius: var(--rs-radius-md);
+	padding: 1.25rem;
 	display: flex;
 	align-items: center;
-	transition: transform 0.2s, box-shadow 0.2s;
+	gap: 1rem;
+	transition: var(--rs-transition);
 }
 
 .metric-card:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	box-shadow: var(--rs-shadow);
+	border-color: var(--rs-primary);
 }
 
 .metric-icon {
-	font-size: 32px;
-	margin-right: 15px;
-	width: 50px;
-	text-align: center;
+	width: 48px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--rs-bg-main);
+	border-radius: var(--rs-radius-sm);
+	font-size: 1.5rem;
 }
 
 .metric-content h3 {
-	margin: 0 0 8px 0;
-	font-size: 14px;
-	font-weight: 600;
-	color: #666;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--rs-text-muted);
 	text-transform: uppercase;
-	letter-spacing: 0.5px;
+	letter-spacing: 0.05em;
 }
 
-.metric-number {
-	font-size: 28px;
+.metric-value, .metric-number {
+	margin: 0.25rem 0 0;
+	font-size: 1.5rem;
 	font-weight: 700;
-	color: #1a1a1a;
-	margin: 0;
+	color: var(--rs-text-main);
 }
 
-.metric-number.alert {
-	color: #dc3545;
-}
-
-.metric-number.warning {
-	color: #ffc107;
-}
-
-/* Dashboard Widgets */
-.royal-storage-widget {
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
-	padding: 20px;
-	margin-bottom: 20px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.royal-storage-widget h2 {
-	margin-top: 0;
-	margin-bottom: 20px;
-	color: #1a1a1a;
-	font-size: 20px;
-	font-weight: 600;
-	border-bottom: 2px solid #f0f0f0;
-	padding-bottom: 10px;
-}
-
-/* Status Styles */
-.status-confirmed {
-	color: #28a745;
-	font-weight: 600;
-}
-
-.status-active {
-	color: #007cba;
-	font-weight: 600;
-}
-
-.status-pending {
-	color: #ffc107;
-	font-weight: 600;
-}
-
-.status-cancelled {
-	color: #dc3545;
-	font-weight: 600;
-}
-
-.status-expired {
-	color: #6c757d;
-	font-weight: 600;
-}
-
-.days-left.urgent {
-	color: #dc3545;
-	font-weight: 700;
-}
-
-.days-left.warning {
-	color: #ffc107;
-	font-weight: 600;
-}
-
-/* Settings Page Styles */
-.royal-storage-settings-container {
-	margin-top: 20px;
-}
-
-.royal-storage-settings-section {
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
-	padding: 20px;
-	margin-bottom: 20px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.royal-storage-settings-section h2 {
-	margin-top: 0;
-	margin-bottom: 20px;
-	color: #1a1a1a;
-	font-size: 20px;
-	font-weight: 600;
-	border-bottom: 2px solid #f0f0f0;
-	padding-bottom: 10px;
-}
-
-.royal-storage-settings-section .form-table th {
-	width: 200px;
-	padding: 15px 10px 15px 0;
-	vertical-align: top;
-	font-weight: 600;
-	color: #333;
-}
-
-.royal-storage-settings-section .form-table td {
-	padding: 15px 10px;
-	vertical-align: top;
-}
-
-.royal-storage-settings-section .form-table input[type="text"],
-.royal-storage-settings-section .form-table input[type="email"],
-.royal-storage-settings-section .form-table input[type="password"],
-.royal-storage-settings-section .form-table input[type="number"],
-.royal-storage-settings-section .form-table select,
-.royal-storage-settings-section .form-table textarea {
-	width: 100%;
-	max-width: 400px;
-	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	font-size: 14px;
-	transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.royal-storage-settings-section .form-table input:focus,
-.royal-storage-settings-section .form-table select:focus,
-.royal-storage-settings-section .form-table textarea:focus {
-	border-color: #007cba;
-	box-shadow: 0 0 0 1px #007cba;
-	outline: none;
-}
-
-.royal-storage-settings-section .form-table .small-text {
-	max-width: 100px;
-}
-
-.royal-storage-settings-section .form-table .large-text {
-	max-width: 600px;
-}
-
-.royal-storage-settings-section .form-table .description {
-	font-style: italic;
-	color: #666;
-	margin-top: 5px;
-	font-size: 13px;
-}
-
-.royal-storage-settings-section fieldset {
-	border: none;
-	padding: 0;
-	margin: 0;
-}
-
-.royal-storage-settings-section fieldset label {
-	display: block;
-	margin-bottom: 8px;
-	font-weight: normal;
-}
-
-.royal-storage-settings-section fieldset input[type="checkbox"] {
-	width: auto;
-	margin-right: 8px;
-}
-
-/* Settings Save Button */
-.royal-storage-settings-container .submit {
-	margin-top: 30px;
-	padding: 20px;
-	background: #f8f9fa;
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
-}
-
-.royal-storage-settings-container .submit .button-primary {
-	background: #007cba;
-	border-color: #007cba;
-	padding: 10px 20px;
-	font-size: 16px;
-	font-weight: 600;
-	height: auto;
-	line-height: 1.4;
-}
-
-.royal-storage-settings-container .submit .button-primary:hover {
-	background: #005a87;
-	border-color: #005a87;
-}
-
-/* Reports Page Styles */
-.royal-storage-reports-filters {
-	background: #f8f9fa;
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
-	padding: 20px;
-	margin-bottom: 20px;
-	display: flex;
-	align-items: end;
-	gap: 20px;
-	flex-wrap: wrap;
-}
-
-.royal-storage-reports-filters .filter-group {
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
-}
-
-.royal-storage-reports-filters label {
-	font-weight: 600;
-	color: #333;
-	font-size: 14px;
-}
-
-.royal-storage-reports-filters input[type="date"] {
-	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	font-size: 14px;
-	min-width: 150px;
-}
-
-.royal-storage-reports-export {
-	margin-bottom: 20px;
-}
-
-.royal-storage-reports-export .button {
-	background: #28a745;
-	border-color: #28a745;
-	color: #fff;
-	padding: 8px 16px;
-	font-size: 14px;
-}
-
-.royal-storage-reports-export .button:hover {
-	background: #218838;
-	border-color: #1e7e34;
-}
-
-.royal-storage-reports-section {
-	margin-bottom: 30px;
-}
-
-.royal-storage-reports-section .royal-storage-widget {
-	margin-bottom: 0;
-}
-
-/* Revenue Chart Styles */
-.revenue-chart-container {
-	margin-top: 15px;
-}
-
-.chart-placeholder {
-	background: #f8f9fa;
-	border: 1px solid #e9ecef;
-	border-radius: 4px;
-	padding: 15px;
-}
-
-/* Occupancy Report Styles */
-.occupancy-stats {
+/* Alert Cards */
+.alerts-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: 20px;
-	margin-bottom: 20px;
-	padding: 20px;
-	background: #f8f9fa;
-	border-radius: 8px;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 1.25rem;
 }
 
-.occupancy-metric {
+.alert-card {
+	padding: 1.25rem;
+	border-radius: var(--rs-radius-md);
 	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 10px 15px;
-	background: #fff;
-	border: 1px solid #e9ecef;
-	border-radius: 6px;
+	gap: 1rem;
+	border: 1px solid transparent;
 }
 
-.occupancy-metric .label {
+.alert-danger {
+	background: #fef2f2;
+	border-color: #fee2e2;
+}
+
+.alert-danger .alert-icon { color: var(--rs-danger); }
+
+.alert-warning {
+	background: #fffbeb;
+	border-color: #fef3c7;
+}
+
+.alert-warning .alert-icon { color: var(--rs-warning); }
+
+.alert-info {
+	background: #f0f9ff;
+	border-color: #e0f2fe;
+}
+
+.alert-info .alert-icon { color: var(--rs-info); }
+
+.alert-content h3 {
+	margin: 0;
+	font-size: 0.875rem;
 	font-weight: 600;
-	color: #666;
 }
 
-.occupancy-metric .value {
-	font-size: 18px;
+.alert-value {
+	font-size: 1.25rem;
 	font-weight: 700;
-	color: #007cba;
+	margin: 0.25rem 0;
 }
 
-.occupancy-details {
-	margin-top: 20px;
-}
-
-.occupancy-details h3 {
-	margin-bottom: 15px;
-	color: #333;
-	font-size: 16px;
-}
-
-/* Status Badge Styles */
-.status-badge {
-	display: inline-block;
-	padding: 4px 8px;
-	border-radius: 4px;
-	font-size: 12px;
+.alert-link {
+	font-size: 0.75rem;
 	font-weight: 600;
+	text-decoration: none;
+	color: inherit;
+	opacity: 0.8;
 	text-transform: uppercase;
-	letter-spacing: 0.5px;
 }
 
-.status-badge.status-confirmed {
-	background: #d4edda;
-	color: #155724;
-	border: 1px solid #c3e6cb;
-}
-
-.status-badge.status-active {
-	background: #cce7ff;
-	color: #004085;
-	border: 1px solid #b3d7ff;
-}
-
-.status-badge.status-pending {
-	background: #fff3cd;
-	color: #856404;
-	border: 1px solid #ffeaa7;
-}
-
-.status-badge.status-cancelled {
-	background: #f8d7da;
-	color: #721c24;
-	border: 1px solid #f5c6cb;
-}
-
-.status-badge.status-expired {
-	background: #e2e3e5;
-	color: #383d41;
-	border: 1px solid #d6d8db;
-}
-
-.status-badge.status-paid {
-	background: #d4edda;
-	color: #155724;
-	border: 1px solid #c3e6cb;
-}
-
-.status-badge.status-unpaid {
-	background: #f8d7da;
-	color: #721c24;
-	border: 1px solid #f5c6cb;
-}
-
-.status-badge.status-partial {
-	background: #fff3cd;
-	color: #856404;
-	border: 1px solid #ffeaa7;
-}
-
-/* Table Enhancements */
-.royal-storage-widget table {
-	margin-top: 0;
-}
-
-.royal-storage-widget table th {
-	background: #f8f9fa;
-	font-weight: 600;
-	color: #333;
-	border-bottom: 2px solid #e9ecef;
-}
-
-.royal-storage-widget table td {
-	vertical-align: middle;
-}
-
-.royal-storage-widget table tfoot th {
-	background: #e9ecef;
-	font-weight: 700;
-	color: #333;
-}
-
-/* Responsive Design for Reports */
-@media (max-width: 768px) {
-	.royal-storage-reports-filters {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 15px;
-	}
-	
-	.royal-storage-reports-filters .filter-group {
-		width: 100%;
-	}
-	
-	.royal-storage-reports-filters input[type="date"] {
-		width: 100%;
-		min-width: auto;
-	}
-	
-	.occupancy-stats {
-		grid-template-columns: 1fr;
-		gap: 15px;
-	}
-	
-	.royal-storage-widget table {
-		font-size: 12px;
-	}
-	
-	.royal-storage-widget table th,
-	.royal-storage-widget table td {
-		padding: 8px 4px;
-	}
-}
-
-/* Customers Page Styles */
-.royal-storage-customers-summary {
-	margin-bottom: 30px;
-}
-
-.royal-storage-customers-filters {
-	background: #f8f9fa;
-	border: 1px solid #e9ecef;
-	border-radius: 8px;
-	padding: 20px;
-	margin-bottom: 20px;
-}
-
-.royal-storage-customers-filters .search-box {
+/* Revenue Card - Modern Gradient */
+.revenue-card {
+	background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+	color: white;
+	padding: 2rem;
+	border-radius: var(--rs-radius-lg);
 	display: flex;
 	align-items: center;
-	gap: 15px;
-	flex-wrap: wrap;
+	gap: 2rem;
+	box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
-.royal-storage-customers-filters label {
-	font-weight: 600;
-	color: #333;
-	font-size: 14px;
-	min-width: 120px;
+.revenue-icon { font-size: 3rem; opacity: 0.9; }
+
+.revenue-content h3 {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 500;
+	opacity: 0.9;
 }
 
-.royal-storage-customers-filters input[type="search"] {
-	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	font-size: 14px;
-	min-width: 300px;
-	flex: 1;
+.revenue-value {
+	margin: 0.5rem 0 1rem;
+	font-size: 2.5rem;
+	font-weight: 800;
 }
 
-.royal-storage-customers-export {
-	margin-bottom: 20px;
-}
-
-.royal-storage-customers-export .button {
-	background: #28a745;
-	border-color: #28a745;
-	color: #fff;
-	padding: 8px 16px;
-	font-size: 14px;
-}
-
-.royal-storage-customers-export .button:hover {
-	background: #218838;
-	border-color: #1e7e34;
-}
-
-.royal-storage-customers-table {
-	margin-bottom: 30px;
-}
-
-.royal-storage-customers-pagination {
-	margin-top: 20px;
-}
-
-/* Customer Table Styles */
-.royal-storage-widget h2 .search-results {
-	font-size: 14px;
-	font-weight: normal;
-	color: #666;
-	margin-left: 10px;
-}
-
-.customer-actions {
-	display: flex;
-	gap: 5px;
-	flex-wrap: wrap;
-}
-
-.customer-actions .button {
-	font-size: 12px;
-	padding: 4px 8px;
-	height: auto;
-	line-height: 1.4;
-}
-
-.overdue-amount {
-	color: #dc3545;
-	font-weight: 600;
-}
-
-.no-overdue {
-	color: #28a745;
-	font-weight: 600;
-}
-
-.active-bookings-count {
-	background: #cce7ff;
-	color: #004085;
-	padding: 2px 6px;
-	border-radius: 3px;
-	font-weight: 600;
-	font-size: 12px;
-}
-
-.total-bookings-count {
-	background: #e2e3e5;
-	color: #383d41;
-	padding: 2px 6px;
-	border-radius: 3px;
-	font-weight: 600;
-	font-size: 12px;
-}
-
-.no-customers {
-	text-align: center;
-	padding: 40px 20px;
-	color: #666;
-}
-
-.no-customers p {
-	margin: 10px 0;
-	font-size: 16px;
-}
-
-/* Pagination Styles */
-.tablenav {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-top: 20px;
-	padding: 10px 0;
-}
-
-.tablenav-pages {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.tablenav-pages .button {
-	padding: 4px 8px;
-	font-size: 12px;
-	height: auto;
-	line-height: 1.4;
-}
-
-.tablenav-pages .paging-input {
-	display: flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.tablenav-pages .current-page {
-	width: 50px;
-	text-align: center;
-	padding: 4px;
-	border: 1px solid #ddd;
-	border-radius: 3px;
-}
-
-.tablenav-pages .tablenav-paging-text {
-	font-size: 12px;
-	color: #666;
-}
-
-.displaying-num {
-	font-size: 12px;
-	color: #666;
-}
-
-/* Responsive Design for Customers */
-@media (max-width: 768px) {
-	.royal-storage-customers-filters .search-box {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 10px;
-	}
-	
-	.royal-storage-customers-filters input[type="search"] {
-		min-width: auto;
-		width: 100%;
-	}
-	
-	.customer-actions {
-		flex-direction: column;
-		gap: 3px;
-	}
-	
-	.customer-actions .button {
-		width: 100%;
-		text-align: center;
-	}
-	
-	.royal-storage-widget table {
-		font-size: 12px;
-	}
-	
-	.royal-storage-widget table th,
-	.royal-storage-widget table td {
-		padding: 6px 4px;
-	}
-	
-	.tablenav {
-		flex-direction: column;
-		gap: 10px;
-	}
-	
-	.tablenav-pages {
-		flex-wrap: wrap;
-		justify-content: center;
-	}
-}
-
-/* Dashboard Widgets */
-.royal-storage-dashboard-widget {
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 4px;
-	padding: 20px;
-	margin-bottom: 20px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.royal-storage-dashboard-widget h3 {
-	margin-top: 0;
-	margin-bottom: 15px;
-	color: #1a1a1a;
-	font-size: 18px;
-}
-
-.royal-storage-stat {
+.revenue-link {
 	display: inline-block;
-	margin-right: 30px;
-	margin-bottom: 15px;
+	background: rgba(255, 255, 255, 0.2);
+	color: white;
+	padding: 0.5rem 1rem;
+	border-radius: var(--rs-radius-sm);
+	text-decoration: none;
+	font-size: 0.875rem;
+	font-weight: 600;
+	backdrop-filter: blur(4px);
+	transition: var(--rs-transition);
 }
 
-.royal-storage-stat-value {
-	font-size: 32px;
-	font-weight: 700;
-	color: #0073aa;
-	display: block;
-}
-
-.royal-storage-stat-label {
-	font-size: 14px;
-	color: #666;
-	margin-top: 5px;
+.revenue-link:hover {
+	background: rgba(255, 255, 255, 0.3);
 }
 
 /* Tables */
-.royal-storage-table {
+.royal-storage-table, .wp-list-table {
 	width: 100%;
-	border-collapse: collapse;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 4px;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--rs-border) !important;
+	border-radius: var(--rs-radius-md);
 	overflow: hidden;
+	box-shadow: var(--rs-shadow-sm);
 }
 
-.royal-storage-table thead {
-	background: #f5f5f5;
-	border-bottom: 2px solid #e0e0e0;
+.royal-storage-table th, .wp-list-table th {
+	background: var(--rs-bg-main) !important;
+	color: var(--rs-text-muted) !important;
+	font-weight: 600 !important;
+	text-transform: uppercase;
+	font-size: 0.75rem !important;
+	letter-spacing: 0.05em;
+	padding: 1rem !important;
+	border-bottom: 1px solid var(--rs-border) !important;
 }
 
-.royal-storage-table th {
-	padding: 12px 15px;
-	text-align: left;
-	font-weight: 600;
-	color: #1a1a1a;
+.royal-storage-table td, .wp-list-table td {
+	padding: 1rem !important;
+	border-bottom: 1px solid var(--rs-border) !important;
+	vertical-align: middle !important;
 }
 
-.royal-storage-table td {
-	padding: 12px 15px;
-	border-bottom: 1px solid #e0e0e0;
+.royal-storage-table tr:last-child td, .wp-list-table tr:last-child td {
+	border-bottom: none !important;
 }
 
 .royal-storage-table tbody tr:hover {
-	background: #f9f9f9;
-}
-
-/* Forms */
-.royal-storage-form-group {
-	margin-bottom: 20px;
-}
-
-.royal-storage-form-group label {
-	display: block;
-	margin-bottom: 8px;
-	font-weight: 600;
-	color: #1a1a1a;
-}
-
-.royal-storage-form-group input,
-.royal-storage-form-group select,
-.royal-storage-form-group textarea {
-	width: 100%;
-	padding: 10px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	font-size: 14px;
-	font-family: inherit;
-}
-
-.royal-storage-form-group input:focus,
-.royal-storage-form-group select:focus,
-.royal-storage-form-group textarea:focus {
-	outline: none;
-	border-color: #0073aa;
-	box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+	background-color: #f8fafc;
 }
 
 /* Buttons */
-.royal-storage-btn {
-	display: inline-block;
-	padding: 10px 20px;
-	background: #0073aa;
-	color: #fff;
-	border: none;
-	border-radius: 4px;
+.royal-storage-btn, .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.5rem 1rem !important;
+	font-size: 0.875rem !important;
+	font-weight: 600 !important;
+	border-radius: var(--rs-radius-sm) !important;
+	transition: var(--rs-transition) !important;
 	cursor: pointer;
-	font-size: 14px;
-	font-weight: 600;
-	text-decoration: none;
-	transition: background 0.2s;
+	height: auto !important;
+	line-height: 1.5 !important;
 }
 
-.royal-storage-btn:hover {
-	background: #005a87;
+.btn-primary, .button-primary {
+	background-color: var(--rs-primary) !important;
+	border-color: var(--rs-primary) !important;
+	color: white !important;
+	box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
-.royal-storage-btn-secondary {
-	background: #6c757d;
+.btn-primary:hover, .button-primary:hover {
+	background-color: var(--rs-primary-hover) !important;
+	border-color: var(--rs-primary-hover) !important;
+	transform: translateY(-1px);
+	box-shadow: var(--rs-shadow);
 }
 
-.royal-storage-btn-secondary:hover {
-	background: #5a6268;
-}
-
-.royal-storage-btn-danger {
-	background: #dc3545;
-}
-
-.royal-storage-btn-danger:hover {
-	background: #c82333;
-}
-
-/* Status Badges */
-.royal-storage-badge {
-	display: inline-block;
-	padding: 4px 12px;
-	border-radius: 20px;
-	font-size: 12px;
+/* Badges */
+.status-badge, .royal-storage-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.25rem 0.75rem;
+	border-radius: 9999px;
+	font-size: 0.75rem;
 	font-weight: 600;
 	text-transform: uppercase;
+	letter-spacing: 0.025em;
 }
 
-.royal-storage-badge-success {
-	background: #d4edda;
-	color: #155724;
+.status-confirmed, .status-paid, .royal-storage-badge-success {
+	background: #d1fae5;
+	color: #065f46;
 }
 
-.royal-storage-badge-warning {
-	background: #fff3cd;
-	color: #856404;
+.status-active, .status-info, .royal-storage-badge-info {
+	background: #e0f2fe;
+	color: #0369a1;
 }
 
-.royal-storage-badge-danger {
-	background: #f8d7da;
-	color: #721c24;
+.status-pending, .status-warning, .royal-storage-badge-warning {
+	background: #fef3c7;
+	color: #92400e;
 }
 
-.royal-storage-badge-info {
-	background: #d1ecf1;
-	color: #0c5460;
+.status-cancelled, .status-expired, .status-unpaid, .royal-storage-badge-danger {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+/* Forms */
+.royal-storage-form-group input, 
+.royal-storage-form-group select, 
+.royal-storage-form-group textarea,
+.form-table input[type="text"],
+.form-table input[type="email"],
+.form-table select {
+	width: 100%;
+	padding: 0.625rem 0.875rem !important;
+	border: 1px solid var(--rs-border) !important;
+	border-radius: var(--rs-radius-sm) !important;
+	background-color: #fff !important;
+	color: var(--rs-text-main) !important;
+	transition: var(--rs-transition) !important;
+}
+
+.royal-storage-form-group input:focus,
+.form-table input:focus {
+	border-color: var(--rs-primary) !important;
+	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+	outline: none !important;
+}
+
+/* Modal */
+.royal-storage-modal {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	background: rgba(15, 23, 42, 0.6);
+	backdrop-filter: blur(4px);
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	animation: rs-fade-in 0.2s ease-out;
+}
+
+.royal-storage-modal.show {
+	display: flex !important;
+}
+
+.royal-storage-modal-content {
+	background: var(--rs-bg-card);
+	border: none;
+	border-radius: var(--rs-radius-lg);
+	box-shadow: var(--rs-shadow-lg);
+	width: 100%;
+	max-width: 600px;
+	max-height: 90vh;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	animation: rs-slide-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.royal-storage-modal-header {
+	padding: 1.5rem 2rem;
+	border-bottom: 1px solid var(--rs-border);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: var(--rs-bg-main);
+}
+
+.royal-storage-modal-title {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: var(--rs-text-main);
+}
+
+.royal-storage-modal-close {
+	font-size: 1.5rem;
+	cursor: pointer;
+	color: var(--rs-text-muted);
+	transition: var(--rs-transition);
+}
+
+.royal-storage-modal-close:hover {
+	color: var(--rs-danger);
+}
+
+.royal-storage-modal-body {
+	padding: 2rem;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.royal-storage-modal-footer {
+	padding: 1.25rem 2rem;
+	border-top: 1px solid var(--rs-border);
+	display: flex;
+	justify-content: flex-end;
+	gap: 1rem;
+	background: var(--rs-bg-main);
+}
+
+/* Animations */
+@keyframes rs-fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes rs-slide-up {
+	from { opacity: 0; transform: translateY(20px) scale(0.95); }
+	to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes rs-spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+
+/* Loading Overlay */
+.rs-loading-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100001;
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(2px);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.rs-loading-overlay.active {
+	display: flex;
+}
+
+.rs-spinner {
+	width: 40px;
+	height: 40px;
+	border: 3px solid var(--rs-border);
+	border-top-color: var(--rs-primary);
+	border-radius: 50%;
+	animation: rs-spin 0.8s linear infinite;
+}
+
+/* Toast Notifications */
+.rs-toast-container {
+	position: fixed;
+	bottom: 2rem;
+	right: 2rem;
+	z-index: 100002;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.rs-toast {
+	padding: 1rem 1.5rem;
+	background: white;
+	border-radius: var(--rs-radius-md);
+	box-shadow: var(--rs-shadow-lg);
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-width: 300px;
+	border-left: 4px solid var(--rs-primary);
+	animation: rs-slide-in-right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.rs-toast.success { border-left-color: var(--rs-success); }
+.rs-toast.error { border-left-color: var(--rs-danger); }
+.rs-toast.warning { border-left-color: var(--rs-warning); }
+
+@keyframes rs-slide-in-right {
+	from { opacity: 0; transform: translateX(50px); }
+	to { opacity: 1; transform: translateX(0); }
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-	.royal-storage-admin .wrap {
-		margin: 10px;
+@media (max-width: 640px) {
+	.metrics-grid {
+		grid-template-columns: 1fr;
 	}
 
-	.royal-storage-stat {
-		display: block;
-		margin-right: 0;
-		margin-bottom: 20px;
-	}
-
-	.royal-storage-table {
-		font-size: 12px;
-	}
-
-	.royal-storage-table th,
-	.royal-storage-table td {
-		padding: 8px 10px;
+	.revenue-card {
+		flex-direction: column;
+		text-align: center;
+		gap: 1rem;
 	}
 }
 
-/* Bookings Page Styles */
-.royal-storage-bookings-filters {
-	background: #fff;
-	border: 1px solid #ccd0d4;
-	border-radius: 4px;
-	padding: 20px;
-	margin: 20px 0;
-	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+/* Booking Details Modal */
+.booking-details {
+	padding: 0.5rem 0;
 }
 
-.royal-storage-bookings-filters .search-box,
-.royal-storage-bookings-filters .filter-group {
+.booking-detail-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.875rem 1rem;
+	border-bottom: 1px solid var(--rs-border);
+	transition: var(--rs-transition);
+}
+
+.booking-detail-row:last-child {
+	border-bottom: none;
+}
+
+.booking-detail-row:hover {
+	background-color: var(--rs-bg-main);
+}
+
+.booking-detail-row strong {
+	font-weight: 600;
+	color: var(--rs-text-main);
+	font-size: 0.875rem;
+	flex: 0 0 auto;
+	min-width: 140px;
+}
+
+.booking-detail-row span {
+	color: var(--rs-text-muted);
+	font-size: 0.875rem;
+	text-align: right;
+	flex: 1;
+}
+
+.booking-detail-row .status-badge {
 	display: inline-block;
-	margin-right: 20px;
-	vertical-align: top;
-}
-
-.royal-storage-bookings-filters .search-box label,
-.royal-storage-bookings-filters .filter-group label {
-	display: block;
-	margin-bottom: 5px;
-	font-weight: 600;
-	color: #23282d;
-}
-
-.royal-storage-bookings-filters input[type="search"],
-.royal-storage-bookings-filters select {
-	width: 250px;
-	padding: 8px 12px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	font-size: 14px;
-}
-
-.royal-storage-bookings-filters .button {
-	margin-top: 20px;
-}
-
-.royal-storage-bookings-table {
-	margin: 20px 0;
-}
-
-.royal-storage-bookings-table .wp-list-table {
-	background: #fff;
-	border: 1px solid #ccd0d4;
-	border-radius: 4px;
-	box-shadow: 0 1px 1px rgba(0,0,0,.04);
-}
-
-.royal-storage-bookings-table .wp-list-table th {
-	background: #f9f9f9;
-	font-weight: 600;
-	color: #23282d;
-	border-bottom: 1px solid #ccd0d4;
-}
-
-.royal-storage-bookings-table .wp-list-table td {
-	border-bottom: 1px solid #f0f0f1;
-	vertical-align: top;
-}
-
-.royal-storage-bookings-table .wp-list-table tr:hover {
-	background: #f6f7f7;
-}
-
-.royal-storage-bookings-table .no-items {
-	text-align: center;
-	padding: 40px 20px;
-	color: #666;
-	font-style: italic;
-}
-
-/* Status and Payment Status Styles */
-.status-pending {
-	color: #f56e28;
-	font-weight: 600;
-}
-
-.status-confirmed {
-	color: #00a32a;
-	font-weight: 600;
-}
-
-.status-active {
-	color: #0073aa;
-	font-weight: 600;
-}
-
-.status-cancelled {
-	color: #d63638;
-	font-weight: 600;
-}
-
-.status-expired {
-	color: #8c8f94;
-	font-weight: 600;
-}
-
-.payment-unpaid {
-	color: #d63638;
-	font-weight: 600;
-}
-
-.payment-pending {
-	color: #f56e28;
-	font-weight: 600;
-}
-
-.payment-paid {
-	color: #00a32a;
-	font-weight: 600;
-}
-
-.payment-overdue {
-	color: #d63638;
-	font-weight: 600;
-}
-
-.payment-refunded {
-	color: #8c8f94;
-	font-weight: 600;
-}
-
-/* Unit Type Styles */
-.unit-type-storage {
-	background: #e3f2fd;
-	color: #1976d2;
-	padding: 2px 8px;
-	border-radius: 12px;
-	font-size: 11px;
+	padding: 0.25rem 0.75rem;
+	border-radius: var(--rs-radius-sm);
+	font-size: 0.75rem;
 	font-weight: 600;
 	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
-.unit-type-parking {
-	background: #f3e5f5;
-	color: #7b1fa2;
-	padding: 2px 8px;
-	border-radius: 12px;
-	font-size: 11px;
-	font-weight: 600;
-	text-transform: uppercase;
+.booking-detail-row .status-pending {
+	background-color: #fef3c7;
+	color: #92400e;
+}
+
+.booking-detail-row .status-confirmed {
+	background-color: #dcfce7;
+	color: #166534;
+}
+
+.booking-detail-row .status-cancelled {
+	background-color: #fee2e2;
+	color: #991b1b;
+}
+
+.booking-detail-row .status-expired {
+	background-color: #f3f4f6;
+	color: #6b7280;
+}
+
+.booking-detail-row .status-paid {
+	background-color: #dcfce7;
+	color: #166534;
+}
+
+.booking-detail-row .status-pending {
+	background-color: #fef3c7;
+	color: #92400e;
+}
+
+.booking-detail-row .status-unpaid {
+	background-color: #fee2e2;
+	color: #991b1b;
 }
 
 /* Booking Actions */
 .booking-actions {
 	display: flex;
-	gap: 5px;
+	gap: 0.5rem;
 	flex-wrap: wrap;
 }
 
 .booking-actions .button {
-	font-size: 11px;
-	padding: 4px 8px;
-	height: auto;
-	line-height: 1.4;
+	margin: 0;
 }
 
-.booking-actions .button-small {
-	font-size: 11px;
-	padding: 4px 8px;
-	height: auto;
-	line-height: 1.4;
+/* Loading Spinner (Legacy from bookings.js) */
+.royal-storage-spinner {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
 }
 
-/* Pagination Styles */
-.royal-storage-bookings-pagination {
-	margin: 20px 0;
-	text-align: center;
+.royal-storage-spinner .spinner {
+	border: 4px solid #f3f3f3;
+	border-top: 4px solid #667eea;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	animation: spin 1s linear infinite;
 }
 
-.royal-storage-bookings-pagination .tablenav-pages {
-	display: inline-block;
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
 
-.royal-storage-bookings-pagination .displaying-num {
-	margin-right: 20px;
-	color: #666;
-	font-size: 13px;
+/* Legacy Notification Styles (from bookings.js) */
+.royal-storage-notification {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	padding: 15px 20px;
+	border-radius: 5px;
+	color: white;
+	font-weight: bold;
+	z-index: 10000;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	display: none;
 }
 
-.royal-storage-bookings-pagination .pagination-links {
-	display: inline-block;
+.notification-success {
+	background: #27ae60;
 }
 
-.royal-storage-bookings-pagination .page-numbers {
-	display: inline-block;
-	padding: 6px 10px;
-	margin: 0 2px;
-	border: 1px solid #ddd;
-	text-decoration: none;
-	color: #0073aa;
-	border-radius: 3px;
-	font-size: 13px;
+.notification-error {
+	background: #e74c3c;
 }
-
-.royal-storage-bookings-pagination .page-numbers:hover {
-	background: #f6f7f7;
-	border-color: #999;
-}
-
-.royal-storage-bookings-pagination .current-page {
-	display: inline-block;
-	padding: 6px 10px;
-	margin: 0 2px;
-	background: #0073aa;
-	color: #fff;
-	border: 1px solid #0073aa;
-	border-radius: 3px;
-	font-size: 13px;
-	font-weight: 600;
-}
-
-.royal-storage-bookings-pagination .prev-page,
-.royal-storage-bookings-pagination .next-page {
-	display: inline-block;
-	padding: 6px 10px;
-	margin: 0 2px;
-	border: 1px solid #ddd;
-	text-decoration: none;
-	color: #0073aa;
-	border-radius: 3px;
-	font-size: 13px;
-}
-
-.royal-storage-bookings-pagination .prev-page:hover,
-.royal-storage-bookings-pagination .next-page:hover {
-	background: #f6f7f7;
-	border-color: #999;
-}
-
-/* Responsive Design for Bookings */
-@media (max-width: 768px) {
-	.royal-storage-bookings-filters .search-box,
-	.royal-storage-bookings-filters .filter-group {
-		display: block;
-		margin-bottom: 15px;
-		margin-right: 0;
-	}
-	
-	.royal-storage-bookings-filters input[type="search"],
-	.royal-storage-bookings-filters select {
-		width: 100%;
-		max-width: 300px;
-	}
-	
-	.royal-storage-bookings-table .wp-list-table {
-		font-size: 12px;
-	}
-	
-	.royal-storage-bookings-table .wp-list-table th,
-	.royal-storage-bookings-table .wp-list-table td {
-		padding: 8px 6px;
-	}
-	
-	.booking-actions {
-		flex-direction: column;
-		gap: 3px;
-	}
-}
-

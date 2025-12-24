@@ -40,6 +40,9 @@ class Bookings {
 		add_action( 'admin_post_royal_storage_create_booking', array( $this, 'handle_create_booking' ) );
 		add_action( 'admin_post_royal_storage_cancel_booking', array( $this, 'handle_cancel_booking' ) );
 		add_action( 'admin_post_royal_storage_update_booking_status', array( $this, 'handle_update_booking_status' ) );
+		add_action( 'wp_ajax_get_booking_details', array( $this, 'ajax_get_booking_details' ) );
+		add_action( 'wp_ajax_approve_booking', array( $this, 'ajax_approve_booking' ) );
+		add_action( 'wp_ajax_cancel_booking_ajax', array( $this, 'ajax_cancel_booking' ) );
 	}
 
 	/**
@@ -231,6 +234,120 @@ class Bookings {
 		} else {
 			wp_redirect( admin_url( 'admin.php?page=royal-storage-bookings&error=1' ) );
 			exit;
+		}
+	}
+
+	/**
+	 * AJAX handler to get booking details
+	 *
+	 * @return void
+	 */
+	public function ajax_get_booking_details() {
+		check_ajax_referer( 'royal_storage_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'royal-storage' ) ) );
+		}
+
+		$booking_id = isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+
+		if ( ! $booking_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid booking ID', 'royal-storage' ) ) );
+		}
+
+		$booking = $this->get_booking( $booking_id );
+
+		if ( ! $booking ) {
+			wp_send_json_error( array( 'message' => __( 'Booking not found', 'royal-storage' ) ) );
+		}
+
+		// Get customer details
+		$customer = get_user_by( 'id', $booking->customer_id );
+
+		// Get unit or space details
+		$unit_details = '';
+		if ( $booking->unit_id > 0 ) {
+			global $wpdb;
+			$unit = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}royal_storage_units WHERE id = %d", $booking->unit_id ) );
+			$unit_details = $unit ? sprintf( 'Unit #%d - Size: %s, Dimensions: %s', $unit->id, $unit->size, $unit->dimensions ) : 'Unit #' . $booking->unit_id;
+		} elseif ( $booking->space_id > 0 ) {
+			global $wpdb;
+			$space = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}royal_parking_spaces WHERE id = %d", $booking->space_id ) );
+			$unit_details = $space ? sprintf( 'Parking Space #%d - %s', $space->id, $space->space_number ) : 'Space #' . $booking->space_id;
+		}
+
+		$booking_data = array(
+			'id'              => $booking->id,
+			'customer_name'   => $customer ? $customer->display_name : __( 'Unknown', 'royal-storage' ),
+			'customer_email'  => $customer ? $customer->user_email : '',
+			'unit_details'    => $unit_details,
+			'start_date'      => $booking->start_date,
+			'end_date'        => $booking->end_date,
+			'total_price'     => number_format( $booking->total_price, 2 ),
+			'status'          => ucfirst( $booking->status ),
+			'payment_status'  => ucfirst( $booking->payment_status ),
+			'created_at'      => $booking->created_at,
+			'period'          => isset( $booking->period ) ? $booking->period : 'monthly',
+		);
+
+		wp_send_json_success( array( 'booking' => $booking_data ) );
+	}
+
+	/**
+	 * AJAX handler to approve booking
+	 *
+	 * @return void
+	 */
+	public function ajax_approve_booking() {
+		check_ajax_referer( 'royal_storage_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'royal-storage' ) ) );
+		}
+
+		$booking_id = isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+
+		if ( ! $booking_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid booking ID', 'royal-storage' ) ) );
+		}
+
+		// Update booking status to confirmed
+		$result = $this->update_booking( $booking_id, array( 'status' => 'confirmed' ) );
+
+		if ( $result !== false ) {
+			// Send confirmation email
+			$this->email_manager->send_booking_confirmation( $booking_id );
+
+			wp_send_json_success( array( 'message' => __( 'Booking approved successfully', 'royal-storage' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to approve booking', 'royal-storage' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX handler to cancel booking
+	 *
+	 * @return void
+	 */
+	public function ajax_cancel_booking() {
+		check_ajax_referer( 'royal_storage_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'royal-storage' ) ) );
+		}
+
+		$booking_id = isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+
+		if ( ! $booking_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid booking ID', 'royal-storage' ) ) );
+		}
+
+		$result = $this->booking_engine->cancel_booking( $booking_id );
+
+		if ( $result ) {
+			wp_send_json_success( array( 'message' => __( 'Booking cancelled successfully', 'royal-storage' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to cancel booking', 'royal-storage' ) ) );
 		}
 	}
 }

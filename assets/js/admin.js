@@ -23,62 +23,43 @@
 				return;
 			}
 
-			var $btn = $(e.target);
+			var $btn = $(e.currentTarget);
 			var itemId = $btn.data('id');
 			var itemType = $btn.data('type');
 
-			$.ajax({
+			RoyalStorageUtils.ajax({
 				url: royalStorageAdmin.ajaxUrl,
-				type: 'POST',
 				data: {
 					action: 'royal_storage_delete_' + itemType,
 					id: itemId,
 					nonce: royalStorageAdmin.nonce
 				},
 				success: function(response) {
-					if (response.success) {
-						location.reload();
-					} else {
-						alert('Error: ' + response.data.message);
-					}
-				},
-				error: function() {
-					alert('An error occurred. Please try again.');
+					RoyalStorageUtils.showToast('Deleted successfully');
+					setTimeout(() => location.reload(), 1000);
 				}
 			});
 		},
 
 		editItem: function(e) {
 			e.preventDefault();
-
-			var $btn = $(e.target);
+			var $btn = $(e.currentTarget);
 			var itemId = $btn.data('id');
 			var itemType = $btn.data('type');
-
-			// Redirect to edit page
 			window.location.href = '?page=royal-storage-' + itemType + '&action=edit&id=' + itemId;
 		},
 
 		submitForm: function(e) {
 			e.preventDefault();
-
 			var $form = $(e.target);
 			var formData = $form.serialize();
 
-			$.ajax({
+			RoyalStorageUtils.ajax({
 				url: royalStorageAdmin.ajaxUrl,
-				type: 'POST',
 				data: formData + '&nonce=' + royalStorageAdmin.nonce,
 				success: function(response) {
-					if (response.success) {
-						alert('Saved successfully!');
-						location.reload();
-					} else {
-						alert('Error: ' + response.data.message);
-					}
-				},
-				error: function() {
-					alert('An error occurred. Please try again.');
+					RoyalStorageUtils.showToast('Saved successfully');
+					setTimeout(() => location.reload(), 1000);
 				}
 			});
 		}
@@ -89,4 +70,3 @@
 	});
 
 })(jQuery);
-

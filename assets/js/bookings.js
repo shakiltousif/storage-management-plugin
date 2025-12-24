@@ -13,6 +13,27 @@
 	 * Initialize bookings
 	 */
 	function initBookings() {
+		// View booking button
+		$(document).on('click', '.view-booking', function(e) {
+			e.preventDefault();
+			var bookingId = $(this).data('booking-id');
+			viewBookingDetails(bookingId);
+		});
+
+		// Approve booking button
+		$(document).on('click', '.approve-booking', function(e) {
+			e.preventDefault();
+			var bookingId = $(this).data('booking-id');
+			approveBooking(bookingId);
+		});
+
+		// Cancel booking button (admin page)
+		$(document).on('click', '.cancel-booking-btn', function(e) {
+			e.preventDefault();
+			var bookingId = $(this).data('booking-id');
+			showCancelConfirmation(bookingId);
+		});
+
 		// Renew booking button
 		$(document).on('click', '.renew-booking', function(e) {
 			e.preventDefault();
@@ -20,11 +41,118 @@
 			showRenewDialog(bookingId);
 		});
 
-		// Cancel booking button
+		// Cancel booking button (legacy support)
 		$(document).on('click', '.cancel-booking', function(e) {
 			e.preventDefault();
 			var bookingId = $(this).data('booking-id');
 			showCancelConfirmation(bookingId);
+		});
+	}
+
+	/**
+	 * View booking details in modal
+	 */
+	function viewBookingDetails(bookingId) {
+		if (typeof RoyalStorageUtils === 'undefined') {
+			alert('Required utilities not loaded. Please refresh the page.');
+			return;
+		}
+
+		RoyalStorageUtils.ajax({
+			url: royalStorageAdmin.ajaxUrl,
+			data: {
+				action: 'get_booking_details',
+				nonce: royalStorageAdmin.nonce,
+				booking_id: bookingId
+			},
+			success: function(response) {
+				var booking = response.data.booking;
+
+				var content = '<div class="booking-details">' +
+					'<div class="booking-detail-row">' +
+						'<strong>Booking ID:</strong> <span>#' + booking.id + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Customer Name:</strong> <span>' + booking.customer_name + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Customer Email:</strong> <span>' + booking.customer_email + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Unit/Space:</strong> <span>' + booking.unit_details + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Period:</strong> <span>' + booking.period + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Start Date:</strong> <span>' + booking.start_date + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>End Date:</strong> <span>' + booking.end_date + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Total Price:</strong> <span>' + booking.total_price + ' RSD</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Status:</strong> <span class="status-badge status-' + booking.status.toLowerCase() + '">' + booking.status + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Payment Status:</strong> <span class="status-badge status-' + booking.payment_status.toLowerCase() + '">' + booking.payment_status + '</span>' +
+					'</div>' +
+					'<div class="booking-detail-row">' +
+						'<strong>Created At:</strong> <span>' + booking.created_at + '</span>' +
+					'</div>' +
+				'</div>';
+
+				var footer = '<button class="royal-storage-btn royal-storage-btn-secondary modal-close">Close</button>';
+
+				RoyalStorageUtils.openModal({
+					title: 'Booking Details #' + booking.id,
+					content: content,
+					footer: footer,
+					onOpen: function($modal) {
+						$modal.find('.modal-close').on('click', function() {
+							$modal.find('.royal-storage-modal-close').click();
+						});
+					}
+				});
+			},
+			error: function() {
+				RoyalStorageUtils.showToast('Failed to load booking details', 'error');
+			}
+		});
+	}
+
+	/**
+	 * Approve booking
+	 */
+	function approveBooking(bookingId) {
+		if (!confirm('Are you sure you want to approve this booking?')) {
+			return;
+		}
+
+		if (typeof RoyalStorageUtils === 'undefined') {
+			alert('Required utilities not loaded. Please refresh the page.');
+			return;
+		}
+
+		RoyalStorageUtils.ajax({
+			url: royalStorageAdmin.ajaxUrl,
+			data: {
+				action: 'approve_booking',
+				nonce: royalStorageAdmin.nonce,
+				booking_id: bookingId
+			},
+			success: function(response) {
+				RoyalStorageUtils.showToast(response.data.message, 'success');
+				setTimeout(function() {
+					location.reload();
+				}, 1500);
+			},
+			error: function(response) {
+				var message = response.data && response.data.message ? response.data.message : 'Failed to approve booking';
+				RoyalStorageUtils.showToast(message, 'error');
+			}
 		});
 	}
 
@@ -88,33 +216,55 @@
 	 * Cancel booking
 	 */
 	function cancelBooking(bookingId) {
-		$.ajax({
-			url: royalStorageBookings.ajaxUrl,
-			type: 'POST',
-			data: {
-				action: 'royal_storage_cancel_booking',
-				nonce: royalStorageBookings.nonce,
-				booking_id: bookingId
-			},
-			beforeSend: function() {
-				showLoadingSpinner();
-			},
-			success: function(response) {
-				hideLoadingSpinner();
-				if (response.success) {
-					showSuccessMessage('Booking cancelled successfully!');
+		if (typeof RoyalStorageUtils !== 'undefined') {
+			RoyalStorageUtils.ajax({
+				url: royalStorageAdmin.ajaxUrl,
+				data: {
+					action: 'cancel_booking_ajax',
+					nonce: royalStorageAdmin.nonce,
+					booking_id: bookingId
+				},
+				success: function(response) {
+					RoyalStorageUtils.showToast(response.data.message, 'success');
 					setTimeout(function() {
 						location.reload();
-					}, 2000);
-				} else {
-					showErrorMessage('Error: ' + response.data.message);
+					}, 1500);
+				},
+				error: function(response) {
+					var message = response.data && response.data.message ? response.data.message : 'Failed to cancel booking';
+					RoyalStorageUtils.showToast(message, 'error');
 				}
-			},
-			error: function() {
-				hideLoadingSpinner();
-				showErrorMessage('An error occurred. Please try again.');
-			}
-		});
+			});
+		} else {
+			// Fallback to legacy implementation
+			$.ajax({
+				url: royalStorageBookings.ajaxUrl,
+				type: 'POST',
+				data: {
+					action: 'royal_storage_cancel_booking',
+					nonce: royalStorageBookings.nonce,
+					booking_id: bookingId
+				},
+				beforeSend: function() {
+					showLoadingSpinner();
+				},
+				success: function(response) {
+					hideLoadingSpinner();
+					if (response.success) {
+						showSuccessMessage('Booking cancelled successfully!');
+						setTimeout(function() {
+							location.reload();
+						}, 2000);
+					} else {
+						showErrorMessage('Error: ' + response.data.message);
+					}
+				},
+				error: function() {
+					hideLoadingSpinner();
+					showErrorMessage('An error occurred. Please try again.');
+				}
+			});
+		}
 	}
 
 	/**
@@ -164,55 +314,4 @@
 	}
 
 })(jQuery);
-
-/* Notification Styles */
-<style>
-	.royal-storage-spinner {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 9999;
-	}
-
-	.spinner {
-		border: 4px solid #f3f3f3;
-		border-top: 4px solid #667eea;
-		border-radius: 50%;
-		width: 40px;
-		height: 40px;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
-	}
-
-	.royal-storage-notification {
-		position: fixed;
-		top: 20px;
-		right: 20px;
-		padding: 15px 20px;
-		border-radius: 5px;
-		color: white;
-		font-weight: bold;
-		z-index: 10000;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		display: none;
-	}
-
-	.notification-success {
-		background: #27ae60;
-	}
-
-	.notification-error {
-		background: #e74c3c;
-	}
-</style>
 

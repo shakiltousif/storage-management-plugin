@@ -393,7 +393,7 @@ This is a virtual product for your storage booking. Payment will be processed th
 			'currency'     => get_option( 'woocommerce_currency', 'RSD' ),
 			'vat_rate'     => floatval( get_option( 'royal_storage_vat_rate', 20 ) ),
 			'min_payment'  => floatval( get_option( 'royal_storage_min_payment', 0 ) ),
-			'max_payment'  => floatval( get_option( 'royal_storage_max_payment', 999999 ) ),
+			'max_payment'  => floatval( get_option( 'royal_storage_max_payment', 999999999 ) ),
 		);
 	}
 

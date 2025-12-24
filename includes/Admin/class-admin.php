@@ -1410,8 +1410,9 @@ class Admin {
 						<label for="royal_storage_daily_rate"><?php esc_html_e( 'Default Daily Rate', 'royal-storage' ); ?></label>
 					</th>
 					<td>
-						<input type="number" id="royal_storage_daily_rate" name="royal_storage_daily_rate" 
-							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_daily_rate', 1000 ) ); ?>" 
+						<input type="number" id="royal_storage_daily_rate" name="royal_storage_daily_rate"
+							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_daily_rate', 1000 ) ); ?>"
+							   placeholder="1000"
 							   min="0" step="0.01" class="small-text" />
 						<p class="description"><?php esc_html_e( 'Default daily rate for storage units.', 'royal-storage' ); ?></p>
 					</td>
@@ -1421,9 +1422,11 @@ class Admin {
 						<label for="royal_storage_weekly_rate"><?php esc_html_e( 'Default Weekly Rate', 'royal-storage' ); ?></label>
 					</th>
 					<td>
-						<input type="number" id="royal_storage_weekly_rate" name="royal_storage_weekly_rate" 
-							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_weekly_rate', 6000 ) ); ?>" 
+						<input type="number" id="royal_storage_weekly_rate" name="royal_storage_weekly_rate"
+							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_weekly_rate', 6000 ) ); ?>"
+							   placeholder="6000"
 							   min="0" step="0.01" class="small-text" />
+						<p class="description"><?php esc_html_e( 'Default weekly rate for storage units.', 'royal-storage' ); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -1431,9 +1434,11 @@ class Admin {
 						<label for="royal_storage_monthly_rate"><?php esc_html_e( 'Default Monthly Rate', 'royal-storage' ); ?></label>
 					</th>
 					<td>
-						<input type="number" id="royal_storage_monthly_rate" name="royal_storage_monthly_rate" 
-							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_monthly_rate', 20000 ) ); ?>" 
+						<input type="number" id="royal_storage_monthly_rate" name="royal_storage_monthly_rate"
+							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_monthly_rate', 20000 ) ); ?>"
+							   placeholder="20000"
 							   min="0" step="0.01" class="small-text" />
+						<p class="description"><?php esc_html_e( 'Default monthly rate for storage units.', 'royal-storage' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -1697,10 +1702,10 @@ class Admin {
 						<label for="royal_storage_auto_cleanup_days"><?php esc_html_e( 'Auto Cleanup Days', 'royal-storage' ); ?></label>
 					</th>
 					<td>
-						<input type="number" id="royal_storage_auto_cleanup_days" name="royal_storage_auto_cleanup_days" 
-							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_auto_cleanup_days', 90 ) ); ?>" 
-							   min="30" max="365" class="small-text" />
-						<p class="description"><?php esc_html_e( 'Days to keep old data before auto-cleanup.', 'royal-storage' ); ?></p>
+						<input type="number" id="royal_storage_auto_cleanup_days" name="royal_storage_auto_cleanup_days"
+							   value="<?php echo esc_attr( $settings->get_setting( 'royal_storage_auto_cleanup_days', 90 ) ); ?>"
+							   min="0" class="small-text" />
+						<p class="description"><?php esc_html_e( 'Days to keep old data before auto-cleanup. Set to 0 to disable auto-cleanup.', 'royal-storage' ); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -1737,8 +1742,50 @@ class Admin {
 	 * @return void
 	 */
 	public function enqueue_admin_assets() {
-		wp_enqueue_style( 'royal-storage-admin' );
-		wp_enqueue_script( 'royal-storage-admin' );
+		// Enqueue admin styles
+		wp_enqueue_style(
+			'royal-storage-admin',
+			ROYAL_STORAGE_URL . 'assets/css/admin.css',
+			array(),
+			ROYAL_STORAGE_VERSION
+		);
+
+		// Enqueue utilities script (required by other scripts)
+		wp_enqueue_script(
+			'royal-storage-utils',
+			ROYAL_STORAGE_URL . 'assets/js/royal-storage-utils.js',
+			array( 'jquery' ),
+			ROYAL_STORAGE_VERSION,
+			true
+		);
+
+		// Enqueue admin script
+		wp_enqueue_script(
+			'royal-storage-admin',
+			ROYAL_STORAGE_URL . 'assets/js/admin.js',
+			array( 'jquery', 'royal-storage-utils' ),
+			ROYAL_STORAGE_VERSION,
+			true
+		);
+
+		// Enqueue bookings script
+		wp_enqueue_script(
+			'royal-storage-bookings',
+			ROYAL_STORAGE_URL . 'assets/js/bookings.js',
+			array( 'jquery', 'royal-storage-utils' ),
+			ROYAL_STORAGE_VERSION,
+			true
+		);
+
+		// Localize script
+		wp_localize_script(
+			'royal-storage-admin',
+			'royalStorageAdmin',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'royal_storage_admin' ),
+			)
+		);
 	}
 
 	/**
@@ -1907,30 +1954,19 @@ class Admin {
 							</td>
 							<td>
 								<div class="booking-actions">
-									<?php if ( $booking->status === 'pending' ) : ?>
-										<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
-											<input type="hidden" name="action" value="royal_storage_update_booking_status" />
-											<input type="hidden" name="booking_id" value="<?php echo esc_attr( $booking->id ); ?>" />
-											<input type="hidden" name="new_status" value="confirmed" />
-											<input type="hidden" name="_wpnonce" value="<?php echo esc_attr( wp_create_nonce( 'royal_storage_update_booking_status' ) ); ?>" />
-											<button type="submit" class="button button-primary button-small">
-												<?php esc_html_e( 'Approve', 'royal-storage' ); ?>
-											</button>
-										</form>
-									<?php endif; ?>
-									<?php if ( $booking->status !== 'cancelled' && $booking->status !== 'expired' ) : ?>
-										<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: inline;">
-											<input type="hidden" name="action" value="royal_storage_cancel_booking" />
-											<input type="hidden" name="booking_id" value="<?php echo esc_attr( $booking->id ); ?>" />
-											<input type="hidden" name="nonce" value="<?php echo esc_attr( wp_create_nonce( 'royal_storage_cancel_booking' ) ); ?>" />
-											<button type="submit" class="button button-small" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to cancel this booking?', 'royal-storage' ); ?>')">
-												<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
-											</button>
-										</form>
-									<?php endif; ?>
-									<a href="<?php echo esc_url( admin_url( 'admin.php?page=royal-storage-bookings&view=' . $booking->id ) ); ?>" class="button button-small">
+									<button type="button" class="button button-small view-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
 										<?php esc_html_e( 'View', 'royal-storage' ); ?>
-									</a>
+									</button>
+									<?php if ( $booking->status === 'pending' ) : ?>
+										<button type="button" class="button button-primary button-small approve-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
+											<?php esc_html_e( 'Approve', 'royal-storage' ); ?>
+										</button>
+									<?php endif; ?>
+									<?php if ( $booking->status !== 'cancelled' && $booking->status !== 'expired' && $booking->status !== 'completed' ) : ?>
+										<button type="button" class="button button-small button-link-delete cancel-booking-btn" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
+											<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
+										</button>
+									<?php endif; ?>
 								</div>
 							</td>
 						</tr>

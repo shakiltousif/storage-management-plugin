@@ -116,58 +116,103 @@ class StorageUnits {
 		<div id="storage-unit-modal" class="royal-storage-modal" style="display: none;">
 			<div class="royal-storage-modal-content">
 				<div class="royal-storage-modal-header">
-					<h2 id="modal-title"><?php esc_html_e( 'Add Storage Unit', 'royal-storage' ); ?></h2>
-					<button type="button" class="royal-storage-modal-close">&times;</button>
+					<h3 id="modal-title" class="royal-storage-modal-title"><?php esc_html_e( 'Add Storage Unit', 'royal-storage' ); ?></h3>
+					<span class="royal-storage-modal-close">&times;</span>
 				</div>
-				<form id="storage-unit-form">
-					<?php wp_nonce_field( 'royal_storage_storage_unit_form', 'storage_unit_nonce' ); ?>
-					<input type="hidden" id="unit-id" name="unit_id" value="">
-					
-					<div class="royal-storage-form-group">
-						<label for="unit-size"><?php esc_html_e( 'Size', 'royal-storage' ); ?> *</label>
-						<select id="unit-size" name="size" required>
-							<option value="s"><?php esc_html_e( 'Small (S)', 'royal-storage' ); ?></option>
-							<option value="m"><?php esc_html_e( 'Medium (M)', 'royal-storage' ); ?></option>
-							<option value="l"><?php esc_html_e( 'Large (L)', 'royal-storage' ); ?></option>
-							<option value="xl"><?php esc_html_e( 'Extra Large (XL)', 'royal-storage' ); ?></option>
-						</select>
-					</div>
-					
-					<div class="royal-storage-form-group">
-						<label for="unit-dimensions"><?php esc_html_e( 'Dimensions', 'royal-storage' ); ?> *</label>
-						<input type="text" id="unit-dimensions" name="dimensions" placeholder="e.g., 3x3x3" required>
-					</div>
-					
-					<div class="royal-storage-form-group">
-						<label for="unit-price"><?php esc_html_e( 'Price (RSD)', 'royal-storage' ); ?> *</label>
-						<input type="number" id="unit-price" name="price" step="0.01" min="0" required>
-					</div>
-					
-					<div class="royal-storage-form-group">
-						<label for="unit-description"><?php esc_html_e( 'Description', 'royal-storage' ); ?></label>
-						<textarea id="unit-description" name="description" rows="3"></textarea>
-					</div>
-					
-					<div class="royal-storage-form-actions">
-						<button type="submit" class="button button-primary">
-							<?php esc_html_e( 'Save Unit', 'royal-storage' ); ?>
-						</button>
-						<button type="button" class="button royal-storage-modal-close">
-							<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
-						</button>
-					</div>
-				</form>
+				<div class="royal-storage-modal-body">
+					<form id="storage-unit-form">
+						<?php wp_nonce_field( 'royal_storage_storage_unit_form', 'storage_unit_nonce' ); ?>
+						<input type="hidden" id="unit-id" name="unit_id" value="">
+
+						<div class="royal-storage-form-group">
+							<label for="unit-size"><?php esc_html_e( 'Size', 'royal-storage' ); ?> *</label>
+							<select id="unit-size" name="size" required>
+								<option value="s"><?php esc_html_e( 'Small (S)', 'royal-storage' ); ?></option>
+								<option value="m"><?php esc_html_e( 'Medium (M)', 'royal-storage' ); ?></option>
+								<option value="l"><?php esc_html_e( 'Large (L)', 'royal-storage' ); ?></option>
+								<option value="xl"><?php esc_html_e( 'Extra Large (XL)', 'royal-storage' ); ?></option>
+							</select>
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-dimensions"><?php esc_html_e( 'Dimensions', 'royal-storage' ); ?> *</label>
+							<input type="text" id="unit-dimensions" name="dimensions" placeholder="e.g., 3x3x3" required>
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-price"><?php esc_html_e( 'Price (RSD)', 'royal-storage' ); ?> *</label>
+							<input type="number" id="unit-price" name="price" step="0.01" min="0" required>
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-status"><?php esc_html_e( 'Status', 'royal-storage' ); ?> *</label>
+							<select id="unit-status" name="status" required>
+								<option value="available"><?php esc_html_e( 'Available', 'royal-storage' ); ?></option>
+								<option value="occupied"><?php esc_html_e( 'Occupied', 'royal-storage' ); ?></option>
+								<option value="reserved"><?php esc_html_e( 'Reserved', 'royal-storage' ); ?></option>
+							</select>
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-position-x"><?php esc_html_e( 'Position X', 'royal-storage' ); ?></label>
+							<input type="number" id="unit-position-x" name="position_x" min="0" value="0">
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-position-y"><?php esc_html_e( 'Position Y', 'royal-storage' ); ?></label>
+							<input type="number" id="unit-position-y" name="position_y" min="0" value="0">
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-group"><?php esc_html_e( 'Unit Group', 'royal-storage' ); ?></label>
+							<input type="text" id="unit-group" name="unit_group" placeholder="e.g., m_boxes">
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-access-code"><?php esc_html_e( 'Access Code', 'royal-storage' ); ?></label>
+							<input type="text" id="unit-access-code" name="access_code" placeholder="e.g., ABC123">
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-amenities"><?php esc_html_e( 'Amenities', 'royal-storage' ); ?></label>
+							<textarea id="unit-amenities" name="amenities" rows="2" placeholder="e.g., Climate controlled, 24/7 access"></textarea>
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="unit-description"><?php esc_html_e( 'Description', 'royal-storage' ); ?></label>
+							<textarea id="unit-description" name="description" rows="3"></textarea>
+						</div>
+					</form>
+				</div>
+				<div class="royal-storage-modal-footer">
+					<button type="submit" form="storage-unit-form" class="button button-primary royal-storage-btn">
+						<?php esc_html_e( 'Save Unit', 'royal-storage' ); ?>
+					</button>
+					<button type="button" class="button royal-storage-btn royal-storage-btn-secondary royal-storage-modal-close">
+						<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
+					</button>
+				</div>
 			</div>
 		</div>
 
 		<style>
+		.royal-storage-form-group {
+			margin-bottom: 1rem;
+		}
+
+		.royal-storage-form-group label {
+			display: block;
+			margin-bottom: 0.5rem;
+			font-weight: 600;
+		}
+
 		.royal-storage-admin-content {
 			background: #fff;
 			padding: 20px;
 			border-radius: 8px;
 			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 		}
-		
+
 		.royal-storage-header {
 			display: flex;
 			justify-content: space-between;
@@ -176,12 +221,12 @@ class StorageUnits {
 			padding-bottom: 20px;
 			border-bottom: 1px solid #e1e1e1;
 		}
-		
+
 		.royal-storage-stats {
 			display: flex;
 			gap: 20px;
 		}
-		
+
 		.stat-card {
 			background: #f8f9fa;
 			padding: 20px;
@@ -189,28 +234,28 @@ class StorageUnits {
 			text-align: center;
 			min-width: 120px;
 		}
-		
+
 		.stat-card h3 {
 			margin: 0 0 5px 0;
 			font-size: 24px;
 			color: #0073aa;
 		}
-		
+
 		.stat-card p {
 			margin: 0;
 			color: #666;
 			font-size: 14px;
 		}
-		
+
 		.royal-storage-actions {
 			display: flex;
 			gap: 10px;
 		}
-		
+
 		.royal-storage-table-container {
 			overflow-x: auto;
 		}
-		
+
 		.status {
 			padding: 4px 8px;
 			border-radius: 4px;
@@ -218,91 +263,20 @@ class StorageUnits {
 			font-weight: bold;
 			text-transform: uppercase;
 		}
-		
+
 		.status-available {
 			background: #d4edda;
 			color: #155724;
 		}
-		
+
 		.status-occupied {
 			background: #f8d7da;
 			color: #721c24;
 		}
-		
+
 		.status-reserved {
 			background: #fff3cd;
 			color: #856404;
-		}
-		
-		.royal-storage-modal {
-			display: none;
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background: rgba(0,0,0,0.5);
-			z-index: 9999;
-		}
-		
-		.royal-storage-modal.show {
-			display: block !important;
-		}
-		
-		.royal-storage-modal-content {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			background: white;
-			border-radius: 8px;
-			width: 90%;
-			max-width: 500px;
-			max-height: 90vh;
-			overflow-y: auto;
-		}
-		
-		.royal-storage-modal-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 20px;
-			border-bottom: 1px solid #e1e1e1;
-		}
-		
-		.royal-storage-modal-close {
-			background: none;
-			border: none;
-			font-size: 24px;
-			cursor: pointer;
-		}
-		
-		.royal-storage-form-group {
-			margin-bottom: 20px;
-			padding: 0 20px;
-		}
-		
-		.royal-storage-form-group label {
-			display: block;
-			margin-bottom: 5px;
-			font-weight: bold;
-		}
-		
-		.royal-storage-form-group input,
-		.royal-storage-form-group select,
-		.royal-storage-form-group textarea {
-			width: 100%;
-			padding: 8px;
-			border: 1px solid #ddd;
-			border-radius: 4px;
-		}
-		
-		.royal-storage-form-actions {
-			padding: 20px;
-			border-top: 1px solid #e1e1e1;
-			display: flex;
-			gap: 10px;
-			justify-content: flex-end;
 		}
 		</style>
 
@@ -337,6 +311,12 @@ class StorageUnits {
 							$('#unit-size').val(unit.size);
 							$('#unit-dimensions').val(unit.dimensions);
 							$('#unit-price').val(unit.base_price);
+							$('#unit-status').val(unit.status || 'available');
+							$('#unit-position-x').val(unit.position_x || 0);
+							$('#unit-position-y').val(unit.position_y || 0);
+							$('#unit-group').val(unit.unit_group || '');
+							$('#unit-access-code').val(unit.access_code || '');
+							$('#unit-amenities').val(unit.amenities || '');
 							$('#unit-description').val(unit.description || '');
 							$('#storage-unit-modal').addClass('show');
 						} else {
@@ -469,26 +449,51 @@ class StorageUnits {
 			// Get the unit to find post_id
 			$unit = $wpdb->get_row( $wpdb->prepare( "SELECT post_id FROM $table_name WHERE id = %d", $unit_id ) );
 
-			// Update post content if post_id exists
+			// Create post if it doesn't exist, or update if it does
 			if ( $unit && ! empty( $unit->post_id ) ) {
 				wp_update_post( array(
 					'ID' => $unit->post_id,
 					'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : ''
 				) );
+			} else {
+				// Create post if it doesn't exist
+				$post_data = array(
+					'post_title'   => 'Storage Unit ' . sanitize_text_field( $_POST['size'] ),
+					'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : '',
+					'post_status'  => 'publish',
+					'post_type'    => 'rs_storage_unit'
+				);
+				$post_id = wp_insert_post( $post_data );
+
+				if ( ! is_wp_error( $post_id ) ) {
+					// Update the unit record with the new post_id
+					$wpdb->update(
+						$table_name,
+						array( 'post_id' => $post_id ),
+						array( 'id' => $unit_id ),
+						array( '%d' ),
+						array( '%d' )
+					);
+				}
 			}
 
 			$unit_data = array(
-				'size' => sanitize_text_field( $_POST['size'] ),
-				'dimensions' => sanitize_text_field( $_POST['dimensions'] ),
-				'base_price' => floatval( $_POST['price'] ),
-				'status' => 'available'
+				'size'         => sanitize_text_field( $_POST['size'] ),
+				'dimensions'   => sanitize_text_field( $_POST['dimensions'] ),
+				'base_price'   => floatval( $_POST['price'] ),
+				'status'       => isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : 'available',
+				'position_x'   => isset( $_POST['position_x'] ) ? intval( $_POST['position_x'] ) : 0,
+				'position_y'   => isset( $_POST['position_y'] ) ? intval( $_POST['position_y'] ) : 0,
+				'unit_group'   => isset( $_POST['unit_group'] ) ? sanitize_text_field( $_POST['unit_group'] ) : '',
+				'access_code'  => isset( $_POST['access_code'] ) ? sanitize_text_field( $_POST['access_code'] ) : '',
+				'amenities'    => isset( $_POST['amenities'] ) ? sanitize_textarea_field( $_POST['amenities'] ) : '',
 			);
 
 			$result = $wpdb->update(
 				$table_name,
 				$unit_data,
 				array( 'id' => $unit_id ),
-				array( '%s', '%s', '%f', '%s' ),
+				array( '%s', '%s', '%f', '%s', '%d', '%d', '%s', '%s', '%s' ),
 				array( '%d' )
 			);
 
@@ -503,7 +508,7 @@ class StorageUnits {
 				'post_title'   => 'Storage Unit ' . sanitize_text_field( $_POST['size'] ),
 				'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : '',
 				'post_status'  => 'publish',
-				'post_type'    => 'storage_unit'
+				'post_type'    => 'rs_storage_unit'
 			);
 
 			$post_id = wp_insert_post( $post_data );
@@ -513,17 +518,22 @@ class StorageUnits {
 			}
 
 			$unit_data = array(
-				'post_id' => $post_id,
-				'size' => sanitize_text_field( $_POST['size'] ),
-				'dimensions' => sanitize_text_field( $_POST['dimensions'] ),
-				'base_price' => floatval( $_POST['price'] ),
-				'status' => 'available'
+				'post_id'      => $post_id,
+				'size'         => sanitize_text_field( $_POST['size'] ),
+				'dimensions'   => sanitize_text_field( $_POST['dimensions'] ),
+				'base_price'   => floatval( $_POST['price'] ),
+				'status'       => isset( $_POST['status'] ) ? sanitize_text_field( $_POST['status'] ) : 'available',
+				'position_x'   => isset( $_POST['position_x'] ) ? intval( $_POST['position_x'] ) : 0,
+				'position_y'   => isset( $_POST['position_y'] ) ? intval( $_POST['position_y'] ) : 0,
+				'unit_group'   => isset( $_POST['unit_group'] ) ? sanitize_text_field( $_POST['unit_group'] ) : '',
+				'access_code'  => isset( $_POST['access_code'] ) ? sanitize_text_field( $_POST['access_code'] ) : '',
+				'amenities'    => isset( $_POST['amenities'] ) ? sanitize_textarea_field( $_POST['amenities'] ) : '',
 			);
 
 			$result = $wpdb->insert(
 				$table_name,
 				$unit_data,
-				array( '%d', '%s', '%s', '%f', '%s' )
+				array( '%d', '%s', '%s', '%f', '%s', '%d', '%d', '%s', '%s', '%s' )
 			);
 
 			if ( $result ) {
@@ -599,6 +609,7 @@ class StorageUnits {
 		}
 
 		// Get description from post content if post_id exists
+		$unit['description'] = '';
 		if ( ! empty( $unit['post_id'] ) ) {
 			$post = get_post( $unit['post_id'] );
 			if ( $post ) {

@@ -116,46 +116,57 @@ class ParkingSpaces {
 		<div id="parking-space-modal" class="royal-storage-modal" style="display: none;">
 			<div class="royal-storage-modal-content">
 				<div class="royal-storage-modal-header">
-					<h2 id="modal-title"><?php esc_html_e( 'Add Parking Space', 'royal-storage' ); ?></h2>
-					<button type="button" class="royal-storage-modal-close">&times;</button>
+					<h3 id="modal-title" class="royal-storage-modal-title"><?php esc_html_e( 'Add Parking Space', 'royal-storage' ); ?></h3>
+					<span class="royal-storage-modal-close">&times;</span>
 				</div>
-				<form id="parking-space-form">
-					<?php wp_nonce_field( 'royal_storage_parking_space_form', 'parking_space_nonce' ); ?>
-					<input type="hidden" id="space-id" name="space_id" value="">
-					
-					<div class="royal-storage-form-group">
-						<label for="space-spot-number"><?php esc_html_e( 'Spot Number', 'royal-storage' ); ?> *</label>
-						<input type="number" id="space-spot-number" name="spot_number" min="1" required>
-					</div>
+				<div class="royal-storage-modal-body">
+					<form id="parking-space-form">
+						<?php wp_nonce_field( 'royal_storage_parking_space_form', 'parking_space_nonce' ); ?>
+						<input type="hidden" id="space-id" name="space_id" value="">
 
-					<div class="royal-storage-form-group">
-						<label for="space-height-limit"><?php esc_html_e( 'Height Limit', 'royal-storage' ); ?></label>
-						<input type="text" id="space-height-limit" name="height_limit" placeholder="e.g., 2.5m">
-					</div>
+						<div class="royal-storage-form-group">
+							<label for="space-spot-number"><?php esc_html_e( 'Spot Number', 'royal-storage' ); ?> *</label>
+							<input type="number" id="space-spot-number" name="spot_number" min="1" required>
+						</div>
 
-					<div class="royal-storage-form-group">
-						<label for="space-price"><?php esc_html_e( 'Price (RSD)', 'royal-storage' ); ?> *</label>
-						<input type="number" id="space-price" name="price" step="0.01" min="0" required>
-					</div>
+						<div class="royal-storage-form-group">
+							<label for="space-height-limit"><?php esc_html_e( 'Height Limit', 'royal-storage' ); ?></label>
+							<input type="text" id="space-height-limit" name="height_limit" placeholder="e.g., 2.5m">
+						</div>
 
-					<div class="royal-storage-form-group">
-						<label for="space-description"><?php esc_html_e( 'Description', 'royal-storage' ); ?></label>
-						<textarea id="space-description" name="description" rows="3"></textarea>
-					</div>
-					
-					<div class="royal-storage-form-actions">
-						<button type="submit" class="button button-primary">
-							<?php esc_html_e( 'Save Space', 'royal-storage' ); ?>
-						</button>
-						<button type="button" class="button royal-storage-modal-close">
-							<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
-						</button>
-					</div>
-				</form>
+						<div class="royal-storage-form-group">
+							<label for="space-price"><?php esc_html_e( 'Price (RSD)', 'royal-storage' ); ?> *</label>
+							<input type="number" id="space-price" name="price" step="0.01" min="0" required>
+						</div>
+
+						<div class="royal-storage-form-group">
+							<label for="space-description"><?php esc_html_e( 'Description', 'royal-storage' ); ?></label>
+							<textarea id="space-description" name="description" rows="3"></textarea>
+						</div>
+					</form>
+				</div>
+				<div class="royal-storage-modal-footer">
+					<button type="submit" form="parking-space-form" class="button button-primary royal-storage-btn">
+						<?php esc_html_e( 'Save Space', 'royal-storage' ); ?>
+					</button>
+					<button type="button" class="button royal-storage-btn royal-storage-btn-secondary royal-storage-modal-close">
+						<?php esc_html_e( 'Cancel', 'royal-storage' ); ?>
+					</button>
+				</div>
 			</div>
 		</div>
 
 		<style>
+		.royal-storage-form-group {
+			margin-bottom: 1rem;
+		}
+
+		.royal-storage-form-group label {
+			display: block;
+			margin-bottom: 0.5rem;
+			font-weight: 600;
+		}
+
 		.royal-storage-admin-content {
 			background: #fff;
 			padding: 20px;
@@ -227,77 +238,6 @@ class ParkingSpaces {
 		.status-reserved {
 			background: #fff3cd;
 			color: #856404;
-		}
-		
-		.royal-storage-modal {
-			display: none;
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background: rgba(0,0,0,0.5);
-			z-index: 9999;
-		}
-		
-		.royal-storage-modal.show {
-			display: block !important;
-		}
-		
-		.royal-storage-modal-content {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			background: white;
-			border-radius: 8px;
-			width: 90%;
-			max-width: 500px;
-			max-height: 90vh;
-			overflow-y: auto;
-		}
-		
-		.royal-storage-modal-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 20px;
-			border-bottom: 1px solid #e1e1e1;
-		}
-		
-		.royal-storage-modal-close {
-			background: none;
-			border: none;
-			font-size: 24px;
-			cursor: pointer;
-		}
-		
-		.royal-storage-form-group {
-			margin-bottom: 20px;
-			padding: 0 20px;
-		}
-		
-		.royal-storage-form-group label {
-			display: block;
-			margin-bottom: 5px;
-			font-weight: bold;
-		}
-		
-		.royal-storage-form-group input,
-		.royal-storage-form-group select,
-		.royal-storage-form-group textarea {
-			width: 100%;
-			padding: 8px;
-			border: 1px solid #ddd;
-			border-radius: 4px;
-		}
-		
-		.royal-storage-form-actions {
-			padding: 20px;
-			border-top: 1px solid #e1e1e1;
-			display: flex;
-			gap: 10px;
-			justify-content: flex-end;
 		}
 		</style>
 
@@ -464,12 +404,32 @@ class ParkingSpaces {
 			// Get the space to find post_id
 			$space = $wpdb->get_row( $wpdb->prepare( "SELECT post_id FROM $table_name WHERE id = %d", $space_id ) );
 
-			// Update post content if post_id exists
+			// Create post if it doesn't exist, or update if it does
 			if ( $space && ! empty( $space->post_id ) ) {
 				wp_update_post( array(
 					'ID' => $space->post_id,
 					'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : ''
 				) );
+			} else {
+				// Create post if it doesn't exist
+				$post_data = array(
+					'post_title'   => 'Parking Space #' . intval( $_POST['spot_number'] ),
+					'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : '',
+					'post_status'  => 'publish',
+					'post_type'    => 'rs_parking_space'
+				);
+				$post_id = wp_insert_post( $post_data );
+
+				if ( ! is_wp_error( $post_id ) ) {
+					// Update the parking space record with the new post_id
+					$wpdb->update(
+						$table_name,
+						array( 'post_id' => $post_id ),
+						array( 'id' => $space_id ),
+						array( '%d' ),
+						array( '%d' )
+					);
+				}
 			}
 
 			$space_data = array(
@@ -505,7 +465,7 @@ class ParkingSpaces {
 				'post_title'   => 'Parking Space #' . intval( $_POST['spot_number'] ),
 				'post_content' => isset( $_POST['description'] ) ? sanitize_textarea_field( $_POST['description'] ) : '',
 				'post_status'  => 'publish',
-				'post_type'    => 'parking_space'
+				'post_type'    => 'rs_parking_space'
 			);
 
 			$post_id = wp_insert_post( $post_data );
@@ -601,6 +561,7 @@ class ParkingSpaces {
 		}
 
 		// Get description from post content if post_id exists
+		$space['description'] = '';
 		if ( ! empty( $space['post_id'] ) ) {
 			$post = get_post( $space['post_id'] );
 			if ( $post ) {
