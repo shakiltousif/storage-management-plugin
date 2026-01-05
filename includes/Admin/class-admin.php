@@ -213,65 +213,92 @@ class Admin {
 	 */
 	private function render_dashboard_metrics( $dashboard ) {
 		?>
-		<div class="royal-storage-metrics">
-			<div class="metrics-row">
-				<div class="metric-card">
-					<div class="metric-icon">📦</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Total Units', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $dashboard->get_total_units() ); ?></div>
-					</div>
+		<div class="metrics-grid">
+			<!-- Total Units -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-primary);">
+					<span class="dashicons dashicons-store"></span>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">✅</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Occupied Units', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $dashboard->get_occupied_units() ); ?></div>
-					</div>
-				</div>
-				<div class="metric-card">
-					<div class="metric-icon">🆓</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Available Units', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $dashboard->get_available_units() ); ?></div>
-					</div>
-				</div>
-				<div class="metric-card">
-					<div class="metric-icon">📊</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Occupancy Rate', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( round( $dashboard->get_occupancy_rate(), 1 ) ); ?>%</div>
-					</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Total Units', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $dashboard->get_total_units() ); ?></div>
 				</div>
 			</div>
-			<div class="metrics-row">
-				<div class="metric-card">
-					<div class="metric-icon">⚠️</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Overdue Bookings', 'royal-storage' ); ?></h3>
-						<div class="metric-number alert"><?php echo esc_html( $dashboard->get_overdue_bookings_count() ); ?></div>
-					</div>
+
+			<!-- Occupied Units -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-info);">
+					<span class="dashicons dashicons-lock"></span>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">⏰</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Expiring Soon', 'royal-storage' ); ?></h3>
-						<div class="metric-number warning"><?php echo esc_html( count( $dashboard->get_upcoming_expiries( 7 ) ) ); ?></div>
-					</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Occupied Units', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $dashboard->get_occupied_units() ); ?></div>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">💰</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Monthly Revenue', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $dashboard->get_monthly_revenue() ); ?> RSD</div>
-					</div>
+			</div>
+
+			<!-- Available Units -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-success);">
+					<span class="dashicons dashicons-unlock"></span>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">💳</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Pending Payments', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $dashboard->get_pending_payments_count() ); ?></div>
-					</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Available Units', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $dashboard->get_available_units() ); ?></div>
+				</div>
+			</div>
+
+			<!-- Occupancy Rate -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-secondary);">
+					<span class="dashicons dashicons-chart-pie"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Occupancy Rate', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( round( $dashboard->get_occupancy_rate(), 1 ) ); ?>%</div>
+				</div>
+			</div>
+
+			<!-- Overdue Bookings -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-danger);">
+					<span class="dashicons dashicons-warning"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Overdue Bookings', 'royal-storage' ); ?></h3>
+					<div class="metric-number alert"><?php echo esc_html( $dashboard->get_overdue_bookings_count() ); ?></div>
+				</div>
+			</div>
+
+			<!-- Expiring Soon -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-warning);">
+					<span class="dashicons dashicons-calendar-alt"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Expiring Soon', 'royal-storage' ); ?></h3>
+					<div class="metric-number warning"><?php echo esc_html( count( $dashboard->get_upcoming_expiries( 7 ) ) ); ?></div>
+				</div>
+			</div>
+
+			<!-- Monthly Revenue -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: #8b5cf6;">
+					<span class="dashicons dashicons-money-alt"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Monthly Revenue', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $dashboard->get_monthly_revenue() ); ?> RSD</div>
+				</div>
+			</div>
+
+			<!-- Pending Payments -->
+			<div class="metric-card">
+				<div class="metric-icon" style="color: #f59e0b;">
+					<span class="dashicons dashicons-clock"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Pending Payments', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $dashboard->get_pending_payments_count() ); ?></div>
 				</div>
 			</div>
 		</div>
@@ -313,7 +340,7 @@ class Admin {
 								<td><?php echo esc_html( $booking->unit_id ? 'Unit ' . $booking->unit_id : 'Space ' . $booking->space_id ); ?></td>
 								<td><?php echo esc_html( $booking->start_date . ' - ' . $booking->end_date ); ?></td>
 								<td>
-									<span class="status-<?php echo esc_attr( $booking->status ); ?>">
+									<span class="status-badge status-<?php echo esc_attr( $booking->status ); ?>">
 										<?php echo esc_html( ucfirst( $booking->status ) ); ?>
 									</span>
 								</td>
@@ -565,35 +592,41 @@ class Admin {
 	 */
 	private function render_reports_metrics( $total_revenue, $total_bookings, $avg_revenue_per_booking, $occupancy_rate ) {
 		?>
-		<div class="royal-storage-metrics">
-			<div class="metrics-row">
-				<div class="metric-card">
-					<div class="metric-icon">💰</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Total Revenue', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( number_format( $total_revenue, 2 ) ); ?> RSD</div>
-					</div>
+		<div class="metrics-grid">
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-primary);">
+					<span class="dashicons dashicons-money-alt"></span>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">📊</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Total Bookings', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $total_bookings ); ?></div>
-					</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Total Revenue', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( number_format( $total_revenue, 2 ) ); ?> RSD</div>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">📈</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Avg Revenue/Booking', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( number_format( $avg_revenue_per_booking, 2 ) ); ?> RSD</div>
-					</div>
+			</div>
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-info);">
+					<span class="dashicons dashicons-list-view"></span>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">🏠</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Occupancy Rate', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( number_format( $occupancy_rate, 1 ) ); ?>%</div>
-					</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Total Bookings', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $total_bookings ); ?></div>
+				</div>
+			</div>
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-success);">
+					<span class="dashicons dashicons-chart-line"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Avg Revenue/Booking', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( number_format( $avg_revenue_per_booking, 2 ) ); ?> RSD</div>
+				</div>
+			</div>
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-secondary);">
+					<span class="dashicons dashicons-chart-pie"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Occupancy Rate', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( number_format( $occupancy_rate, 1 ) ); ?>%</div>
 				</div>
 			</div>
 		</div>
@@ -1006,35 +1039,41 @@ class Admin {
 	 */
 	private function render_customers_summary( $stats ) {
 		?>
-		<div class="royal-storage-metrics">
-			<div class="metrics-row">
-				<div class="metric-card">
-					<div class="metric-icon">👥</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Total Customers', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $stats['total_customers'] ); ?></div>
-					</div>
+		<div class="metrics-grid">
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-primary);">
+					<span class="dashicons dashicons-groups"></span>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">💰</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Total Revenue', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( number_format( $stats['total_revenue'], 2 ) ); ?> RSD</div>
-					</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Total Customers', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $stats['total_customers'] ); ?></div>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">✅</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Active Customers', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $stats['active_customers'] ); ?></div>
-					</div>
+			</div>
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-success);">
+					<span class="dashicons dashicons-money-alt"></span>
 				</div>
-				<div class="metric-card">
-					<div class="metric-icon">⚠️</div>
-					<div class="metric-content">
-						<h3><?php esc_html_e( 'Overdue Customers', 'royal-storage' ); ?></h3>
-						<div class="metric-number"><?php echo esc_html( $stats['overdue_customers'] ); ?></div>
-					</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Total Revenue', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( number_format( $stats['total_revenue'], 2 ) ); ?> RSD</div>
+				</div>
+			</div>
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-info);">
+					<span class="dashicons dashicons-yes-alt"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Active Customers', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $stats['active_customers'] ); ?></div>
+				</div>
+			</div>
+			<div class="metric-card">
+				<div class="metric-icon" style="color: var(--rs-danger);">
+					<span class="dashicons dashicons-warning"></span>
+				</div>
+				<div class="metric-content">
+					<h3><?php esc_html_e( 'Overdue Customers', 'royal-storage' ); ?></h3>
+					<div class="metric-number"><?php echo esc_html( $stats['overdue_customers'] ); ?></div>
 				</div>
 			</div>
 		</div>

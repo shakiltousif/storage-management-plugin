@@ -100,6 +100,11 @@ $total_pages = ceil( $total / $limit );
 								<button type="button" class="button button-small view-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
 									<?php esc_html_e( 'View', 'royal-storage' ); ?>
 								</button>
+								<?php if ( in_array( $booking->status, array( 'pending', 'confirmed', 'active' ), true ) ) : ?>
+									<button type="button" class="button button-small reassign-unit-btn" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
+										<?php esc_html_e( 'Reassign Unit', 'royal-storage' ); ?>
+									</button>
+								<?php endif; ?>
 								<?php if ( 'pending' === $booking->status ) : ?>
 									<button type="button" class="button button-small button-primary approve-booking" data-booking-id="<?php echo esc_attr( $booking->id ); ?>">
 										<?php esc_html_e( 'Approve', 'royal-storage' ); ?>
@@ -144,4 +149,35 @@ $total_pages = ceil( $total / $limit );
 			</div>
 		</div>
 	<?php endif; ?>
+
+	<!-- Unit Reassignment Modal - Added 2026-01-06 -->
+	<div id="reassign-unit-modal" class="royal-storage-modal" style="display: none;">
+		<div class="modal-overlay"></div>
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2><?php esc_html_e( 'Reassign Unit', 'royal-storage' ); ?></h2>
+				<button type="button" class="modal-close">&times;</button>
+			</div>
+			<div class="modal-body">
+				<div class="reassign-info">
+					<p><strong><?php esc_html_e( 'Booking ID:', 'royal-storage' ); ?></strong> <span id="reassign-booking-id"></span></p>
+					<p><strong><?php esc_html_e( 'Current Unit:', 'royal-storage' ); ?></strong> <span id="reassign-current-unit"></span></p>
+					<p><strong><?php esc_html_e( 'Dates:', 'royal-storage' ); ?></strong> <span id="reassign-dates"></span></p>
+				</div>
+				<div class="form-group">
+					<label for="new-unit-id"><?php esc_html_e( 'Select New Unit:', 'royal-storage' ); ?></label>
+					<select id="new-unit-id" name="new_unit_id" required>
+						<option value=""><?php esc_html_e( 'Loading available units...', 'royal-storage' ); ?></option>
+					</select>
+					<p class="description"><?php esc_html_e( 'Only units available for the booking dates are shown.', 'royal-storage' ); ?></p>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="button modal-close"><?php esc_html_e( 'Cancel', 'royal-storage' ); ?></button>
+				<button type="button" id="confirm-reassignment" class="button button-primary">
+					<?php esc_html_e( 'Reassign Unit', 'royal-storage' ); ?>
+				</button>
+			</div>
+		</div>
+	</div>
 </div>

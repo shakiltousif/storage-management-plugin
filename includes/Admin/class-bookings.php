@@ -43,6 +43,11 @@ class Bookings {
 		add_action( 'wp_ajax_get_booking_details', array( $this, 'ajax_get_booking_details' ) );
 		add_action( 'wp_ajax_approve_booking', array( $this, 'ajax_approve_booking' ) );
 		add_action( 'wp_ajax_cancel_booking_ajax', array( $this, 'ajax_cancel_booking' ) );
+		// NEW 2026-01-06: Reassignment AJAX handlers
+		add_action( 'wp_ajax_get_available_units_for_reassignment', array( $this, 'ajax_get_available_units_for_reassignment' ) );
+		add_action( 'wp_ajax_reassign_booking_unit', array( $this, 'ajax_reassign_booking_unit' ) );
+		// NEW 2026-01-06: Mark as paid handler
+		add_action( 'wp_ajax_mark_booking_paid', array( $this, 'ajax_mark_booking_paid' ) );
 	}
 
 	/**
@@ -348,6 +353,253 @@ class Bookings {
 			wp_send_json_success( array( 'message' => __( 'Booking cancelled successfully', 'royal-storage' ) ) );
 		} else {
 			wp_send_json_error( array( 'message' => __( 'Failed to cancel booking', 'royal-storage' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX handler to get available units for reassignment
+	 * Added: 2026-01-06
+	 *
+	 * @return void
+	 */
+	public function ajax_get_available_units_for_reassignment() {
+		check_ajax_referer( 'royal_storage_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'royal-storage' ) ) );
+		}
+
+		$booking_id = isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+		$unit_type = isset( $_POST['unit_type'] ) ? sanitize_text_field( wp_unslash( $_POST['unit_type'] ) ) : 'storage';
+		$start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : '';
+		$end_date = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : '';
+
+		if ( ! $booking_id || ! $start_date || ! $end_date ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid parameters', 'royal-storage' ) ) );
+		}
+
+		// Get current booking to determine unit size
+		$booking = $this->get_booking( $booking_id );
+		if ( ! $booking ) {
+			wp_send_json_error( array( 'message' => __( 'Booking not found', 'royal-storage' ) ) );
+		}
+
+		global $wpdb;
+
+		// Get unit size from current booking
+		if ( 'parking' === $unit_type ) {
+			$table = $wpdb->prefix . 'royal_parking_spaces';
+			$size_condition = '';
+		} else {
+			$table = $wpdb->prefix . 'royal_storage_units';
+
+			// Get size of current unit
+			$current_unit = $wpdb->get_row(
+				$wpdb->prepare( "SELECT size FROM $table WHERE id = %d", $booking->unit_id )
+			);
+
+			if ( $current_unit && $current_unit->size ) {
+				$size_condition = $wpdb->prepare( 'AND size = %s', $current_unit->size );
+			} else {
+				$size_condition = '';
+			}
+		}
+
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+
+		// Get all units of same size
+		$all_units_query = "SELECT id, size, dimensions, base_price, status
+		                    FROM $table
+		                    WHERE status = 'available'
+		                    $size_condition
+		                    ORDER BY id ASC";
+		$all_units = $wpdb->get_results( $all_units_query );
+
+		// Get booked units for the date range (excluding current booking)
+		$booked_units = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT DISTINCT unit_id
+				 FROM $bookings_table
+				 WHERE unit_type = %s
+				 AND id != %d
+				 AND status IN ('confirmed', 'active', 'pending')
+				 AND start_date < %s
+				 AND end_date > %s",
+				$unit_type,
+				$booking_id,
+				$end_date,
+				$start_date
+			)
+		);
+
+		$booked_unit_ids = wp_list_pluck( $booked_units, 'unit_id' );
+
+		// Filter available units
+		$available = array_filter(
+			$all_units,
+			function( $unit ) use ( $booked_unit_ids ) {
+				return ! in_array( $unit->id, $booked_unit_ids, true );
+			}
+		);
+
+		wp_send_json_success( array( 'units' => array_values( $available ) ) );
+	}
+
+	/**
+	 * AJAX handler to reassign booking unit
+	 * Added: 2026-01-06
+	 *
+	 * @return void
+	 */
+	public function ajax_reassign_booking_unit() {
+		check_ajax_referer( 'royal_storage_admin', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized', 'royal-storage' ) ) );
+		}
+
+		$booking_id = isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+		$new_unit_id = isset( $_POST['new_unit_id'] ) ? intval( $_POST['new_unit_id'] ) : 0;
+
+		if ( ! $booking_id || ! $new_unit_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid parameters', 'royal-storage' ) ) );
+		}
+
+		// Get booking details
+		$booking = $this->get_booking( $booking_id );
+		if ( ! $booking ) {
+			wp_send_json_error( array( 'message' => __( 'Booking not found', 'royal-storage' ) ) );
+		}
+
+		// Verify new unit is available for the booking dates
+		global $wpdb;
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+
+		$conflicts = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*)
+				 FROM $bookings_table
+				 WHERE unit_id = %d
+				 AND id != %d
+				 AND status IN ('confirmed', 'active', 'pending')
+				 AND start_date < %s
+				 AND end_date > %s",
+				$new_unit_id,
+				$booking_id,
+				$booking->end_date,
+				$booking->start_date
+			)
+		);
+
+		if ( $conflicts > 0 ) {
+			wp_send_json_error( array( 'message' => __( 'Selected unit is not available for the booking dates', 'royal-storage' ) ) );
+		}
+
+		// Update booking with new unit
+		$result = $this->update_booking(
+			$booking_id,
+			array( 'unit_id' => $new_unit_id )
+		);
+
+		if ( $result !== false ) {
+			// Log the reassignment
+			error_log( sprintf(
+				'Royal Storage: Booking #%d reassigned from unit #%d to unit #%d by user #%d',
+				$booking_id,
+				$booking->unit_id,
+				$new_unit_id,
+				get_current_user_id()
+			) );
+
+			wp_send_json_success( array(
+				'message' => __( 'Unit reassigned successfully', 'royal-storage' ),
+				'new_unit_id' => $new_unit_id,
+			) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to update booking', 'royal-storage' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX handler to mark booking as paid
+	 * Added: 2026-01-06
+	 */
+	public function ajax_mark_booking_paid() {
+		// Verify nonce
+		if ( ! check_ajax_referer( 'royal_storage_admin', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid security token', 'royal-storage' ) ) );
+		}
+
+		// Check user permissions
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions', 'royal-storage' ) ) );
+		}
+
+		// Get booking ID
+		$booking_id = isset( $_POST['booking_id'] ) ? intval( $_POST['booking_id'] ) : 0;
+		$payment_notes = isset( $_POST['payment_notes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['payment_notes'] ) ) : '';
+
+		if ( ! $booking_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid booking ID', 'royal-storage' ) ) );
+		}
+
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'royal_bookings';
+
+		// Get current booking
+		$booking = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM {$table_name} WHERE id = %d",
+			$booking_id
+		) );
+
+		if ( ! $booking ) {
+			wp_send_json_error( array( 'message' => __( 'Booking not found', 'royal-storage' ) ) );
+		}
+
+		// Update payment status to 'paid'
+		$result = $wpdb->update(
+			$table_name,
+			array( 'payment_status' => 'paid' ),
+			array( 'id' => $booking_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+
+		if ( $result !== false ) {
+			// If payment notes provided, add them to order notes or booking meta
+			if ( ! empty( $payment_notes ) ) {
+				// Try to add note to WooCommerce order if exists
+				if ( $booking->order_id ) {
+					$order = wc_get_order( $booking->order_id );
+					if ( $order ) {
+						$order->add_order_note( sprintf(
+							__( 'Payment marked as complete by admin. Notes: %s', 'royal-storage' ),
+							$payment_notes
+						) );
+					}
+				}
+
+				// Log the action
+				error_log( sprintf(
+					'Royal Storage: Booking #%d marked as PAID by user #%d. Notes: %s',
+					$booking_id,
+					get_current_user_id(),
+					$payment_notes
+				) );
+			} else {
+				// Log without notes
+				error_log( sprintf(
+					'Royal Storage: Booking #%d marked as PAID by user #%d',
+					$booking_id,
+					get_current_user_id()
+				) );
+			}
+
+			wp_send_json_success( array(
+				'message' => __( 'Booking marked as paid successfully', 'royal-storage' ),
+			) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'Failed to update payment status', 'royal-storage' ) ) );
 		}
 	}
 }

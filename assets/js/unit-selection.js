@@ -1,6 +1,14 @@
 /**
- * Unit Selection JavaScript
+ * Unit Selection JavaScript - MODIFIED FOR AUTO-ASSIGNMENT
+ * Modified: 2026-01-06
  */
+
+/*
+===========================================
+LEGACY GRID SELECTION CODE - PRESERVED FOR POTENTIAL RESTORATION
+Date Disabled: 2026-01-06
+Reason: Replaced with auto-assignment by size system
+===========================================
 
 jQuery(document).ready(function($) {
     'use strict';
@@ -56,7 +64,7 @@ jQuery(document).ready(function($) {
             $cell.addClass(status).attr({ 'data-unit-id': unit.id, 'data-unit-type': unit.size });
             $cell.append($('<div class="unit-icon"></div>').addClass(unit.visual_properties?.icon || 'single-rect'));
             if (unit.visual_properties?.unit_number) $cell.append($('<div class="unit-number"></div>').text(unit.visual_properties.unit_number));
-            
+
             const $tooltip = $('<div class="unit-details"></div>').html(`<strong>${unit.size} #${unit.id}</strong><br>${unit.dimensions || ''}<br>${unit.base_price} RSD`);
             $cell.append($tooltip);
 
@@ -113,7 +121,7 @@ jQuery(document).ready(function($) {
             }
             if (window.nextStep) window.nextStep();
         });
-        
+
         $(document).on('click', '.btn-back', (e) => {
             e.preventDefault();
             if (window.previousStep) window.previousStep();
@@ -124,4 +132,68 @@ jQuery(document).ready(function($) {
         getSelectedUnit: () => selectedUnit,
         refreshUnits: loadUnits
     };
+});
+
+===========================================
+END LEGACY GRID SELECTION CODE
+===========================================
+*/
+
+// NEW: Size Selection JavaScript for Auto-Assignment
+jQuery(document).ready(function($) {
+    'use strict';
+
+    let selectedSize = null;
+
+    function initSizeSelection() {
+        // Handle size card clicks
+        $('.size-card').on('click', function() {
+            const size = $(this).data('size');
+
+            // Update radio button
+            $(this).find('input[name="unit_size"]').prop('checked', true);
+
+            // Store selected size
+            selectedSize = size;
+
+            // Remove selected class from all cards
+            $('.size-card').removeClass('selected');
+
+            // Add selected class to clicked card
+            $(this).addClass('selected');
+
+            // Trigger event for main booking form
+            $(document).trigger('size_selected', [size]);
+
+            console.log('Royal Storage: Size selected:', size);
+        });
+
+        // Handle radio button changes directly (for keyboard navigation)
+        $('input[name="unit_size"]').on('change', function() {
+            const size = $(this).val();
+            selectedSize = size;
+
+            $('.size-card').removeClass('selected');
+            $(this).closest('.size-card').addClass('selected');
+
+            $(document).trigger('size_selected', [size]);
+
+            console.log('Royal Storage: Size selected via radio:', size);
+        });
+    }
+
+    // Public API for compatibility with booking.js
+    window.sizeSelection = {
+        getSelectedSize: function() {
+            return selectedSize;
+        },
+        clearSelection: function() {
+            selectedSize = null;
+            $('.size-card').removeClass('selected');
+            $('input[name="unit_size"]').prop('checked', false);
+        }
+    };
+
+    // Initialize on page load
+    initSizeSelection();
 });

@@ -1,5 +1,6 @@
 /**
- * Royal Storage Booking Form JavaScript
+ * Royal Storage Booking Form JavaScript - MODIFIED FOR AUTO-ASSIGNMENT
+ * Modified: 2026-01-06
  */
 
 jQuery(document).ready(function($) {
@@ -7,9 +8,10 @@ jQuery(document).ready(function($) {
 
     let currentStep = 1;
     let bookingData = {
-        unit_type: null,
-        unit_id: null,
-        selected_unit: null,
+        unit_type: 'storage',  // DEFAULT 2026-01-06: Storage pre-selected
+        // unit_id: null,  // DISABLED 2026-01-06: Manual selection
+        // selected_unit: null,  // DISABLED 2026-01-06: Manual selection
+        unit_size: null,  // NEW 2026-01-06: Auto-assignment by size
         start_date: null,
         end_date: null,
         period: 'monthly'
@@ -40,21 +42,45 @@ jQuery(document).ready(function($) {
         // Event: Unit Type Card Click
         $('.unit-type-card').on('click', function() {
             const type = $(this).find('input[name="unit_type"]').val();
+
+            // Update selected state
+            $('.unit-type-card').removeClass('selected');
+            $(this).addClass('selected');
             $(this).find('input[name="unit_type"]').prop('checked', true);
             bookingData.unit_type = type;
-            
-            // Auto move to next step
-            setTimeout(() => nextStep(), 300);
+
+            // MODIFIED 2026-01-06: Show size selection for storage, auto-advance for parking
+            if (type === 'storage') {
+                // Show size selection in same step
+                $('#storage-size-selection').slideDown(300);
+                $('#next-step').prop('disabled', true).text('Select a Size to Continue');
+            } else {
+                // Parking doesn't need size - hide size selection and enable next
+                $('#storage-size-selection').slideUp(300);
+                // Clear any size selection
+                $('.size-card').removeClass('selected');
+                $('input[name="unit_size"]').prop('checked', false);
+                bookingData.unit_size = null;
+                $('#next-step').prop('disabled', false).text('Continue to Dates');
+            }
         });
 
-        // Event: Unit Selection from Grid
+        // Event: Size Selection (AUTO-ASSIGNMENT 2026-01-06)
+        // UPDATED 2026-01-06: Size selection now inline in Step 1
+        $(document).on('size_selected', function(e, size) {
+            bookingData.unit_size = size;
+
+            // Enable next button (still in Step 1)
+            $('#next-step').prop('disabled', false).text('Continue to Dates');
+        });
+
+        /* LEGACY 2026-01-06: Unit selection from grid - DISABLED
         $(document).on('unit_selected', function(e, unit) {
             bookingData.selected_unit = unit;
             bookingData.unit_id = unit.id;
-            
-            // Enable next button or auto-advance
             $('#next-step').prop('disabled', false).text('Continue with Unit #' + unit.id);
         });
+        */
 
         // Navigation
         $('#next-step').on('click', nextStep);
@@ -65,12 +91,21 @@ jQuery(document).ready(function($) {
             handleFormSubmit();
         });
 
+        // Initialize default state (storage pre-selected)
+        $('.unit-type-card[data-type="storage"]').addClass('selected');
+        $('#next-step').prop('disabled', true).text('Select a Size to Continue');
+
         updateStepVisibility();
     }
 
     function nextStep() {
         if (validateCurrentStep()) {
-            currentStep++;
+            // MODIFIED 2026-01-06: Skip Step 2 (old unit selection)
+            if (currentStep === 1) {
+                currentStep = 3; // Jump from 1 to 3
+            } else {
+                currentStep++;
+            }
             updateStepVisibility();
             handleStepChange();
             window.scrollTo({ top: $('.royal-storage-booking').offset().top - 50, behavior: 'smooth' });
@@ -78,7 +113,12 @@ jQuery(document).ready(function($) {
     }
 
     function prevStep() {
-        currentStep--;
+        // MODIFIED 2026-01-06: Skip Step 2 when going back
+        if (currentStep === 3) {
+            currentStep = 1; // Jump from 3 back to 1
+        } else {
+            currentStep--;
+        }
         updateStepVisibility();
         window.scrollTo({ top: $('.royal-storage-booking').offset().top - 50, behavior: 'smooth' });
     }
@@ -96,15 +136,26 @@ jQuery(document).ready(function($) {
         });
 
         // Buttons
-        $('#prev-step').toggle(currentStep > 1);
-        $('#next-step').toggle(currentStep < 5);
+        $('#prev-step').toggle(currentStep > 1 && currentStep !== 2); // Hide on step 1 and 2
+        $('#next-step').toggle(currentStep < 5 && currentStep !== 2);
         $('#submit-booking').toggle(currentStep === 5);
 
         // Step-specific button state
-        if (currentStep === 2) {
-            const hasUnit = !!(window.unitSelection && window.unitSelection.getSelectedUnit());
-            $('#next-step').prop('disabled', !hasUnit);
-            if (!hasUnit) $('#next-step').text('Select a Unit to Continue');
+        if (currentStep === 1) {
+            // MODIFIED 2026-01-06: Check type and size in Step 1
+            const hasType = !!bookingData.unit_type;
+            if (bookingData.unit_type === 'storage') {
+                // Storage requires size selection
+                const hasSize = !!bookingData.unit_size;
+                $('#next-step').prop('disabled', !hasSize);
+                if (!hasSize) $('#next-step').text('Select a Size to Continue');
+            } else if (bookingData.unit_type === 'parking') {
+                // Parking ready to proceed
+                $('#next-step').prop('disabled', false).text('Continue to Dates');
+            } else {
+                // No type selected yet
+                $('#next-step').prop('disabled', true).text('Select Type to Continue');
+            }
         } else if (currentStep === 5) {
             // Keep submit button disabled until summary loads
             $('#submit-booking').prop('disabled', true).text('Loading Summary...');
@@ -116,19 +167,23 @@ jQuery(document).ready(function($) {
     function validateCurrentStep() {
         switch (currentStep) {
             case 1:
+                // MODIFIED 2026-01-06: Validate type and size (if storage) in Step 1
                 if (!bookingData.unit_type) {
                     RoyalStorageUtils.showToast('Please select a unit type', 'error');
                     return false;
                 }
+                // If storage, require size selection
+                if (bookingData.unit_type === 'storage') {
+                    const size = window.sizeSelection ? window.sizeSelection.getSelectedSize() : bookingData.unit_size;
+                    if (!size) {
+                        RoyalStorageUtils.showToast('Please select a unit size', 'error');
+                        return false;
+                    }
+                    bookingData.unit_size = size;
+                }
                 return true;
             case 2:
-                const unit = window.unitSelection ? window.unitSelection.getSelectedUnit() : null;
-                if (!unit) {
-                    RoyalStorageUtils.showToast('Please select a unit from the grid', 'error');
-                    return false;
-                }
-                bookingData.selected_unit = unit;
-                bookingData.unit_id = unit.id;
+                // Step 2 is now skipped - size selection moved to Step 1
                 return true;
             case 3:
                 const start = $('#start_date').val();
@@ -168,9 +223,10 @@ jQuery(document).ready(function($) {
     }
 
     function handleStepChange() {
-        if (currentStep === 2 && window.unitSelection) {
-            window.unitSelection.refreshUnits();
-        }
+        // DISABLED 2026-01-06: Grid refresh no longer needed for auto-assignment
+        // if (currentStep === 2 && window.unitSelection) {
+        //     window.unitSelection.refreshUnits();
+        // }
         if (currentStep === 5) {
             loadSummary();
         }
@@ -182,7 +238,8 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'calculate_booking_price',
                 nonce: royalStorageBooking.nonce,
-                unit_id: bookingData.unit_id,
+                // unit_id: bookingData.unit_id,  // DISABLED 2026-01-06: Manual selection
+                unit_size: bookingData.unit_size,  // NEW 2026-01-06: Auto-assignment
                 unit_type: bookingData.unit_type,
                 start_date: bookingData.start_date,
                 end_date: bookingData.end_date,
@@ -216,14 +273,14 @@ jQuery(document).ready(function($) {
     }
 
     function renderSummary(pricing) {
-        const u = bookingData.selected_unit;
+        // AUTO-ASSIGNMENT 2026-01-06: Display size instead of specific unit
         const html = `
             <div class="summary-card">
                 <div class="summary-section">
                     <h4><span class="icon">📦</span> Unit Information</h4>
                     <div class="summary-row"><span>Type</span><span>${bookingData.unit_type.toUpperCase()}</span></div>
-                    <div class="summary-row"><span>Unit ID</span><span>#${u.id}</span></div>
-                    <div class="summary-row"><span>Size</span><span>${u.size}</span></div>
+                    <div class="summary-row"><span>Size</span><span>${bookingData.unit_size}</span></div>
+                    <div class="summary-row auto-assign-notice"><span>Unit Assignment</span><span style="font-style: italic; color: #7f8c8d;">Automatically assigned at checkout</span></div>
                 </div>
                 <div class="summary-section">
                     <h4><span class="icon">📅</span> Schedule</h4>

@@ -88,22 +88,19 @@ class Booking {
 			<div class="royal-storage-form-steps">
 				<div class="royal-storage-form-step active" data-step="1">
 					<div class="royal-storage-form-step-number">1</div>
-					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Type', 'royal-storage' ); ?></div>
+					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Type & Size', 'royal-storage' ); ?></div>
 				</div>
-				<div class="royal-storage-form-step" data-step="2">
-					<div class="royal-storage-form-step-number">2</div>
-					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Unit', 'royal-storage' ); ?></div>
-				</div>
+				<!-- Step 2 hidden - size selection now in Step 1 -->
 				<div class="royal-storage-form-step" data-step="3">
-					<div class="royal-storage-form-step-number">3</div>
+					<div class="royal-storage-form-step-number">2</div>
 					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Dates', 'royal-storage' ); ?></div>
 				</div>
 				<div class="royal-storage-form-step" data-step="4">
-					<div class="royal-storage-form-step-number">4</div>
+					<div class="royal-storage-form-step-number">3</div>
 					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Details', 'royal-storage' ); ?></div>
 				</div>
 				<div class="royal-storage-form-step" data-step="5">
-					<div class="royal-storage-form-step-number">5</div>
+					<div class="royal-storage-form-step-number">4</div>
 					<div class="royal-storage-form-step-label"><?php esc_html_e( 'Confirm', 'royal-storage' ); ?></div>
 				</div>
 			</div>
@@ -114,8 +111,8 @@ class Booking {
 				<div class="form-step active" data-step="1">
 					<div class="unit-type-selection">
 						<?php if ( 'true' === $atts['show_storage'] ) : ?>
-						<div class="unit-type-card" data-type="storage">
-							<input type="radio" id="unit_type_storage" name="unit_type" value="storage" <?php checked( $atts['unit_type'], 'storage' ); ?>>
+						<div class="unit-type-card selected" data-type="storage">
+							<input type="radio" id="unit_type_storage" name="unit_type" value="storage" checked>
 							<label for="unit_type_storage">
 								<div class="unit-type-icon">📦</div>
 								<div class="unit-type-content">
@@ -140,6 +137,49 @@ class Booking {
 							</label>
 						</div>
 						<?php endif; ?>
+					</div>
+
+					<!-- Size Selection for Storage Units - Inline in Step 1 - VISIBLE BY DEFAULT -->
+					<div id="storage-size-selection" class="royal-storage-size-selection" style="margin-top: 2rem;">
+						<h3><?php esc_html_e( 'Select Your Unit Size', 'royal-storage' ); ?></h3>
+						<p class="size-selection-description"><?php esc_html_e( 'Choose a size and we\'ll automatically assign the best available unit for you.', 'royal-storage' ); ?></p>
+
+						<div class="size-options">
+							<div class="size-card" data-size="M">
+								<input type="radio" id="size_m" name="unit_size" value="M">
+								<label for="size_m">
+									<div class="size-icon">📦</div>
+									<h4><?php esc_html_e( 'Medium (M)', 'royal-storage' ); ?></h4>
+									<p class="size-dimensions">3x3x3 <?php esc_html_e( 'meters', 'royal-storage' ); ?></p>
+									<p class="size-price">10,000 RSD/<?php esc_html_e( 'month', 'royal-storage' ); ?></p>
+								</label>
+							</div>
+
+							<div class="size-card" data-size="L">
+								<input type="radio" id="size_l" name="unit_size" value="L">
+								<label for="size_l">
+									<div class="size-icon">📦📦</div>
+									<h4><?php esc_html_e( 'Large (L)', 'royal-storage' ); ?></h4>
+									<p class="size-dimensions">4x4x4 <?php esc_html_e( 'meters', 'royal-storage' ); ?></p>
+									<p class="size-price">18,000 RSD/<?php esc_html_e( 'month', 'royal-storage' ); ?></p>
+								</label>
+							</div>
+
+							<div class="size-card" data-size="XL">
+								<input type="radio" id="size_xl" name="unit_size" value="XL">
+								<label for="size_xl">
+									<div class="size-icon">📦📦📦</div>
+									<h4><?php esc_html_e( 'Extra Large (XL)', 'royal-storage' ); ?></h4>
+									<p class="size-dimensions">5x5x5 <?php esc_html_e( 'meters', 'royal-storage' ); ?></p>
+									<p class="size-price">25,000 RSD/<?php esc_html_e( 'month', 'royal-storage' ); ?></p>
+								</label>
+							</div>
+						</div>
+
+						<div class="auto-assignment-notice">
+							<span class="notice-icon">ℹ️</span>
+							<p><?php esc_html_e( 'Your unit will be automatically assigned when you complete the booking.', 'royal-storage' ); ?></p>
+						</div>
 					</div>
 				</div>
 
@@ -257,6 +297,7 @@ class Booking {
 
 	/**
 	 * Calculate booking price via AJAX
+	 * Modified: 2026-01-06 - Size-based pricing for auto-assignment
 	 *
 	 * @return void
 	 */
@@ -265,23 +306,25 @@ class Booking {
 			wp_send_json_error( array( 'message' => __( 'Security check failed', 'royal-storage' ) ) );
 		}
 
-		$unit_id = isset( $_POST['unit_id'] ) ? intval( $_POST['unit_id'] ) : 0;
+		// AUTO-ASSIGNMENT: Accept unit_size instead of unit_id
+		$unit_size = isset( $_POST['unit_size'] ) ? sanitize_text_field( wp_unslash( $_POST['unit_size'] ) ) : '';
 		$unit_type = isset( $_POST['unit_type'] ) ? sanitize_text_field( wp_unslash( $_POST['unit_type'] ) ) : '';
 		$start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : '';
 		$end_date = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : '';
 		$period = isset( $_POST['period'] ) ? sanitize_text_field( wp_unslash( $_POST['period'] ) ) : 'monthly';
 
-		if ( empty( $unit_id ) || empty( $unit_type ) || empty( $start_date ) || empty( $end_date ) ) {
+		if ( empty( $unit_size ) || empty( $unit_type ) || empty( $start_date ) || empty( $end_date ) ) {
 			wp_send_json_error( array( 'message' => __( 'Missing required parameters', 'royal-storage' ) ) );
 		}
 
-		$base_price = $this->get_unit_base_price( $unit_id, $unit_type );
+		// Get base price by size instead of specific unit
+		$base_price = $this->get_unit_base_price_by_size( $unit_type, $unit_size );
 		if ( ! $base_price ) {
-			wp_send_json_error( array( 'message' => __( 'Unit not found', 'royal-storage' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Unit size not found', 'royal-storage' ) ) );
 		}
 
 		$pricing = $this->calculate_booking_price( $base_price, $start_date, $end_date, $period );
-		$pricing['unit_id'] = $unit_id;
+		$pricing['unit_size'] = $unit_size;
 		$pricing['unit_type'] = $unit_type;
 
 		wp_send_json_success( $pricing );
@@ -333,6 +376,7 @@ class Booking {
 
 	/**
 	 * Create booking via AJAX
+	 * Modified: 2026-01-06 - Auto-assignment by size
 	 *
 	 * @return void
 	 */
@@ -341,14 +385,29 @@ class Booking {
 			wp_send_json_error( array( 'message' => __( 'Security check failed', 'royal-storage' ) ) );
 		}
 
-		$unit_id = isset( $_POST['unit_id'] ) ? intval( $_POST['unit_id'] ) : 0;
+		// AUTO-ASSIGNMENT: Accept unit_size instead of unit_id
+		$unit_size = isset( $_POST['unit_size'] ) ? sanitize_text_field( wp_unslash( $_POST['unit_size'] ) ) : '';
 		$unit_type = isset( $_POST['unit_type'] ) ? sanitize_text_field( wp_unslash( $_POST['unit_type'] ) ) : '';
 		$start_date = isset( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : '';
 		$end_date = isset( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : '';
 		$period = isset( $_POST['period'] ) ? sanitize_text_field( wp_unslash( $_POST['period'] ) ) : 'monthly';
 
-		if ( empty( $unit_id ) || empty( $unit_type ) || empty( $start_date ) || empty( $end_date ) ) {
+		// Validate required parameters
+		if ( empty( $unit_size ) || empty( $unit_type ) || empty( $start_date ) || empty( $end_date ) ) {
 			wp_send_json_error( array( 'message' => __( 'Missing required parameters', 'royal-storage' ) ) );
+		}
+
+		// AUTO-ASSIGNMENT: Get first available unit by size
+		$unit_id = $this->get_first_available_unit_by_size( $unit_type, $unit_size, $start_date, $end_date );
+
+		if ( ! $unit_id ) {
+			wp_send_json_error( array(
+				'message' => sprintf(
+					/* translators: %s: Unit size */
+					__( 'Sorry, no %s units are currently available for the selected dates. Please try different dates or a different size.', 'royal-storage' ),
+					$unit_size
+				),
+			) );
 		}
 
 		// Handle guest checkout
@@ -399,37 +458,55 @@ class Booking {
 			// Add product to cart and redirect to checkout
 			$wc_integration = new \RoyalStorage\WooCommerceIntegration();
 			$product_id = $wc_integration->create_order( $booking_id, $customer_id, $pricing['total'] );
-			
+
 			if ( $product_id ) {
 				// Verify cart has items
 				if ( function_exists( 'WC' ) && WC()->cart && ! WC()->cart->is_empty() ) {
 					// Store booking ID in URL for checkout page
 					$checkout_url = add_query_arg( 'booking_id', $booking_id, wc_get_checkout_url() );
-					
-					wp_send_json_success( array( 
-						'message' => __( 'Booking created successfully. Redirecting to checkout...', 'royal-storage' ),
+
+					wp_send_json_success( array(
+						'message' => sprintf(
+							/* translators: %1$d: Unit ID, %2$s: Unit size */
+							__( 'Booking created successfully! Unit #%1$d (%2$s) has been assigned. Redirecting to checkout...', 'royal-storage' ),
+							$unit_id,
+							$unit_size
+						),
 						'booking_id' => $booking_id,
+						'unit_id' => $unit_id,
 						'redirect_url' => $checkout_url,
-						'cart_count' => WC()->cart->get_cart_contents_count()
+						'cart_count' => WC()->cart->get_cart_contents_count(),
 					) );
 				} else {
 					// Fallback if cart is empty - redirect to custom checkout or portal
 					$checkout_url = add_query_arg( 'booking_id', $booking_id, home_url( '/checkout/' ) );
-					
-					wp_send_json_success( array( 
-						'message' => __( 'Booking created successfully. Redirecting to checkout...', 'royal-storage' ),
+
+					wp_send_json_success( array(
+						'message' => sprintf(
+							/* translators: %1$d: Unit ID, %2$s: Unit size */
+							__( 'Booking created successfully! Unit #%1$d (%2$s) has been assigned. Redirecting to checkout...', 'royal-storage' ),
+							$unit_id,
+							$unit_size
+						),
 						'booking_id' => $booking_id,
-						'redirect_url' => $checkout_url
+						'unit_id' => $unit_id,
+						'redirect_url' => $checkout_url,
 					) );
 				}
 			} else {
 				// If WooCommerce cart failed, redirect to custom checkout page
 				$checkout_url = add_query_arg( 'booking_id', $booking_id, home_url( '/checkout/' ) );
-				
-				wp_send_json_success( array( 
-					'message' => __( 'Booking created successfully. Redirecting to checkout...', 'royal-storage' ),
+
+				wp_send_json_success( array(
+					'message' => sprintf(
+						/* translators: %1$d: Unit ID, %2$s: Unit size */
+						__( 'Booking created successfully! Unit #%1$d (%2$s) has been assigned. Redirecting to checkout...', 'royal-storage' ),
+						$unit_id,
+						$unit_size
+					),
 					'booking_id' => $booking_id,
-					'redirect_url' => $checkout_url
+					'unit_id' => $unit_id,
+					'redirect_url' => $checkout_url,
 				) );
 			}
 		} else {
@@ -480,6 +557,107 @@ class Booking {
 		);
 
 		return array_values( $available );
+	}
+
+	/**
+	 * Get first available unit by size (Auto-assignment)
+	 * Date Added: 2026-01-06
+	 *
+	 * @param string $unit_type Unit type (storage/parking).
+	 * @param string $unit_size Unit size (M, L, XL).
+	 * @param string $start_date Start date.
+	 * @param string $end_date End date.
+	 * @return int|false Unit ID or false if none available.
+	 */
+	public function get_first_available_unit_by_size( $unit_type, $unit_size, $start_date, $end_date ) {
+		global $wpdb;
+
+		// Determine table based on unit type
+		if ( 'parking' === $unit_type ) {
+			$table = $wpdb->prefix . 'royal_parking_spaces';
+			// Parking spaces don't have size, so we ignore size parameter
+			$size_condition = '';
+		} else {
+			$table = $wpdb->prefix . 'royal_storage_units';
+			$size_condition = $wpdb->prepare( 'AND size = %s', strtoupper( $unit_size ) );
+		}
+
+		$bookings_table = $wpdb->prefix . 'royal_bookings';
+
+		// Find first available unit by ID (ascending order)
+		// A unit is available if:
+		// 1. Its status is 'available'
+		// 2. It's NOT in the booked_units list for the date range
+		$query = "
+			SELECT u.id
+			FROM $table u
+			WHERE u.status = 'available'
+			$size_condition
+			AND u.id NOT IN (
+				SELECT DISTINCT unit_id
+				FROM $bookings_table
+				WHERE unit_type = %s
+				AND status IN ('confirmed', 'active', 'pending')
+				AND start_date < %s
+				AND end_date > %s
+			)
+			ORDER BY u.id ASC
+			LIMIT 1
+		";
+
+		$unit_id = $wpdb->get_var(
+			$wpdb->prepare(
+				$query,
+				$unit_type,
+				$end_date,
+				$start_date
+			)
+		);
+
+		if ( $unit_id ) {
+			error_log( "Royal Storage: Auto-assigned unit ID {$unit_id} for size {$unit_size}, type {$unit_type}" );
+			return intval( $unit_id );
+		}
+
+		error_log( "Royal Storage: No available units found for size {$unit_size}, type {$unit_type}, dates {$start_date} to {$end_date}" );
+		return false;
+	}
+
+	/**
+	 * Get unit base price by size (Auto-assignment)
+	 * Date Added: 2026-01-06
+	 *
+	 * @param string $unit_type Unit type (storage/parking).
+	 * @param string $unit_size Unit size (M, L, XL).
+	 * @return float|false Base price or false if not found.
+	 */
+	public function get_unit_base_price_by_size( $unit_type, $unit_size ) {
+		global $wpdb;
+
+		if ( 'parking' === $unit_type ) {
+			$table = $wpdb->prefix . 'royal_parking_spaces';
+			// Parking spaces use first available
+			$unit = $wpdb->get_row( "SELECT base_price FROM $table WHERE status = 'available' ORDER BY id ASC LIMIT 1" );
+		} else {
+			$table = $wpdb->prefix . 'royal_storage_units';
+			$unit = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT base_price FROM $table WHERE size = %s AND status = 'available' ORDER BY id ASC LIMIT 1",
+					strtoupper( $unit_size )
+				)
+			);
+		}
+
+		if ( ! $unit ) {
+			error_log( "Royal Storage: No unit found for price lookup. Type: {$unit_type}, Size: {$unit_size}" );
+
+			// Fallback to default pricing
+			$settings = new \RoyalStorage\Settings();
+			$base_price = floatval( $settings->get_setting( 'royal_storage_monthly_rate', 20000 ) );
+			return $base_price;
+		}
+
+		return floatval( $unit->base_price );
 	}
 
 

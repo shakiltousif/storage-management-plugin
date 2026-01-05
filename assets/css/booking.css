@@ -201,3 +201,154 @@
 	.step-progress { gap: 1rem; }
 	.step-progress .step::after { width: 1rem; }
 }
+
+/* ============================================
+   AUTO-ASSIGNMENT SIZE SELECTION STYLES
+   Added: 2026-01-06
+   ============================================ */
+
+.royal-storage-size-selection {
+	padding: 2rem;
+	max-width: 900px;
+	margin: 0 auto;
+}
+
+/* Inline size selection within Step 1 */
+.form-step #storage-size-selection {
+	padding: 0;
+	margin-top: 2rem;
+	padding-top: 2rem;
+	border-top: 2px solid var(--rs-border);
+	animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.royal-storage-size-selection h3 {
+	text-align: center;
+	font-size: 1.75rem;
+	margin-bottom: 0.5rem;
+	color: #2c3e50;
+}
+
+.size-selection-description {
+	text-align: center;
+	color: #7f8c8d;
+	margin-bottom: 2rem;
+}
+
+.size-options {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.size-card {
+	border: 2px solid #e0e0e0;
+	border-radius: 12px;
+	padding: 1.5rem;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	background: white;
+	position: relative;
+}
+
+.size-card:hover {
+	border-color: #3498db;
+	box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+	transform: translateY(-4px);
+}
+
+.size-card.selected {
+	border-color: #27ae60;
+	background: #f0fff4;
+	box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.size-card input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+}
+
+.size-card label {
+	cursor: pointer;
+	display: block;
+	text-align: center;
+}
+
+.size-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.size-card h4 {
+	margin: 0 0 0.5rem 0;
+	font-size: 1.25rem;
+	color: #2c3e50;
+}
+
+.size-dimensions {
+	color: #7f8c8d;
+	font-size: 0.9rem;
+	margin: 0.5rem 0;
+}
+
+.size-price {
+	font-weight: bold;
+	color: #27ae60;
+	font-size: 1.1rem;
+	margin: 0.5rem 0 0 0;
+}
+
+.auto-assignment-notice {
+	background: #e3f2fd;
+	border-left: 4px solid #2196f3;
+	padding: 1rem;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.auto-assignment-notice .notice-icon {
+	font-size: 1.5rem;
+}
+
+.auto-assignment-notice p {
+	margin: 0;
+	color: #1976d2;
+}
+
+.auto-assign-notice {
+	font-style: italic;
+	color: #7f8c8d;
+}
+
+/* Responsive adjustments for size selection */
+@media (max-width: 768px) {
+	.size-options {
+		grid-template-columns: 1fr;
+	}
+
+	.royal-storage-size-selection {
+		padding: 1rem;
+	}
+
+	.size-card {
+		padding: 1.25rem;
+	}
+
+	.size-icon {
+		font-size: 2.5rem;
+	}
+}

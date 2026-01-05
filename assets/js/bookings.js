@@ -41,6 +41,14 @@
 			showRenewDialog(bookingId);
 		});
 
+		// Mark as paid button
+		$(document).on('click', '.mark-paid-btn', function(e) {
+			e.preventDefault();
+			var bookingId = $(this).data('booking-id');
+			var notes = $('.payment-notes-field').val();
+			markAsPaid(bookingId, notes);
+		});
+
 		// Cancel booking button (legacy support)
 		$(document).on('click', '.cancel-booking', function(e) {
 			e.preventDefault();
@@ -101,10 +109,25 @@
 					'</div>' +
 					'<div class="booking-detail-row">' +
 						'<strong>Created At:</strong> <span>' + booking.created_at + '</span>' +
-					'</div>' +
-				'</div>';
+					'</div>';
 
-				var footer = '<button class="royal-storage-btn royal-storage-btn-secondary modal-close">Close</button>';
+				// Add payment notes field if payment is not complete
+				if (booking.payment_status.toLowerCase() !== 'paid') {
+					content += '<div class="booking-detail-row" style="margin-top: 1.5rem; flex-direction: column; align-items: flex-start;">' +
+						'<strong style="margin-bottom: 0.5rem;">Payment Notes:</strong>' +
+						'<textarea class="payment-notes-field" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" placeholder="Enter partial payment amount or notes (e.g., Paid 50,000 RSD of 360,000 RSD)"></textarea>' +
+						'<small style="color: #666; margin-top: 0.25rem;">Use this field to record partial payments or payment details</small>' +
+					'</div>';
+				}
+
+				content += '</div>';
+
+				// Build footer with Mark as Paid button if unpaid
+				var footer = '';
+				if (booking.payment_status.toLowerCase() !== 'paid') {
+					footer += '<button class="button button-primary mark-paid-btn" data-booking-id="' + booking.id + '" style="margin-right: 10px;">Mark as Paid</button>';
+				}
+				footer += '<button class="royal-storage-btn royal-storage-btn-secondary modal-close">Close</button>';
 
 				RoyalStorageUtils.openModal({
 					title: 'Booking Details #' + booking.id,
@@ -265,6 +288,42 @@
 				}
 			});
 		}
+	}
+
+	/**
+	 * Mark booking as paid
+	 */
+	function markAsPaid(bookingId, notes) {
+		if (!confirm('Are you sure you want to mark this booking as paid?')) {
+			return;
+		}
+
+		if (typeof RoyalStorageUtils === 'undefined') {
+			alert('Required utilities not loaded. Please refresh the page.');
+			return;
+		}
+
+		RoyalStorageUtils.ajax({
+			url: royalStorageAdmin.ajaxUrl,
+			data: {
+				action: 'mark_booking_paid',
+				nonce: royalStorageAdmin.nonce,
+				booking_id: bookingId,
+				payment_notes: notes
+			},
+			success: function(response) {
+				RoyalStorageUtils.showToast(response.data.message, 'success');
+				// Close modal
+				$('.royal-storage-modal-close').click();
+				setTimeout(function() {
+					location.reload();
+				}, 1500);
+			},
+			error: function(response) {
+				var message = response.data && response.data.message ? response.data.message : 'Failed to mark booking as paid';
+				RoyalStorageUtils.showToast(message, 'error');
+			}
+		});
 	}
 
 	/**
