@@ -157,16 +157,11 @@ class Booking {
 						</div>
 						<div class="form-group">
 							<label for="end_date"><?php esc_html_e( 'End Date', 'royal-storage' ); ?></label>
-							<input type="date" id="end_date" name="end_date">
+							<input type="date" id="end_date" name="end_date" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+							<p class="description" style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;"><?php esc_html_e( 'Automatically set to 1 month after start date', 'royal-storage' ); ?></p>
 						</div>
-						<div class="form-group">
-							<label for="period"><?php esc_html_e( 'Billing Period', 'royal-storage' ); ?></label>
-							<select id="period" name="period">
-								<option value="daily"><?php esc_html_e( 'Daily', 'royal-storage' ); ?></option>
-								<option value="weekly"><?php esc_html_e( 'Weekly', 'royal-storage' ); ?></option>
-								<option value="monthly" selected><?php esc_html_e( 'Monthly', 'royal-storage' ); ?></option>
-							</select>
-						</div>
+						<!-- Hidden billing period - always monthly -->
+						<input type="hidden" id="period" name="period" value="monthly">
 					</div>
 				</div>
 
@@ -511,7 +506,21 @@ class Booking {
 			)
 		);
 
-		return $unit ? floatval( $unit->base_price ) : false;
+		if ( ! $unit ) {
+			// Log for debugging
+			error_log( "Royal Storage: Unit not found. Unit ID: {$unit_id}, Unit Type: {$unit_type}, Table: {$table}" );
+			return false;
+		}
+
+		// If base_price is 0 or null, use default monthly rate from settings
+		$base_price = floatval( $unit->base_price );
+		if ( $base_price <= 0 ) {
+			$settings = new \RoyalStorage\Settings();
+			$base_price = floatval( $settings->get_setting( 'royal_storage_monthly_rate', 20000 ) );
+			error_log( "Royal Storage: Using default rate for unit {$unit_id}: {$base_price}" );
+		}
+
+		return $base_price;
 	}
 
 	/**

@@ -20,7 +20,22 @@ jQuery(document).ready(function($) {
     function initBookingForm() {
         // Set min dates
         const today = new Date().toISOString().split('T')[0];
-        $('#start_date, #end_date').attr('min', today);
+        $('#start_date').attr('min', today);
+
+        // Auto-calculate end date when start date is selected (1 month later)
+        $('#start_date').on('change', function() {
+            const startDate = $(this).val();
+            if (startDate) {
+                const start = new Date(startDate);
+                const end = new Date(start);
+                end.setMonth(end.getMonth() + 1);
+
+                const endDateStr = end.toISOString().split('T')[0];
+                $('#end_date').val(endDateStr);
+                bookingData.start_date = startDate;
+                bookingData.end_date = endDateStr;
+            }
+        });
 
         // Event: Unit Type Card Click
         $('.unit-type-card').on('click', function() {
@@ -214,7 +229,7 @@ jQuery(document).ready(function($) {
                     <h4><span class="icon">📅</span> Schedule</h4>
                     <div class="summary-row"><span>Start</span><span>${bookingData.start_date}</span></div>
                     <div class="summary-row"><span>End</span><span>${bookingData.end_date}</span></div>
-                    <div class="summary-row"><span>Billing</span><span>${bookingData.period}</span></div>
+                    <div class="summary-row"><span>Billing Period</span><span>Monthly</span></div>
                 </div>
                 <div class="summary-section total">
                     <div class="summary-row"><span>Subtotal</span><span>${parseFloat(pricing.subtotal).toFixed(2)} RSD</span></div>
